@@ -222,9 +222,10 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 			return 4;
 		}
 
-		/* rotate the upper of the images */
-		if(hCamera == sSO2Parameters->hCamera_A){
-			rotate180(stBuffer.pvAddress);
+
+		/* rotate one of the images */
+		if(hCamera == sSO2Parameters->hCamera_B){
+			rotateImage(stBuffer.pvAddress, imageBitCount);
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
