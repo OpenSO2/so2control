@@ -67,10 +67,20 @@ Interface:
 TODO
 ====
 
-- implement second camera
-- improve time management to millisecond accuracy
-- measure frame rate -> Interframedelay etc.
-- implement dark-frame subtraction
-- implement automated filter wheel control
-- improve error management
-- ExposureTimeControl: improve loop detection
+- johann: bilder verarbeiten
+- johann: Bug: neue Datei anlegen
+- johann: Bug: Kamera in Bildnamen oder Header
+- morten: Bilder gleichzeitig aufnehmen oder Zeitdifferenz messen
+- morten: Zeitstempel direkt nach aufnahme setzen
+- Belichtungszeit? -> Matthias 
+- Zeitsynchro/Batterie -> Matthias
+Mi: Kamera bauen
+Do: testen
+Fr: packen
+--
+- morten: improve time management to millisecond accuracy
+- morten: measure frame rate -> Interframedelay etc.
+- johann: implement automated filter wheel control
+- johann: implement dark-frame subtraction
+- morten: improve error management
+- morten: ExposureTimeControl: improve loop detection
