@@ -47,6 +47,8 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 	int					saveErrCount	= 0;	/* counting how often saving an image failed */
 	int 				startErrCount	= 0;	/* counting how often the start of capture process failed */
 	FILE*				fid = NULL;
+	char filename[PHX_MAX_FILE_LENGTH];
+
 	printf("Starting acquisition...\n");
 	printf("Press a key to exit\n");
 
@@ -77,7 +79,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 			sControlFlags->fBufferReady = FALSE;
 
 			/* save the captured image */
-			eStat = writeImage(sSO2Parameters);
+			eStat = writeImage(sSO2Parameters, filename);
 			if ( PHX_OK != eStat )
 			{
 				logError("Saving an image failed. This is not fatal");
@@ -122,11 +124,10 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 
 
 
-int writeImage(sParameterStruct *sSO2Parameters)
+int writeImage(sParameterStruct *sSO2Parameters, char *filename)
 {
 	stImageBuff			stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
 	int					status;		/* Status variable for several return values */
-	char				filename[PHX_MAX_FILE_LENGTH];
 	int					fwriteCount=2752512; /* (1344*1024*16)/8 = 2752512 Bytes per image 12 bits saved in 16 bits */
 	int					fwriteReturn; /* Return value for the write functions */
 	FILE				*imageBuffer; /* FIle handle for current image */
@@ -134,6 +135,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	SYSTEMTIME			timeThisImage; /* System time windows.h dependency */
 	char				errbuff[512];
 	char				messBuff[512];
+
 	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
 
@@ -156,7 +158,8 @@ int writeImage(sParameterStruct *sSO2Parameters)
 			printf("%09d Images are saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
 		}
 	}
-	/* create a Fileheader caution <windows.h> is used her */
+
+	/* create a Fileheader caution <windows.h> is used here */
 	status = createFileheader(headerString, &timeThisImage);
 	if (status != 0)
 	{
@@ -299,7 +302,7 @@ int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 	if (fid != NULL) fclose(fid);
 
 	/* create new filename */
-	status = createFilename(sSO2Parameters,filename,time);
+	status = createFilename(sSO2Parameters, filename, time);
 	if (status <= 0)
 	{
 		logError("Creating filename failed.");
