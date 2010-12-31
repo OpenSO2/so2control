@@ -334,7 +334,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 					if(strcmp(inputLineBuffer,outputLineBuffer) != 0)
 					{
 						/* if cameras answer equals input string, exit successful */
-						printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
+						//printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
 						return 0;
 					}
 				}

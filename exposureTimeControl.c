@@ -11,46 +11,64 @@
 
 int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
-	etStat eStat = PHX_OK;
-	int exposureTime = (int)sSO2Parameters->dExposureTime;
-	tHandle hCamera = sSO2Parameters->hCamera;
-	stImageBuff stBuffer;
-	int timeSwitch=0;
+	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
+	//int				status; /* Status varable for several return values */
+	int				exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
+	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
+	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
+	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
+	
+	/* pre-set the buffer with zeros */
 	memset( &stBuffer, 0, sizeof(stImageBuff ));
 	if(sSO2Parameters->dFixTime != 0)
 	{
-		/* fix exposure time */
-
-		fixExposureTime(sSO2Parameters);
+		/* Check if exposure time is declared fix in the config file if so set it.*/
+		eStat = fixExposureTime(sSO2Parameters);
+		if (eStat != 0)
+		{
+			printf("setting fixed exposure time failed. aborting...\n");
+			return eStat;
+		}
 	}
 	else
 	{
-		/* variable exposure time */
-		
 		/* SOME PROBLEMS WITH NOT FINDING THE RIGHT FRAMEBLANKING MODE 
-		 * it switches between 1 and 2 becaus one is to dark and the 
+		 * it switches between 1 and 2 because one is to dark and the 
 		 * other one is to bright
 		 */
 		
-
-		/* Preset the Camera with a medium exposuretime
-		 * NMD: N, S, F
+		/* NMD: N, S, F
 		 * N = Normal, S = Electronic Shutter, F = Frameblanking
 		 * Speed:
 		 * Frameblanking FBL: 1 - 12
 		 * Electronic Shutter SHT = 1 - 1055
 		 * FBL > SHT 
-		 * conversion to seconds see Manual
+		 * for conversion to milliseconds see camera manual
 		 */
+		 
+		 /* Pre-set the Camera with a medium exposure time */
 		eStat = sendMessage(hCamera,"NMD S");
-			if (PHX_OK != eStat ) goto Error;
+			if (PHX_OK != eStat )
+			{
+				sSO2Parameters->eStat = eStat;
+				return eStat;
+			}
+
 		eStat = sendMessage(hCamera, "SHT 1055");
-			if (PHX_OK != eStat ) goto Error;
+			if (PHX_OK != eStat )
+			{
+				sSO2Parameters->eStat = eStat;
+				return eStat;
+			}
 		
 		/* Acquire first buffer to decide between FBL or SHT */
-		getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
-		
-		/* calculate histogram to test for over or unter exposition */
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		if (eStat != 0)
+		{
+			sSO2Parameters->eStat = eStat;
+			return eStat;
+		}
+		/* calculate histogram to test for over or under exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
 
 		switch(timeSwitch)
@@ -73,7 +91,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 			
 			default:printf("Oh oh something weird just happened\n");
 					printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
-					break;
+					return 1;
 		}
 	}
 	Error:
@@ -83,99 +101,146 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 
 int fixExposureTime(sParameterStruct *sSO2Parameters)
 {
-	int exposureTime = (int)sSO2Parameters->dExposureTime;
-	tHandle hCamera = sSO2Parameters->hCamera;
-	etStat eStat = PHX_OK;
-	int		shutterSpeed = 1; /* in case something went wrong this value is accepted by both modi */
+	int			exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
+	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
+	etStat		eStat			= PHX_OK; /* Phoenix status variable */
+	int			shutterSpeed	= 1; /* in case something went wrong this value is accepted by both modi */
 	char message[9];
 
+	/* before doing anything check if exposure time is within the limits */
 	if ( exposureTime < 2.4 || exposureTime > 1004400)
 	{
 		printf("Exposure time is out of range \n2.4us < Exposure Time > 1004.4ms\n");
 		eStat = PHX_ERROR_OUT_OF_RANGE;
-		goto Error;
+		return eStat;
 	}
 
 	if (exposureTime <= 83560)
 	{	//===========ELECTRONIC=SHUTTER==========
+	
 		shutterSpeed = roundToInt(((exposureTime - 2.4)/79.275)+1);
 		sprintf(message,"SHT %d",shutterSpeed);
 
 		// N normal, S Shutter, F frameblanking
 		eStat = sendMessage(hCamera, "NMD S");
-		if ( PHX_OK != eStat ) goto Error;
+		if ( PHX_OK != eStat )
+		{
+			printf("communication with camera failed. aborting... \n");
+			return eStat;
+		}
+		
 		
 		// Shutter speed, 1 - 1055
 		eStat = sendMessage(hCamera, message);
-		if ( PHX_OK != eStat ) goto Error;
+		if ( PHX_OK != eStat )
+		{
+			printf("communication with camera failed. aborting... \n");
+			return eStat;
+		}
+		
 		exposureTime = (int)(2.4 + (shutterSpeed-1) * 79.275);
 		printf("Elektronic shutter mode\nExposure time = %f us\n",exposureTime);
 	}
 	else
 	{	//===========FRAME=BLANKING==========
+	
 		shutterSpeed = roundToInt(exposureTime/83700);
 		sprintf(message,"FBL %d",shutterSpeed);
 		
 
 		// N normal, S Shutter, F frameblanking
 		eStat = sendMessage(hCamera, "NMD F");
-		if ( PHX_OK != eStat ) goto Error;
+		if ( PHX_OK != eStat )
+		{
+			printf("communication with camera failed. aborting... \n");
+			return eStat;
+		}
 		
 		// Shutter speed, 1 - 12
 		 eStat = sendMessage(hCamera, message);
-		if ( PHX_OK != eStat ) goto Error;
+		if ( PHX_OK != eStat )
+		{
+			printf("communication with camera failed. aborting... \n");
+			return eStat;
+		}
 
 		exposureTime = shutterSpeed * 83700;
 		printf("Frame blanking mode\nExposure time = %f us\n",exposureTime);
 		
 	}
 
-	Error:
 	sSO2Parameters->eStat = eStat;
-	return 0;
+	return eStat;
 }
+
 int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagStruct *sControlFlags)
 {
-	etStat eStat			= PHX_OK;   /* Status variable */
-	tHandle hCamera			= sSO2Parameters->hCamera;
+	/*  this function is very similar to startAquisition( ... ) */
+	etStat		eStat			= PHX_OK; /* Status variable */
+	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
+	int 		startErrCount	= 0; /* counting how often the start of capture process failed */
 	
 	/* Initiate a software trigger of the exposure control signal
 	 * see triggerConfig()
 	 */
 	PHX_Acquire( hCamera, PHX_EXPOSE, NULL );
 	
-	/* start capture, hand over callback function*/
-	eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
-		if ( PHX_OK != eStat ) goto Error;
-	
-	/* Wait for a user defined period between each camera trigger call*/
-	_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
-	
-	/* Wait here until either:
-	 * (a) The user aborts the wait by pressing a key in the console window
-	 *     DEACTIVATE THIS LATER
-	 * (b) The BufferReady flag is set indicating that the image is complete
-	 * (c) The FIFO overflow flag is set indicating that the image is corrupt.
-	 * Keep calling the sleep function to avoid burning CPU cycles
-	 */
-	while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) 
+	do
 	{
-		_PHX_SleepMs(10);
-	}
-	
-	/* if BufferReady flag is set, reset it for next image */
-	sControlFlags->fBufferReady = FALSE;
-	
-	/* download the buffer and place it in 'stBuffer' */
-	eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
-		if ( PHX_OK != eStat ) goto Error;
-	
-	/* stopping the acquisition */
-	PHX_Acquire( hCamera, PHX_ABORT, NULL );
-	
-	Error:
+		/* start capture, hand over callback function*/
+		eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
+		if ( PHX_OK == eStat )
+		{
+			/* if starting the capture was successful reset error counter to zero */
+			startErrCount = 0;
+			/* Wait for a user defined period between each camera trigger call*/
+			_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
+			
+			/* Wait here until either:
+			 * (a) The user aborts the wait by pressing a key in the console window
+			 *     DEACTIVATE THIS LATER
+			 * (b) The BufferReady flag is set indicating that the image is complete
+			 * (c) The FIFO overflow flag is set indicating that the image is corrupt.
+			 * Keep calling the sleep function to avoid burning CPU cycles
+			 */
+			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) 
+			{
+				_PHX_SleepMs(10);
+			}
+			
+			/* if BufferReady flag is set, reset it for next image */
+			sControlFlags->fBufferReady = FALSE;
+			
+			/* download the buffer and place it in 'stBuffer' */
+			eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
+				if ( PHX_OK != eStat )
+				{
+					printf("acquisition of one buffer failed\n");
+					/* stopping the acquisition */
+					PHX_Acquire( hCamera, PHX_ABORT, NULL );
+					return eStat;
+				}
+			
+			/* stopping the acquisition */
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+		} // if ( PHX_OK == eStat )
+		else
+		{
+			/* if starting the capture failed more than 3 times program stops */
+			startErrCount++;
+			if(startErrCount >= 3)
+			{
+				printf("starting the acquisition failed 3 times in a row. Aborting...");
+				PHX_Acquire( hCamera, PHX_ABORT, NULL );
+				sSO2Parameters->eStat = eStat;
+				return eStat;
+			}
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+		} // else
+	/* loops only if something went wrong */ 
+	} while (startErrCount != 0);
 	sSO2Parameters->eStat = eStat;
-	return 0;
+	return eStat;
 }
 
 int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch)
@@ -186,67 +251,53 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 	 * this might be different on different compilers.
 	 * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
 	 */
-	int i;
-	int bufferlength = sSO2Parameters->dBufferlength;
-	short temp=0; 
-	short * shortBuffer;
-	int summe = 0;
-	int histogram[4096]={0};
-	int percentage = sSO2Parameters->dHistPercentage;
-	int intervalMin = sSO2Parameters->dHistMinInterval; 
-	/* While debugging 2 files are created at this point
-	 * fwriteCount is 2 x bufferlength because
-	 * we save the image date byte per byte
-	 */
-	int fwriteCount= bufferlength*2;//, fwriteReturn;
-//	FILE *output, *bufferDump;
-	
-	/* opening the debug files */
-//	output = fopen("histogram.txt","w");
-//	bufferDump = fopen("histoImage.raw","wb");
-	
+
+	int		bufferlength 	= sSO2Parameters->dBufferlength;
+	int		percentage		= sSO2Parameters->dHistPercentage;
+	int		intervalMin		= sSO2Parameters->dHistMinInterval; 
+	int		histogram[4096]	={0};
+	int		summe 			= 0;
+	int		i;
+	short	temp			=0; 
+	short	*shortBuffer;
 	
 	/* shortBuffer gets the address of the image data assigned 
 	 * since shortBuffer is of datatyp 'short' 
 	 * shortbuffer++ will set the pointer 16 bits forward
 	 */
-	 shortBuffer=stBuffer->pvAddress;
+	 shortBuffer = stBuffer->pvAddress;
 	
 	/* scanning the whole buffer and creating a histogram */
 	 for(i=0;i<bufferlength;i++)
 	{
-		temp=*shortBuffer;
+		temp = *shortBuffer;
 		histogram[temp]++;
 		shortBuffer++;
 	}
-	 
-	 /* For debugging: save histogram to file */
-/*	for(i=0;i<4096;i++)
-	{
-		fprintf(output,"%04d %06d\n",i,histogram[i]);
-	}
-*/	
-	/* check if image is over or underexposed */
+
+	/* sum over a through config file given interval to check if image is underexposed */
 	for(i=0;i<intervalMin;i++)
 	{
 		summe = summe + histogram[i];
 	}
+	
+	/* pre-set the switch to 0 if image is neither over or under exposed it remains 0 */
 	*timeSwitch = 0;
+	
+	/* check if the image is underexposed by testing if the sum of al values in a given interval
+	 * is greater than a given confidence value */
 	if(summe > (bufferlength*percentage/100)) 
 	{
-		//printf("Underexposed!\nsumme = %d \n",summe);
 		*timeSwitch = 1;
 	}
-	
+	/* check if the image is overexposed by testing how often the brightest pixel appears in the image */
 	if(histogram[4095] > (bufferlength*percentage/100)) 
 	{
-		//printf("Overexposed!\nHistogram[4095]= %d\n",histogram[4095]);
 		if(*timeSwitch == 1)
 		{
-			/* If timeSwitch was already set to the picture is underexposed and 
-			 * overexposed therefor the timeSwitch is set to 3
+			/* If timeSwitch was already set to 1 the picture is underexposed and 
+			 * overexposed therefore the timeSwitch is set to 3
 			 */
-			//printf("to much Contrast\n");
 			*timeSwitch = 3;
 		}
 		else
@@ -255,17 +306,6 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 			*timeSwitch = 2;
 		}
 	}
-
-	 
-	 /* for debugging the captured image is save to harddrive
-	  * to save it we have to reset the pointer. The easiest way
-	  * to do so is to assign it again to the original buffer
-	  */
-	  	shortBuffer=stBuffer->pvAddress;
-	//fwriteCount = 2752512; 
-//	fwriteReturn = fwrite(shortBuffer,1,fwriteCount,bufferDump);
-//	fclose(bufferDump);
-//	fclose(output);
 	return 0;
 }
 
@@ -273,40 +313,60 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 
 int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
-	etStat eStat = PHX_OK;
-	tHandle hCamera	= sSO2Parameters->hCamera;
-	stImageBuff stBuffer;
-	char message[9];
-	/* Just a Value != 0,1,2,3 */
-	int timeSwitch  = 4;
-	/* FBL max = 12 12/2=6 */
-	double FBvalue = 6., divisor = FBvalue;
+	etStat			eStat		= PHX_OK; /* Phoenix status variable */
+	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
+	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
+	char			message[9]; /* Message buffer for communication with camera */
+	int				timeSwitch	= 1; /* Integer switch to switch between exposure modi */
+	double			FBvalue		= 6; /* pre-set value 12/2=6 */
+	double			divisor		= FBvalue; /* actual value send to camera */
+	int 			switchMemory1 = 2; /* we need 2 memories because we */
+	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
 	
 	/* Switching to Frameblanking mode */
 	eStat = sendMessage(hCamera,"NMD F");
-		if ( PHX_OK != eStat ) goto Error;
+	if ( PHX_OK != eStat )
+	{
+		sSO2Parameters->eStat = eStat;
+		return eStat;
+	}
 	
 	
 	
 	while(timeSwitch != 0 && timeSwitch != 3)
 	{
 		if(FBvalue > 12 || FBvalue < 1) break;
-		printf("timeSwitch = %d \n",timeSwitch);
-		printf("%f\n",FBvalue);
+		
 		divisor = divisor / 2;
+		/* it seems we are doing this twice not sure why */
 		divisor = (double)roundToInt(divisor);
+		
 		sprintf(message,"FBL %d",roundToInt(FBvalue));
 		eStat = sendMessage(hCamera,message);
-			if (PHX_OK != eStat ) goto Error;
+		if (PHX_OK != eStat )
+		{
+			sSO2Parameters->eStat = eStat;
+			return eStat;
+		}
 		
 		/* Acquire first buffer to decide between FBL or SHT */
-		getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		if ( PHX_OK != eStat )
+		{
+			sSO2Parameters->eStat = eStat;
+			return eStat;
+		}
 		
-		/* calculate histogram to test for over or unter exposition */
+		/* calculate histogram to test for over or under exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
-		
-		
 
+		/* a little bit hacky but it works */
+		if (switchMemory2 == timeSwitch)
+		{
+			printf("we are caught in a loop between %d and %d. Breaking out.\n", roundToInt(switchMemory1), roundToInt(switchMemory2));
+			timeSwitch = 0;
+		}
+		
 		switch(timeSwitch)
 		{
 		case 0 : printf("Exposuretime is set!\n"); 
@@ -328,28 +388,36 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 				printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
 				break;
 		}
+		switchMemory2 = switchMemory1;
+		switchMemory1 = timeSwitch;
+	
 	}
-	/* save the exposure time to control Struct */
+	/* save the exposure time in [ms] to control Struct */
 	sSO2Parameters->dExposureTime = FBvalue * 0.0837;
-	Error:
+
 	sSO2Parameters->eStat = eStat;
-	return 0;
+	return eStat;
 }
 
 int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
-	etStat eStat = PHX_OK;
-	tHandle hCamera	= sSO2Parameters->hCamera;
-	stImageBuff stBuffer;
-	char message[9];
-	/* Just a Value !=0,1,2,3 */
-	int timeSwitch  = 4;
-	/* SHT max = 1055 1055/2=527.5 -> 528 */ 
-	double SHTvalue = 528., divisor = SHTvalue;
+	etStat			eStat		= PHX_OK; /* Phoenix status variable */
+	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
+	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
+	char			message[9]; /* Message buffer for communication with camera */
+	int				timeSwitch 	= 1; /* Integer switch to switch between exposure modi */
+	double			SHTvalue	= 528; /* SHT max = 1055 1055/2=527.5 -> 528 */ 
+	double			divisor		= SHTvalue; /* actual value send to camera */
+	int 			switchMemory1 = 2; /* we need 2 memories because we */
+	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
 	
 	/* Switching to Electronic Shutter mode */
 	eStat = sendMessage(hCamera,"NMD S");
-		if ( PHX_OK != eStat ) goto Error;
+	if ( PHX_OK != eStat )
+	{
+		sSO2Parameters->eStat = eStat;
+		return eStat;
+	}
 	
 	
 	
@@ -358,18 +426,32 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		if(SHTvalue > 1055 || SHTvalue < 1) break;
 		
 		divisor = divisor / 2.;
+		
 		sprintf(message,"SHT %d",roundToInt(SHTvalue));
-		printf("%s\n",message);
 		eStat = sendMessage(hCamera,message);
-			if (PHX_OK != eStat ) goto Error;
+		if (PHX_OK != eStat )
+		{
+			sSO2Parameters->eStat = eStat;
+			return eStat;
+		}
 		
 		/* Acquire first buffer to decide between FBL or SHT */
-		getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		if ( PHX_OK != eStat )
+		{
+			sSO2Parameters->eStat = eStat;
+			return eStat;
+		}
 		
 		/* calculate histogram to test for over or unter exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
 		
-		
+		/* a little bit hacky but it works */
+		if (switchMemory2 == timeSwitch)
+		{
+			printf("we are caught in a loop between %d and %d. Breaking out.\n", roundToInt(switchMemory1), roundToInt(switchMemory2));
+			timeSwitch = 0;
+		}
 		
 		switch(timeSwitch)
 		{
@@ -390,19 +472,21 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 				printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
 				break;
 		}
+		switchMemory2 = switchMemory1;
+		switchMemory1 = timeSwitch;
 	}
+	
 	/* save the exposure time to control Struct */
-	/* GENAUIGKEIT VON FLOAT!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
-	Error:
+
 	sSO2Parameters->eStat = eStat;
-	return 0;
+	return eStat;
 }
 
 int roundToInt(double value)
 {
 	/* This function is necessary because round()
-	 * seems not implemented in this version of "math.h"
+	 * seems not implemented in the VC6.0 version of "math.h"
 	 */
 	int result;
 	double temp;
