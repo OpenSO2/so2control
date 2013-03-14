@@ -25,7 +25,11 @@ int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlF
 	status = structInit(sSO2Parameters);
 	if(status != 0) return status;
 	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera,"configurations//c8484.pcf" , (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL |  PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
-	if(sSO2Parameters->eStat != 0) return sSO2Parameters->eStat;
+	if(sSO2Parameters->eStat != 0)
+	{
+		logError("loading PHX config file failed");
+		return sSO2Parameters->eStat;
+	}
 	status = defaultConfig(sSO2Parameters,sControlFlags);
 	if(status != 0) return status;
 	status = triggerConfig(sSO2Parameters);
@@ -44,6 +48,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 	int n=1,i=0,delimIndex=0,linebreak=0, valueSize=0;
 	int linenumber=1;
 	char cTmp[MAXBUF];
+	char errbuff[MAXBUF];
 	lineBuf = (char*) malloc(MAXBUF);
 	
 	pFILE = fopen(filename,"r");
@@ -122,7 +127,9 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 	} //end if(pFILE!=NULL)
 	else
 	{
-		printf("opening Configfile: %s failed!\n",filename);
+		sprintf(errbuff,"opening Configfile: %s failed!\n",filename);
+		logError(errbuff);
+		return 1;
 	}
 	
 	return 0;
@@ -160,7 +167,8 @@ int triggerConfig(sParameterStruct	*sSO2Parameters)
    eParamValue = PHX_EXPTRIG_SWTRIG;
    eStat = PHX_ParameterSet( hCamera, PHX_EXPTRIG_SRC, (void *) &eParamValue );
    if ( PHX_OK != eStat ) goto Error;
-
+	
+   logMessage("trigger configuration was successfull");
    Error:
    sSO2Parameters->eStat = eStat;
 	
@@ -235,6 +243,7 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 	eStat = PHX_ParameterSet( hCamera, PHX_EVENT_CONTEXT, (void *) sControlFlags );
 	if ( PHX_OK != eStat ) goto Error;
 	
+	logMessage("configuration of the Framegrabber was successfull");
 Error:
 	sSO2Parameters->eStat = eStat;
 	return 0;
@@ -254,6 +263,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	if ( PHX_OK != eStat )
 	{
 		sSO2Parameters->eStat = eStat;
+		logError("sending INI to camera was unsuccessfull");
 		return 1;
 	}
 	
@@ -263,6 +273,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	if ( PHX_OK != eStat )
 	{
 		sSO2Parameters->eStat = eStat;
+		logError("sending AMD N to camera was unsuccessfull");
 		return 1;
 	}
 	
@@ -271,6 +282,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	if ( PHX_OK != eStat )
 	{
 		sSO2Parameters->eStat = eStat;
+		logError("sending SMD N to camera was unsuccessfull");
 		return 1;
 	}
 		
@@ -279,6 +291,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	if ( PHX_OK != eStat )
 	{
 		sSO2Parameters->eStat = eStat;
+		logError("sending SHA M to camera was unsuccessfull");
 		return 1;
 	}
 
@@ -287,9 +300,11 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	if ( PHX_OK != eStat )
 	{
 		sSO2Parameters->eStat = eStat;
+		logError("sending CEG H to camera was unsuccessfull");
 		return 1;
 	}
-
+	
+	logMessage("configuration of camera was successfull");
 	sSO2Parameters->eStat = eStat;
 	return 0;
 }
@@ -339,7 +354,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 				{
 					if(strcmp(inputLineBuffer,outputLineBuffer) != 0)
 					{
-						/* if cameras answer equals input string, exit successful */
+						/* if cameras answer equals input string, exit successfull */
 						//printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
 						return 0;
 					}
@@ -348,8 +363,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 		}
 	
 	}
-	/* if something went wrong exit with error value */
-	printf("DEBUG: send message: %s was not successful\n",inputLineBuffer);
+
 	return eStat;
 }
 
