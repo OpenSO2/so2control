@@ -3,5 +3,7 @@ old_files/
 old_program/
 Debug/
 Images/
+logs/
 *.ncb
 *.opt
+*.plg

@@ -2,6 +2,7 @@
 #include"messages.h"
 #include"imageCreation.h"
 #include"exposureTimeControl.h"
+#include"log.h"
 /* explanation of prefixes:
  * d = Integer (ui32) (int)
  * e = Status-Value (eStat) or Parameter-Value (etParamValue)
@@ -50,6 +51,6 @@ int main( int argc, char* argv[] )
 
 	/* Release the Phoenix board */
 	if ( sSO2Parameters.hCamera ) PHX_CameraRelease( &sSO2Parameters.hCamera );
-	printf("exposuretime=%f \n",sSO2Parameters.dExposureTime);
+	logExit();
 	return 0;
 }

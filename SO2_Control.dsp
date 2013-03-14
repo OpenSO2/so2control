@@ -106,6 +106,10 @@ SOURCE=.\imageCreation.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\log.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\messages.c
 # End Source File
 # Begin Source File
@@ -135,6 +139,10 @@ SOURCE=.\exposureTimeControl.h
 # Begin Source File
 
 SOURCE=.\imageCreation.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.h
 # End Source File
 # Begin Source File
 

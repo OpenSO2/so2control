@@ -2,7 +2,7 @@
 #include<string.h>
 #include"common.h"
 #define MAXBUF 1024
-
+#include"log.h"
 
 
 int structInit(sParameterStruct *sSO2Parameters)
@@ -18,15 +18,21 @@ int structInit(sParameterStruct *sSO2Parameters)
 
 int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlFlags)
 {
+	
 	int status = 0;
+	status = initLog();
+	if(status != 0) return status;
 	status = structInit(sSO2Parameters);
-
+	if(status != 0) return status;
 	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera,"configurations//c8484.pcf" , (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL |  PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
-
+	if(sSO2Parameters->eStat != 0) return sSO2Parameters->eStat;
 	status = defaultConfig(sSO2Parameters,sControlFlags);
+	if(status != 0) return status;
 	status = triggerConfig(sSO2Parameters);
+	if(status != 0) return status;
 	status = defaultCameraConfig(sSO2Parameters);
-	/* need to create a variable for paths */
+	if(status != 0) return status;
+	/* name of Configfile is hard coded maybe change this sometime */
 	status = readConfig("configurations//SO2Config.conf",sSO2Parameters);
 	return status;
 }
