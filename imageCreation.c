@@ -88,7 +88,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	
 	//createFilename(filename);
 	/* function createFilename needs to be rewritten!!! */
-	//strcpy(filename,"dummyFilename.raw");
+	/* need to create a variable for paths */
 	sprintf(filename,"Images\\Image_%d.raw",sSO2Parameters->dImageCounter);
 	bufferDump = fopen(filename,"wb");
 
