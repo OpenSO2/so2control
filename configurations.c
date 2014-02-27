@@ -20,12 +20,12 @@ int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlF
 	int status = 0;
 	status = structInit(sSO2Parameters);
 
-	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera,"c8484.pcf" , (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL |  PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
-//	if ( PHX_OK != sSO2Parameters->eStat ) goto Error;
+	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera,"configurations//c8484.pcf" , (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL |  PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+
 	status = defaultConfig(sSO2Parameters,sControlFlags);
 	status = triggerConfig(sSO2Parameters);
 	status = defaultCameraConfig(sSO2Parameters);
-	status = readConfig("SO2Config.conf",sSO2Parameters);
+	status = readConfig("configurations//SO2Config.conf",sSO2Parameters);
 	return status;
 }
 
@@ -91,14 +91,17 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 					else
 						sprintf(sSO2Parameters->cFileNamePrefix,"%s",delimeterBuf+1);
 				}				
-			} //end if
+			} //end if(lineBuf[0] != '#')
 		linenumber++;
-		} //end while
-		
-	} //end if
-	
+		} //end while(fgets(lineBuf, MAXBUF, pFILE) != NULL)
 	fclose(pFILE);
 	printf("close file -%s-\n",filename);
+	} //end if(pFILE!=NULL)
+	else
+	{
+		printf("opening Configfile: %s failed!\n",filename);
+	}
+	
 	return 0;
 }
 
