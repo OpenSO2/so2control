@@ -1,0 +1,6 @@
+old_data/
+old_files/
+old_program/
+Debug/
+*.ncb
+*.opt
