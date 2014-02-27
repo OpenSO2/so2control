@@ -25,6 +25,7 @@ int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlF
 	status = defaultConfig(sSO2Parameters,sControlFlags);
 	status = triggerConfig(sSO2Parameters);
 	status = defaultCameraConfig(sSO2Parameters);
+	/* need to create a variable for paths */
 	status = readConfig("configurations//SO2Config.conf",sSO2Parameters);
 	return status;
 }
