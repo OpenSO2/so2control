@@ -9,5 +9,13 @@ void printOpening()
 	printf("*       SO2-Camera Control Software       *\n");
 	printf("*                                         *\n");
 	printf("*******************************************\n");
+	printf("*                                         *\n");
+	Printf("* A Program for controling the Hamamatsu  *\n");
+	printf("* C8484-16 CCD Camera.                    *\n");
+	printf("* written by Morten Harms                 *\n");
+	printf("*                                         *\n");
+	printf("* morten.harms(at)zmaw.de                 *\n");
+	printf("*                                         *\n");
+	printf("*******************************************\n");
 	return;
 };
