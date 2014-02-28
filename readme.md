@@ -72,4 +72,4 @@ ImageCreation.c
 	->	So lange das Filterrad sich nicht Computergesteuert drehen laesst ist das schwierig
 		eventuell trotzdem rudimaentaer implementieren
 - erstellen eines Logfiles mit allen relevanten events
-
+- besseres Fehlermanagement!!!!
