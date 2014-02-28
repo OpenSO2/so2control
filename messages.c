@@ -10,7 +10,7 @@ void printOpening()
 	printf("*                                         *\n");
 	printf("*******************************************\n");
 	printf("*                                         *\n");
-	Printf("* A Program for controling the Hamamatsu  *\n");
+	printf("* A Program for controling the Hamamatsu  *\n");
 	printf("* C8484-16 CCD Camera.                    *\n");
 	printf("* written by Morten Harms                 *\n");
 	printf("*                                         *\n");
