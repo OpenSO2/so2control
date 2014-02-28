@@ -39,7 +39,7 @@ int main( int argc, char* argv[] )
 	
 	setExposureTime(&sSO2Parameters,&sControlFlags);
 	
-	//state = startAquisition(&sSO2Parameters,&sControlFlags);
+	state = startAquisition(&sSO2Parameters,&sControlFlags);
 	if (state != 0) 
 	{
 		printf("Aquisition failed\n");

@@ -2,5 +2,6 @@ old_data/
 old_files/
 old_program/
 Debug/
+Images/
 *.ncb
 *.opt

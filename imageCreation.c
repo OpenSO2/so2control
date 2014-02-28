@@ -1,6 +1,6 @@
 #include"configurations.h"
 #include"imageCreation.h"
-
+#define HEADER_SIZE 64
 
 void callbackFunction(
 	tHandle hCamera,		/* Camera handle. */
@@ -85,13 +85,18 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	char				filename[PHX_MAX_FILE_LENGTH];
 	int					fwriteCount, fwriteReturn;
 	FILE				*bufferDump;
-	char				headerstring[64];
+	char				headerString[HEADER_SIZE];
+	int					fileheader[HEADER_SIZE];
 	//createFilename(filename);
 	/* function createFilename needs to be rewritten!!! */
 	/* need to create a variable for paths */
 	sprintf(filename,"Images\\Image_%d.raw",sSO2Parameters->dImageCounter);
+	
 	//createFilename(filename);
-	//createFileheader(headerstring);
+	createFileheader(headerString);
+	printf("sizeof headerstring= %d \n",sizeof(headerString));
+	//createHeader(fileheader);
+
 	bufferDump = fopen(filename,"wb");
 
 	sSO2Parameters->eStat = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &stBuffer );
@@ -102,6 +107,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	 * 12 Bit in 16 Bit Daten!!!!
 	 */
 	fwriteCount = 2752512; 
+	fwrite(headerString,1,HEADER_SIZE,bufferDump);
 	fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,bufferDump);
 	fclose(bufferDump);
 	printf("Write Image complete\n");
@@ -147,8 +153,23 @@ int createFilename(char * filename)
 	return 0;
 }
 
-int createFileheader(char * headerString)
+int createFileheader(char * headerstring)
 {
-	
+	int i;
+	for (i=0; i < HEADER_SIZE; i++)
+	{
+		headerstring[i]=0;
+	}
+	return 0;
+}
+
+int createHeader(int * fileheader)
+{
+	int i;
+	for (i=0; i < HEADER_SIZE; i++)
+	{
+		fileheader[i]=0;
+	}
+	/* CREATE HERE HEADER */
 	return 0;
 }

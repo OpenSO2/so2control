@@ -1,0 +1,1 @@
+@Hokawo@fACC=0;fAVE=0;fSUB=0;fBSUB=0;fBOFS=0;fSHC=0;vACC=2;vAVE=2;vSUB=1532494687;vBOFS=0;vBPPGr=12;vDate=2009/01/01;vTime=02:55:32;vTStamp=0.000000;vExpTim1=0.167429;vExpTim2=0.000000;vExpTim3=0.000000;vGain1=0;vGain2=0;vGain3=0;vOffset=0;vBinX=1;vBinY=1;vrcSub=0,0,1344,1024;vCTemp=0.000000;vSens=0;vMarker=0;~Hokawo~
