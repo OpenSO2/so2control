@@ -1,4 +1,5 @@
 #include"configurations.h"
+#include<string.h>
 #include"common.h"
 #define MAXBUF 1024
 
@@ -36,6 +37,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 	char *lineBuf, *delimeterBuf; // *valueBuf,
 	int n=1,i=0,delimIndex=0,linebreak=0, valueSize=0;
 	int linenumber=1;
+	char cTmp[MAXBUF];
 	lineBuf = (char*) malloc(MAXBUF);
 	
 	pFILE = fopen(filename,"r");
@@ -88,10 +90,24 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 				{
 					delimeterBuf = strstr(lineBuf,"=");
 					if(delimeterBuf[1] == ' ')
-						sprintf(sSO2Parameters->cFileNamePrefix,"%s",delimeterBuf+2);
+						sprintf(cTmp,"%s",delimeterBuf+2);
 					else
-						sprintf(sSO2Parameters->cFileNamePrefix,"%s",delimeterBuf+1);
-				}				
+						sprintf(cTmp,"%s",delimeterBuf+1);
+				
+					/* remove LF */
+					sprintf(sSO2Parameters->cFileNamePrefix,"%s",strtok(cTmp,"\n"));	
+				}
+				else if(strstr(lineBuf,"imagePath"))
+				{
+					delimeterBuf = strstr(lineBuf,"=");
+					if(delimeterBuf[1] == ' ')
+						sprintf(cTmp,"%s",delimeterBuf+2);
+					else
+						sprintf(cTmp,"%s",delimeterBuf+1);
+				
+					/* remove LF */
+					sprintf(sSO2Parameters->cImagePath,"%s",strtok(cTmp,"\n"));	
+				}
 			} //end if(lineBuf[0] != '#')
 		linenumber++;
 		} //end while(fgets(lineBuf, MAXBUF, pFILE) != NULL)

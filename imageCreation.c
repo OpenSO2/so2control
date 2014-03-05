@@ -1,5 +1,6 @@
 #include"configurations.h"
 #include"imageCreation.h"
+#include<windows.h>
 #define HEADER_SIZE 64
 
 void callbackFunction(
@@ -65,7 +66,8 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 		sControlFlags->fBufferReady = FALSE;
 
 		eStat = writeImage(sSO2Parameters);
-		if ( PHX_OK != eStat ){
+		if ( PHX_OK != eStat )
+		{
 			printf("saving the image failed\n");
 			return 1;
 		}
@@ -86,15 +88,17 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	int					fwriteCount, fwriteReturn;
 	FILE				*bufferDump;
 	char				headerString[HEADER_SIZE];
-	int					fileheader[HEADER_SIZE];
+	SYSTEMTIME timeThisImage;
+	GetSystemTime(&timeThisImage);
 	//createFilename(filename);
 	/* function createFilename needs to be rewritten!!! */
 	/* need to create a variable for paths */
-	sprintf(filename,"Images\\Image_%d.raw",sSO2Parameters->dImageCounter);
+	//sprintf(filename,"Images\\Image_%d.raw",sSO2Parameters->dImageCounter);
 	
-	//createFilename(filename);
+	createFilename(sSO2Parameters, filename, timeThisImage);
 	createFileheader(headerString);
-	printf("sizeof headerstring= %d \n",sizeof(headerString));
+	puts(filename);
+	//printf("sizeof headerstring= %d \n",sizeof(headerString));
 	//createHeader(fileheader);
 
 	bufferDump = fopen(filename,"wb");
@@ -147,9 +151,11 @@ void createFilename(char* filename) {
 	return;
 }*/
 
-int createFilename(char * filename)
+int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time)
 {
-	
+	sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.raw",sSO2Parameters->cImagePath,
+		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
+		time.wMinute, time.wSecond, time.wMilliseconds);
 	return 0;
 }
 
@@ -163,13 +169,3 @@ int createFileheader(char * headerstring)
 	return 0;
 }
 
-int createHeader(int * fileheader)
-{
-	int i;
-	for (i=0; i < HEADER_SIZE; i++)
-	{
-		fileheader[i]=0;
-	}
-	/* CREATE HERE HEADER */
-	return 0;
-}

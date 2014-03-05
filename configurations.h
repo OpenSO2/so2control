@@ -57,6 +57,8 @@ typedef struct
 	char		cConfigFileName[MAX_STRING_LENGTH];
 	/* not used right now, should contains a prefix for all images */
 	char		cFileNamePrefix[MAX_STRING_LENGTH];
+	/* path to image diretory */
+	char		cImagePath[MAX_STRING_LENGTH];
 	/* A handle to identify the camera */
 	tHandle		hCamera;
 	/* A status variable inherited from the SDK */ 
