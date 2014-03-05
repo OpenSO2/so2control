@@ -39,44 +39,75 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
 	etStat eStat			= PHX_OK;   /* Status variable */
 	tHandle hCamera			= sSO2Parameters->hCamera;
-	int	imageCounter		= 0; /* derzeit Ohne verwendung */
+	int	saveErrCount		= 0; 
+	int startErrCount		= 0;
 	printf("Starting acquisition...\n");
 	printf("Press a key to exit\n");
 	PHX_Acquire( hCamera, PHX_EXPOSE, NULL );
-	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) {
-
-		sSO2Parameters->dImageCounter++;
-
-		/* Now start our capture, return control immediately back zu program */
+	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) 
+	{
+		
+		/* Now start our capture, return control immediately back to program */
 		eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
-		if ( PHX_OK != eStat ) goto Error;
-
-		/* Wait for a user defined period between each camera trigger call*/
-		_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
-			
-		/* Wait here until either:
-		 * (a) The user aborts the wait by pressing a key in the console window
-		 * (b) The BufferReady event occurs indicating that the image is complete
-		 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
-		 * Keep calling the sleep function to avoid burning CPU cycles
-		 */
-		while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) {
-			_PHX_SleepMs(10);
-		} 
-		sControlFlags->fBufferReady = FALSE;
-
-		eStat = writeImage(sSO2Parameters);
-		if ( PHX_OK != eStat )
+		if ( PHX_OK == eStat )
 		{
-			printf("saving the image failed\n");
-			return 1;
-		}
-		PHX_Acquire( hCamera, PHX_ABORT, NULL );
-	}
-Error:
+			/* if starting the capture was successful reset error counter to zero */
+			startErrCount = 0;
+			/* Wait for a user defined period between each camera trigger call*/
+			_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
+			
+			/* Wait here until either:
+			 * (a) The user aborts the wait by pressing a key in the console window
+			 * (b) The BufferReady event occurs indicating that the image is complete
+			 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
+			 * Keep calling the sleep function to avoid burning CPU cycles
+			 */
+			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) 
+			{
+				_PHX_SleepMs(10);
+			} 
+			/* Reset the buffer ready flag to false */
+			sControlFlags->fBufferReady = FALSE;
+			
+			/* save the captured image */
+			eStat = writeImage(sSO2Parameters);
+			if ( PHX_OK != eStat )
+			{
+				/* if saving failed somehow more than 3 times program stops */
+				saveErrCount++;
+				if(saveErrCount >= 3)
+				{
+					printf("saving 3 images in a row failed. Aborting...");
+					PHX_Acquire( hCamera, PHX_ABORT, NULL );
+					sSO2Parameters->eStat = eStat;
+					return 1;
+				}
+			}
+			else
+			{
+				/* if saving was successful error counter is reset to zero */
+				/* image counter is set +1 */
+				sSO2Parameters->dImageCounter++;
+				saveErrCount = 0;
+			}
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+		} // if ( PHX_OK == eStat )
+		else
+		{
+			/* if starting the capture failed more than 3 times program stops */
+			startErrCount++;
+			if(startErrCount >= 3)
+			{
+				printf("starting the acquisition failed 3 times i a row. Aborting...");
+				PHX_Acquire( hCamera, PHX_ABORT, NULL );
+				sSO2Parameters->eStat = eStat;
+				return 2;
+			}
+		} // else
+	} // while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) 
+
 	sSO2Parameters->eStat = eStat;
-	
-	return 0;
+	return eStat;
 }
 
 
@@ -84,82 +115,88 @@ Error:
 int writeImage(sParameterStruct *sSO2Parameters)
 {
 	stImageBuff			stBuffer;
+	int					status;
 	char				filename[PHX_MAX_FILE_LENGTH];
-	int					fwriteCount, fwriteReturn;
-	FILE				*bufferDump;
+	int					fwriteCount=2752512; /* (1344*1024*16)/8 = 2752512 Bytes per image 12 bits saved in 16 bits */
+	int					fwriteReturn;
+	FILE				*imageBuffer;
 	char				headerString[HEADER_SIZE];
 	SYSTEMTIME timeThisImage;
+
+	/* get creationtime of image */
 	GetSystemTime(&timeThisImage);
-	//createFilename(filename);
-	/* function createFilename needs to be rewritten!!! */
-	/* need to create a variable for paths */
-	//sprintf(filename,"Images\\Image_%d.raw",sSO2Parameters->dImageCounter);
 	
-	createFilename(sSO2Parameters, filename, timeThisImage);
-	createFileheader(headerString);
-	puts(filename);
-	//printf("sizeof headerstring= %d \n",sizeof(headerString));
-	//createHeader(fileheader);
-
-	bufferDump = fopen(filename,"wb");
-
+	/* create a filename with milliseconds precession -> caution <windows.h> is used her */ 
+	status = createFilename(sSO2Parameters, filename, timeThisImage);
+	if (status <= 0)
+	{
+		/*creating filename failed or filename has length 0 */
+		printf("creating filename failed.\n");
+		return 1;
+	}
+	else
+	{
+		/* reset status if creating a filename was successful */
+		status = 0;
+	}
+	/* create a Fileheader caution <windows.h> is used her */ 
+	status = createFileheader(sSO2Parameters, headerString, timeThisImage);
+	if (status != 0)
+	{
+		printf("creating fileheader failed\n");
+		return 2;
+	}
+	
+	/*Open a new file for the image */
+	imageBuffer = fopen(filename,"wb");
+	if (imageBuffer == NULL)
+	{
+		printf("opening image %s failed",filename);
+		return 3;
+	}
+	
+	/* download the image from the framegrabber */
 	sSO2Parameters->eStat = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &stBuffer );
-	if ( PHX_OK != sSO2Parameters->eStat ) goto Error;
-	
-	/* 2752512 Bytes pro Bild
-	 * (1344*1024*16)/8 
-	 * 12 Bit in 16 Bit Daten!!!!
-	 */
-	fwriteCount = 2752512; 
-	fwrite(headerString,1,HEADER_SIZE,bufferDump);
-	fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,bufferDump);
-	fclose(bufferDump);
-	printf("Write Image complete\n");
-
-Error:
+	if ( PHX_OK == sSO2Parameters->eStat )
+	{	
+		/* save header to file */
+		fwriteReturn = fwrite(headerString,1,HEADER_SIZE,imageBuffer);
+		if( (fwriteReturn - HEADER_SIZE) != 0 )
+		{
+			printf("Error: writing image header failed.\n");
+			fclose(imageBuffer);
+			return 4;
+		}
+		/* save image data to file */
+		fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,imageBuffer);
+		fclose(imageBuffer);
+		if ((fwriteCount-fwriteReturn) == 0)
+			printf("Saving Image %s was successful\n",filename);
+		else
+		{
+			printf("Saving Image %s failed\n",filename);
+			return 5;
+		}
+	}
+	else
+	{
+		printf("downloading Image %s failed\n",filename);
+		return 6;
+	}
 	return 0;
 }
 
-/* 'createFilename' needs to be rewritten in 'C' */
-
-/*
-void createFilename(char* filename) {
-	
-	int		count;
-	char*	buffer;
-	string	strFilename;
-	string	fileEnding = ".raw";
-	mvTime	dateTime;
-
-	dateTime = dateTime.Now();
-	strFilename = dateTime.GetTimeStamp();
-	
-	for (count = 0; count < strFilename.length();count++) 
-	{
-			if (strFilename[count] == ':' ||strFilename[count] == '.' ) 
-			{
-				strFilename[count] = '-';
-			}
-	}
-
-	strFilename +=fileEnding;
-
-	//const_cast<> remove if possible
-	 buffer = const_cast<char*>(strFilename.c_str());
-	strcpy(filename,buffer);
-
-	return;
-}*/
 
 int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time)
 {
-	sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.raw",sSO2Parameters->cImagePath,
+	int status;
+	status = sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.raw",sSO2Parameters->cImagePath,
 		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
 		time.wMinute, time.wSecond, time.wMilliseconds);
-	return 0;
+	return status;
 }
 
-int createFileheader(char * headerstring)
+int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYSTEMTIME time)
 {
 	int i;
 	for (i=0; i < HEADER_SIZE; i++)

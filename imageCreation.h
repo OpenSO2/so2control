@@ -8,5 +8,5 @@ void callbackFunction	( tHandle hCamera, ui32 dwInterruptMask, void *pvParams );
 int writeImage			(sParameterStruct *sSO2Parameters);
 int startAquisition	(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
 int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time);
-int createFileheader(char * headerstring);
+int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYSTEMTIME time);
 #endif
