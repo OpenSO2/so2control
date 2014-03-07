@@ -4,9 +4,9 @@
 #define HEADER_SIZE 64
 
 void callbackFunction(
-	tHandle hCamera,		/* Camera handle. */
-	ui32 dwInterruptMask,	/* Interrupt mask. */
-	void *pvParams			/* Pointer to user supplied context */
+	tHandle		hCamera,			/* Camera handle. */
+	ui32		dwInterruptMask,	/* Interrupt mask. */
+	void		*pvParams			/* Pointer to user supplied context */
 	)
 {
 	flagStruct *psControlFlags = (flagStruct*) pvParams;
@@ -37,12 +37,15 @@ void callbackFunction(
 
 int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
-	etStat eStat			= PHX_OK;   /* Status variable */
-	tHandle hCamera			= sSO2Parameters->hCamera;
-	int	saveErrCount		= 0; 
-	int startErrCount		= 0;
+	etStat 				eStat			= PHX_OK;	/* Status variable */
+	tHandle 			hCamera			= sSO2Parameters->hCamera;	/* hardware handle of camera */
+	int					saveErrCount	= 0;	/* counting how often saving an image failed */
+	int 				startErrCount	= 0;	/* counting how often the start of capture process failed */
+	
 	printf("Starting acquisition...\n");
 	printf("Press a key to exit\n");
+	
+	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
 	PHX_Acquire( hCamera, PHX_EXPOSE, NULL );
 	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) 
 	{
@@ -60,13 +63,12 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 			 * (a) The user aborts the wait by pressing a key in the console window
 			 * (b) The BufferReady event occurs indicating that the image is complete
 			 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
-			 * Keep calling the sleep function to avoid burning CPU cycles
-			 */
+			 * Keep calling the sleep function to avoid burning CPU cycles */
 			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) 
 			{
 				_PHX_SleepMs(10);
 			} 
-			/* Reset the buffer ready flag to false */
+			/* Reset the buffer ready flag to false for next cycle */
 			sControlFlags->fBufferReady = FALSE;
 			
 			/* save the captured image */
@@ -98,7 +100,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 			startErrCount++;
 			if(startErrCount >= 3)
 			{
-				printf("starting the acquisition failed 3 times i a row. Aborting...");
+				printf("starting the acquisition failed 3 times in a row. Aborting...");
 				PHX_Acquire( hCamera, PHX_ABORT, NULL );
 				sSO2Parameters->eStat = eStat;
 				return 2;
@@ -114,16 +116,16 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 
 int writeImage(sParameterStruct *sSO2Parameters)
 {
-	stImageBuff			stBuffer;
-	int					status;
-	char				filename[PHX_MAX_FILE_LENGTH];
+	stImageBuff			stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
+	int					status;		/* Status variable for several return values */ 
+	char				filename[PHX_MAX_FILE_LENGTH]; 
 	int					fwriteCount=2752512; /* (1344*1024*16)/8 = 2752512 Bytes per image 12 bits saved in 16 bits */
-	int					fwriteReturn;
-	FILE				*imageBuffer;
+	int					fwriteReturn; /* Return value for the write functions */
+	FILE				*imageBuffer; /* FIle handle for current image */
 	char				headerString[HEADER_SIZE];
-	SYSTEMTIME timeThisImage;
+	SYSTEMTIME			timeThisImage; /* System time windows.h dependency */
 
-	/* get creationtime of image */
+	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
 	
 	/* create a filename with milliseconds precession -> caution <windows.h> is used her */ 
@@ -147,7 +149,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 		return 2;
 	}
 	
-	/*Open a new file for the image */
+	/*Open a new file for the image (writeable, binary) */
 	imageBuffer = fopen(filename,"wb");
 	if (imageBuffer == NULL)
 	{
@@ -159,7 +161,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	sSO2Parameters->eStat = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &stBuffer );
 	if ( PHX_OK == sSO2Parameters->eStat )
 	{	
-		/* save header to file */
+		/* save the whole header byte per byte to file */
 		fwriteReturn = fwrite(headerString,1,HEADER_SIZE,imageBuffer);
 		if( (fwriteReturn - HEADER_SIZE) != 0 )
 		{
@@ -167,7 +169,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 			fclose(imageBuffer);
 			return 4;
 		}
-		/* save image data to file */
+		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,imageBuffer);
 		fclose(imageBuffer);
 		if ((fwriteCount-fwriteReturn) == 0)
@@ -189,16 +191,22 @@ int writeImage(sParameterStruct *sSO2Parameters)
 
 int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time)
 {
-	int status;
+	int		status;
+	
+	/* write header string with information from system time. windows.h dependency */ 
 	status = sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.raw",sSO2Parameters->cImagePath,
 		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
 		time.wMinute, time.wSecond, time.wMilliseconds);
+	
 	return status;
 }
 
 int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYSTEMTIME time)
 {
-	int i;
+	int		i;
+	
+	/* all this does is create an empty 64 bytes long string. later this function
+	 * shall create a string equal the header from the hokawo software by Hamamatsu */
 	for (i=0; i < HEADER_SIZE; i++)
 	{
 		headerstring[i]=0;
