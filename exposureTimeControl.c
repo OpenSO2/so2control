@@ -8,6 +8,7 @@
 #include"exposureTimeControl.h"
 #include"configurations.h"
 #include"imageCreation.h"
+#include"log.h"
 
 int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
@@ -17,26 +18,21 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
 	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
-	
+	char			messbuff[512];
+	char			errbuff[512];
+
 	/* pre-set the buffer with zeros */
 	memset( &stBuffer, 0, sizeof(stImageBuff ));
+
 	if(sSO2Parameters->dFixTime != 0)
 	{
 		/* Check if exposure time is declared fix in the config file if so set it.*/
+		logMessage("Set program to use a fix exposure time.");
 		eStat = fixExposureTime(sSO2Parameters);
-		if (eStat != 0)
-		{
-			printf("setting fixed exposure time failed. aborting...\n");
-			return eStat;
-		}
+		if (eStat != 0)return eStat;
 	}
 	else
 	{
-		/* SOME PROBLEMS WITH NOT FINDING THE RIGHT FRAMEBLANKING MODE 
-		 * it switches between 1 and 2 because one is to dark and the 
-		 * other one is to bright
-		 */
-		
 		/* NMD: N, S, F
 		 * N = Normal, S = Electronic Shutter, F = Frameblanking
 		 * Speed:
@@ -45,11 +41,12 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		 * FBL > SHT 
 		 * for conversion to milliseconds see camera manual
 		 */
-		 
+
 		 /* Pre-set the Camera with a medium exposure time */
 		eStat = sendMessage(hCamera,"NMD S");
 			if (PHX_OK != eStat )
 			{
+				logError("setting camera to electronic shutter mode failed");
 				sSO2Parameters->eStat = eStat;
 				return eStat;
 			}
@@ -57,6 +54,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		eStat = sendMessage(hCamera, "SHT 1055");
 			if (PHX_OK != eStat )
 			{
+				logError("setting SHT value 1055 failed");
 				sSO2Parameters->eStat = eStat;
 				return eStat;
 			}
@@ -75,22 +73,28 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		{
 			case 0 : printf("starting electronic shutter mode\nExposuretime is set\n");
 					sSO2Parameters->dExposureTime = 0.0000124+(1055-1)*0.000079275;
+					logMessage("Camera is set to electronic shutter mode.");
+					sprintf(messbuff,"Exposure time = %d ms",sSO2Parameters->dExposureTime);
+					logMessage(messbuff);
 					break;
 			
-			case 1: printf("starting frameblanking mode\n");
+			case 1: logMessage("Camera is set to frameblanking mode.");
 					setFrameBlanking(sSO2Parameters, sControlFlags);
 					break;
 			
-			case 2: printf("starting Electronic Shutter mode\n");
+			case 2: logMessage("Camera is set to electronic shutter mode.");
 					setElektronicShutter(sSO2Parameters, sControlFlags);
 					break;
 			
-			case 3: printf("Exposure time is too high and too low.\nmaybe contrast is too high\n");
-					printf("Frameblanking mode is set\nExposuretime is not changed\n");
+			case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
+					logMessage("Camera is set to electronic shutter mode.");
+					sprintf(messbuff,"Exposure time = %d ms",sSO2Parameters->dExposureTime);
+					logMessage(messbuff);
 					break;
 			
-			default:printf("Oh oh something weird just happened\n");
-					printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
+			default:
+					sprintf(errbuff,"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",timeSwitch);
+					logError(errbuff);
 					return 1;
 		}
 	}
@@ -105,12 +109,14 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
 	etStat		eStat			= PHX_OK; /* Phoenix status variable */
 	int			shutterSpeed	= 1; /* in case something went wrong this value is accepted by both modi */
-	char message[9];
-
+	char		message[9];
+	char		messbuff[512];
+	char		errbuff[512];
+	
 	/* before doing anything check if exposure time is within the limits */
 	if ( exposureTime < 2.4 || exposureTime > 1004400)
 	{
-		printf("Exposure time is out of range \n2.4us < Exposure Time > 1004.4ms\n");
+		logError("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
 		eStat = PHX_ERROR_OUT_OF_RANGE;
 		return eStat;
 	}
@@ -125,50 +131,54 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 		eStat = sendMessage(hCamera, "NMD S");
 		if ( PHX_OK != eStat )
 		{
-			printf("communication with camera failed. aborting... \n");
+			logError("setting camera to electronic shutter mode failed");
 			return eStat;
 		}
-		
 		
 		// Shutter speed, 1 - 1055
 		eStat = sendMessage(hCamera, message);
 		if ( PHX_OK != eStat )
 		{
-			printf("communication with camera failed. aborting... \n");
+			sprintf(errbuff,"setting SHT value to %d failed (exposuretime %d ms)",shutterSpeed,exposureTime);
+			logError(errbuff);
 			return eStat;
 		}
-		
-		exposureTime = (int)(2.4 + (shutterSpeed-1) * 79.275);
-		printf("Elektronic shutter mode\nExposure time = %f us\n",exposureTime);
+		else
+		{
+			exposureTime = (int)(2.4 + (shutterSpeed-1) * 79.275);
+			sprintf(messbuff,"Camera uses electronic shutter mode. exposure time is: %d ms",exposureTime);
+			logMessage(messbuff);
+		}
 	}
 	else
 	{	//===========FRAME=BLANKING==========
 	
 		shutterSpeed = roundToInt(exposureTime/83700);
 		sprintf(message,"FBL %d",shutterSpeed);
-		
 
 		// N normal, S Shutter, F frameblanking
 		eStat = sendMessage(hCamera, "NMD F");
 		if ( PHX_OK != eStat )
 		{
-			printf("communication with camera failed. aborting... \n");
+			logError("Setting camera to frameblanking mode failed");
 			return eStat;
 		}
 		
 		// Shutter speed, 1 - 12
-		 eStat = sendMessage(hCamera, message);
+		eStat = sendMessage(hCamera, message);
 		if ( PHX_OK != eStat )
 		{
-			printf("communication with camera failed. aborting... \n");
+			sprintf(errbuff,"setting FBL value to %d failed (exposuretime %d ms)",shutterSpeed,exposureTime);
+			logError(errbuff);
 			return eStat;
 		}
-
-		exposureTime = shutterSpeed * 83700;
-		printf("Frame blanking mode\nExposure time = %f us\n",exposureTime);
-		
+		else
+		{
+			exposureTime = shutterSpeed * 83700;
+			sprintf(messbuff,"Camera uses Frameblanking mode. exposure time is: %d ms",exposureTime);
+			logMessage(messbuff);
+		}
 	}
-
 	sSO2Parameters->eStat = eStat;
 	return eStat;
 }
@@ -215,7 +225,7 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagSt
 			eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
 				if ( PHX_OK != eStat )
 				{
-					printf("acquisition of one buffer failed\n");
+					logError("acquisition of one buffer for calculating the exposuretime failed (not fatal)");
 					/* stopping the acquisition */
 					PHX_Acquire( hCamera, PHX_ABORT, NULL );
 					return eStat;
@@ -226,11 +236,12 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagSt
 		} // if ( PHX_OK == eStat )
 		else
 		{
+			logError("starting acquisition for calculating the exposuretime failed (not fatal)");
 			/* if starting the capture failed more than 3 times program stops */
 			startErrCount++;
 			if(startErrCount >= 3)
 			{
-				printf("starting the acquisition failed 3 times in a row. Aborting...");
+				logError("Acquiring one buffer for calculating the exposuretime failed 3 times in a row. (fatal)");
 				PHX_Acquire( hCamera, PHX_ABORT, NULL );
 				sSO2Parameters->eStat = eStat;
 				return eStat;
@@ -327,6 +338,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	eStat = sendMessage(hCamera,"NMD F");
 	if ( PHX_OK != eStat )
 	{
+		logError("setting camera to frameblanking mode failed");
 		sSO2Parameters->eStat = eStat;
 		return eStat;
 	}
