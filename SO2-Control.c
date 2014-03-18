@@ -32,10 +32,9 @@ int main( int argc, char* argv[] )
 	state = configurationFunktion(&sSO2Parameters,&sControlFlags);
 	if (state != 0) 
 	{
-		printf("configuration failed\n");
+		logError("configuration failed");
 		return 1;
 	}
-	printf("HistogramIntervall = %d\n",sSO2Parameters.dHistMinInterval);
 	// dunkelstromMessung(&sParameterStruct);
 	
 	setExposureTime(&sSO2Parameters,&sControlFlags);

@@ -338,6 +338,8 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	double			divisor		= FBvalue; /* actual value send to camera */
 	int 			switchMemory1 = 2; /* we need 2 memories because we */
 	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
+	char			messbuff[512];
+	char			errbuff[512];
 	
 	/* Switching to Frameblanking mode */
 	eStat = sendMessage(hCamera,"NMD F");
@@ -348,10 +350,14 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		return eStat;
 	}
 	
+	logMessage("Starting to find right FB value");
 	while(timeSwitch != 0 && timeSwitch != 3)
 	{
-		if(FBvalue > 12 || FBvalue < 1) break;
-		
+		if(FBvalue > 12 || FBvalue < 1)
+		{
+			logError("FB value is out of range");
+			break;
+		}
 		divisor = divisor / 2;
 		/* it seems we are doing this twice not sure why */
 		divisor = (double)roundToInt(divisor);
@@ -364,12 +370,12 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 			sSO2Parameters->eStat = eStat;
 			return eStat;
 		}
-
 		
 		/* Acquire first buffer to decide between FBL or SHT */
 		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
 		if ( PHX_OK != eStat )
 		{
+			logError("failed to obtain one image buffer");
 			sSO2Parameters->eStat = eStat;
 			return eStat;
 		}
@@ -377,33 +383,34 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		/* calculate histogram to test for over or under exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
 
+
 		/* a little bit hacky but it works */
 		if (switchMemory2 == timeSwitch)
 		{
-			printf("we are caught in a loop between %d and %d. Breaking out.\n", roundToInt(switchMemory1), roundToInt(switchMemory2));
+			sprintf(messbuff,"setFrameBlanking(...) is stuck between FB values %d and %d. value is set to %d. This is not fatal", roundToInt(switchMemory1), roundToInt(switchMemory2), roundToInt(switchMemory2));
+			logMessage(messbuff);
 			timeSwitch = 0;
 		}
 		
 		switch(timeSwitch)
 		{
-		case 0 : printf("Exposuretime is set!\n"); 
-				 break;
+		case 0 : break;
 		
-		case 1: printf("Exposure time is set up\n");
+		case 1: logMessage("Image is underexposed, FB-value is set up");
 				FBvalue = FBvalue + divisor;
 
 				break;
 		
-		case 2: printf("Exposure time is set down\n");
+		case 2: logMessage("Image is overexposed, FB-value is set down");
 				FBvalue = FBvalue - divisor;
 				break;
 		
-		case 3: printf("Exposure time is too high and too low.\nmaybe contrast is too high\n");
+		case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 				break;
 		
-		default:printf("Oh oh something weird just happened\n");
-				printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
-				break;
+		default:sprintf(errbuff,"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",timeSwitch);
+				logError(errbuff);
+				return 1;
 		}
 		switchMemory2 = switchMemory1;
 		switchMemory1 = timeSwitch;
@@ -411,7 +418,8 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	}
 	/* save the exposure time in [ms] to control Struct */
 	sSO2Parameters->dExposureTime = FBvalue * 0.0837;
-
+	sprintf(messbuff,"Exposure time is set to %d", FBvalue * 0.0837);
+	logMessage(messbuff);
 	sSO2Parameters->eStat = eStat;
 	return eStat;
 }
@@ -427,20 +435,26 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 	double			divisor		= SHTvalue; /* actual value send to camera */
 	int 			switchMemory1 = 2; /* we need 2 memories because we */
 	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
+	char			messbuff[512];
+	char			errbuff[512];
 	
 	/* Switching to Electronic Shutter mode */
 	eStat = sendMessage(hCamera,"NMD S");
 	if ( PHX_OK != eStat )
 	{
+		logError("setting camera to electronic shutter mode failed");
 		sSO2Parameters->eStat = eStat;
 		return eStat;
 	}
 	
-	
-	
+	logMessage("Starting to find right SHT value");
 	while(timeSwitch != 0 && timeSwitch != 3)
 	{
-		if(SHTvalue > 1055 || SHTvalue < 1) break;
+		if(SHTvalue > 1055 || SHTvalue < 1)
+		{
+			logError("SHT value is out of range");
+			break;
+		}
 		
 		divisor = divisor / 2.;
 		
@@ -448,6 +462,7 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		eStat = sendMessage(hCamera,message);
 		if (PHX_OK != eStat )
 		{
+			logError("setting SHT value failed failed");
 			sSO2Parameters->eStat = eStat;
 			return eStat;
 		}
@@ -456,17 +471,19 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
 		if ( PHX_OK != eStat )
 		{
+			logError("failed to obtain one image buffer");
 			sSO2Parameters->eStat = eStat;
 			return eStat;
 		}
 		
 		/* calculate histogram to test for over or unter exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
-		
+
 		/* a little bit hacky but it works */
 		if (switchMemory2 == timeSwitch)
 		{
-			printf("we are caught in a loop between %d and %d. Breaking out.\n", roundToInt(switchMemory1), roundToInt(switchMemory2));
+			sprintf(errbuff,"setElectronicShutter(...) is stuck between SHT values %d and %d. value is set to %d. This is not fatal", roundToInt(switchMemory1), roundToInt(switchMemory2), roundToInt(switchMemory2));
+			logError(errbuff);
 			timeSwitch = 0;
 		}
 		
@@ -474,20 +491,20 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		{
 		case 0 : break;
 		
-		case 1: printf("Exposure time is set up\n");
+		case 1: logMessage("Image is underexposed, SHT-value is set up");
 				SHTvalue = SHTvalue + divisor;
 				break;
 		
-		case 2: printf("Exposure time is set down\n");
+		case 2: logMessage("Image is overexposed, SHT-value is set down");
 				SHTvalue = SHTvalue - divisor;
 				break;
 		
-		case 3: printf("Exposure time is too high and too low.\nmaybe contrast is too high\n");
+		case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 				break;
 		
-		default:printf("Oh oh something weird just happened\n");
-				printf("%d is under no circumstances a valid value for this Switch\n",timeSwitch);
-				break;
+		default:sprintf(errbuff,"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",timeSwitch);
+				logError(errbuff);
+				return 1;
 		}
 		switchMemory2 = switchMemory1;
 		switchMemory1 = timeSwitch;
@@ -495,7 +512,8 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 	
 	/* save the exposure time to control Struct */
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
-
+	sprintf(messbuff,"Exposure time is set to %d", 0.0000124+(SHTvalue-1)*0.000079275);
+	logMessage(messbuff);
 	sSO2Parameters->eStat = eStat;
 	return eStat;
 }
