@@ -1,7 +1,9 @@
+#include<windows.h>
+#include<time.h>
 #include"configurations.h"
 #include"imageCreation.h"
 #include"log.h"
-#include<windows.h>
+
 
 #define HEADER_SIZE 64
 
@@ -147,7 +149,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 		status = 0;
 	}
 	/* create a Fileheader caution <windows.h> is used her */ 
-	status = createFileheader(sSO2Parameters, headerString, timeThisImage);
+	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
 	if (status != 0)
 	{
 		logError("creating fileheader failed");
@@ -208,15 +210,66 @@ int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME 
 	return status;
 }
 
-int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYSTEMTIME time)
+time_t TimeFromSystemTime(const SYSTEMTIME * pTime)
 {
+	/* copied from: http://forums.codeguru.com/showthread.php?139510-Converting-SYSTEMTIME-to-time_t */
+	struct tm tm;
+	memset(&tm, 0, sizeof(tm));
 
-	/* all this does is create an empty 64 bytes long string. later this function
-	 * shall create a string equal the header from the hokawo software by Hamamatsu */
-	 memset(headerstring,'0',HEADER_SIZE);
-	/* WORD wID; 5A5A */
-	headerstring[0]='Z';
-	headerstring[1]='Z';
+	tm.tm_year = pTime->wYear - 1900;
+	tm.tm_mon = pTime->wMonth - 1;
+	tm.tm_mday = pTime->wDay;
+	tm.tm_hour = pTime->wHour;
+	tm.tm_min = pTime->wMinute;
+	tm.tm_sec = pTime->wSecond;
+
+	return mktime(&tm);
+}
+
+int createFileheader(char * header, SYSTEMTIME *time)
+{
+	/* create a hokawo compatible header */
+
+	WORD	wID			= 23130;	// Hex 5A5A
+	WORD	wByteOrder	= 18761;	// ASCII 'II'
+	WORD	wVersion	= 12597;	// Version des RAW-Formats
+	WORD	wWidth		= 1344;		// Bildbreite in Pixel
+	WORD	wHeight		= 1024;		// Bildhöhe in Pixel
+	WORD	wBPP		= 16;		// Bits pro Pixel
+	WORD	wColorType	= 1;		// Farbtyp 2 = Graustufen, 4 = RGB Farbe ist leider = 1 in beispiel datei
+	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneinträgen (immer 0 )
+	time_t	tDateTime	= TimeFromSystemTime(time);	// Datum und Uhrzeit        
+	DWORD  dwTimestamp = time->wMilliseconds;		// Zeitstempel in ms
+
+	/* Preset the whole string with zeros */
+	memset(header,'\0',HEADER_SIZE);
+
+	/* setting the header parameters */
+	header[0] = (char)wID;
+	header[1] = (char)(wID >> 8);
+	header[2] = (char)wByteOrder;
+	header[3] = (char)(wByteOrder >> 8);
+	header[4] = (char)wVersion;
+	header[5] = (char)(wVersion >> 8);
+	header[6] = (char)wWidth;
+	header[7] = (char)(wWidth >> 8);
+	header[8] = (char)wHeight;
+	header[9] = (char)(wHeight >> 8);
+	header[10] = (char)wBPP;
+	header[11] = (char)(wBPP >> 8);
+	header[12] = (char)wColorType;
+	header[13] = (char)(wColorType >> 8);
+	header[14] = (char)wPalEntryNo;
+	header[15] = (char)(wPalEntryNo >> 8);
+	header[16] = (char)tDateTime;
+	header[17] = (char)(tDateTime >> 8);
+	header[18] = (char)(tDateTime >> 16);
+	header[19] = (char)(tDateTime >> 24);
+	header[20] = (char)dwTimestamp;
+	header[21] = (char)(dwTimestamp >> 8);
+	header[22] = (char)(dwTimestamp >> 16);
+	header[23] = (char)(dwTimestamp >> 24);
+
 	return 0;
 }
 
