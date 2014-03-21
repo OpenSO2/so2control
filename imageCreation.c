@@ -1,6 +1,8 @@
 #include"configurations.h"
 #include"imageCreation.h"
+#include"log.h"
 #include<windows.h>
+
 #define HEADER_SIZE 64
 
 void callbackFunction(
@@ -75,11 +77,12 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 			eStat = writeImage(sSO2Parameters);
 			if ( PHX_OK != eStat )
 			{
+				logError("Saving an image failed. This is not fatal");
 				/* if saving failed somehow more than 3 times program stops */
 				saveErrCount++;
 				if(saveErrCount >= 3)
 				{
-					printf("saving 3 images in a row failed. Aborting...");
+					logError("Saving 3 images in a row failed. This is fatal");
 					PHX_Acquire( hCamera, PHX_ABORT, NULL );
 					sSO2Parameters->eStat = eStat;
 					return 1;
@@ -90,17 +93,19 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 				/* if saving was successful error counter is reset to zero */
 				/* image counter is set +1 */
 				sSO2Parameters->dImageCounter++;
+				printf("Image number %09d is successfully saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
 				saveErrCount = 0;
 			}
 			PHX_Acquire( hCamera, PHX_ABORT, NULL );
 		} // if ( PHX_OK == eStat )
 		else
 		{
+			logError("Starting the acquisition failed. This is not fatal");
 			/* if starting the capture failed more than 3 times program stops */
 			startErrCount++;
 			if(startErrCount >= 3)
 			{
-				printf("starting the acquisition failed 3 times in a row. Aborting...");
+				logError("starting the acquisition failed 3 times in a row. this is fatal");
 				PHX_Acquire( hCamera, PHX_ABORT, NULL );
 				sSO2Parameters->eStat = eStat;
 				return 2;
@@ -124,7 +129,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	FILE				*imageBuffer; /* FIle handle for current image */
 	char				headerString[HEADER_SIZE];
 	SYSTEMTIME			timeThisImage; /* System time windows.h dependency */
-
+	char				errbuff[512];
 	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
 	
@@ -133,7 +138,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	if (status <= 0)
 	{
 		/*creating filename failed or filename has length 0 */
-		printf("creating filename failed.\n");
+		logError("creating filename failed.");
 		return 1;
 	}
 	else
@@ -145,7 +150,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	status = createFileheader(sSO2Parameters, headerString, timeThisImage);
 	if (status != 0)
 	{
-		printf("creating fileheader failed\n");
+		logError("creating fileheader failed");
 		return 2;
 	}
 	
@@ -153,36 +158,38 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	imageBuffer = fopen(filename,"wb");
 	if (imageBuffer == NULL)
 	{
-		printf("opening image %s failed",filename);
+		sprintf(errbuff,"create %s on harddrive failed",filename);
+		logError(errbuff);
 		return 3;
 	}
 	
 	/* download the image from the framegrabber */
 	sSO2Parameters->eStat = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &stBuffer );
 	if ( PHX_OK == sSO2Parameters->eStat )
-	{	
+	{
 		/* save the whole header byte per byte to file */
 		fwriteReturn = fwrite(headerString,1,HEADER_SIZE,imageBuffer);
 		if( (fwriteReturn - HEADER_SIZE) != 0 )
 		{
-			printf("Error: writing image header failed.\n");
+			logError("Writing image header failed");
 			fclose(imageBuffer);
 			return 4;
 		}
+		
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,imageBuffer);
 		fclose(imageBuffer);
-		if ((fwriteCount-fwriteReturn) == 0)
-			printf("Saving Image %s was successful\n",filename);
-		else
+		if ((fwriteCount-fwriteReturn) != 0)
 		{
-			printf("Saving Image %s failed\n",filename);
+			sprintf(errbuff,"Saving Image %s failed\n",filename);
+			logError(errbuff);
 			return 5;
 		}
 	}
 	else
 	{
-		printf("downloading Image %s failed\n",filename);
+		sprintf(errbuff,"downloading Image %s from framegrabber failed",filename);
+		logError(errbuff);
 		return 6;
 	}
 	return 0;
@@ -203,14 +210,13 @@ int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME 
 
 int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYSTEMTIME time)
 {
-	int		i;
-	
+
 	/* all this does is create an empty 64 bytes long string. later this function
 	 * shall create a string equal the header from the hokawo software by Hamamatsu */
-	for (i=0; i < HEADER_SIZE; i++)
-	{
-		headerstring[i]=0;
-	}
+	 memset(headerstring,'0',HEADER_SIZE);
+	/* WORD wID; 5A5A */
+	headerstring[0]='Z';
+	headerstring[1]='Z';
 	return 0;
 }
 

@@ -71,7 +71,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 
 		switch(timeSwitch)
 		{
-			case 0 : printf("starting electronic shutter mode\nExposuretime is set\n");
+			case 0 : //printf("starting electronic shutter mode\nExposuretime is set\n");
 					sSO2Parameters->dExposureTime = 0.0000124+(1055-1)*0.000079275;
 					logMessage("Camera is set to electronic shutter mode.");
 					sprintf(messbuff,"Exposure time = %d ms",sSO2Parameters->dExposureTime);
@@ -510,6 +510,9 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		switchMemory1 = timeSwitch;
 	}
 	
+
+	/* GENAUIGEIT VON DEXPOSURETIME REICHT NICHT AUS!!!!!!!! */
+
 	/* save the exposure time to control Struct */
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
 	sprintf(messbuff,"Exposure time is set to %d", 0.0000124+(SHTvalue-1)*0.000079275);

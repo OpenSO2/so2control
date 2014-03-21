@@ -42,7 +42,7 @@ int main( int argc, char* argv[] )
 	state = startAquisition(&sSO2Parameters,&sControlFlags);
 	if (state != 0) 
 	{
-		printf("Aquisition failed\n");
+		logError("Aquisition failed");
 		return 1;
 	}
 	/* Now cease all captures */
