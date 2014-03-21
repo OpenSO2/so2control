@@ -149,7 +149,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 		status = 0;
 	}
 	/* create a Fileheader caution <windows.h> is used her */ 
-	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
+	status = createFileheader(headerString, &timeThisImage);
 	if (status != 0)
 	{
 		logError("creating fileheader failed");
@@ -203,7 +203,7 @@ int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME 
 	int		status;
 	
 	/* write header string with information from system time. windows.h dependency */ 
-	status = sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.raw",sSO2Parameters->cImagePath,
+	status = sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.rbf",sSO2Parameters->cImagePath,
 		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
 		time.wMinute, time.wSecond, time.wMilliseconds);
 	
