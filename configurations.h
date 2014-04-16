@@ -65,6 +65,12 @@ typedef struct
 	etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */
 	int			dFixTime;
+	/* File identifier for current images */
+	FILE*		fid;
+	/* Size of each file */
+	int			dfilesize;
+	/* Images per file. Calculated from size of file*/
+	int			dImagesFile;
 
 	
 }sParameterStruct;

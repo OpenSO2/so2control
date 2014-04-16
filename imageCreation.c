@@ -220,3 +220,26 @@ int createFileheader(sParameterStruct *sSO2Parameters, char * headerstring, SYST
 	return 0;
 }
 
+int newFile(sParameterStruct *sSO2Parameters)
+{
+	int			status = 0;
+	char		filename[PHX_MAX_FILE_LENGTH];
+	SYSTEMTIME	time;
+
+	GetSystemTime(&time);
+
+	/* If old file is still open close it first */
+	if (sSO2Parameters->fid != NULL) fclose(sSO2Parameters->fid);
+
+	status = createFilename(sSO2Parameters,filename,time);
+	if (status != 0)
+	{
+		logError("Creating filename failed.");
+		return status;
+	}
+
+	sSO2Parameters->fid = fopen(filename,"wb");
+
+	return status;
+}
+

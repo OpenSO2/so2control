@@ -1,25 +1,12 @@
 # ==========================
 # Phoenix Configuration File
 # c8484.pcf
-#first try for Hamamatsu Camera c8484-16C
+# do not alter this at all
 # ==========================
+PHX_BOARD_TYPE,				PHX_DIGITAL
+PHX_CAM_ACTIVE_YLENGTH,		1024
+PHX_CAM_ACTIVE_XLENGTH,		1344
+#PHX_CAM_DATA_VALID,		PHX_ENABLE
+#PHX_CAM_SRC_DEPTH,			12
+#PHX_DST_FORMAT				PHX_DST_FORMAT_Y12
 
-
-
-# Camera Specific Settings
-# --------------------------
-PHX_BOARD_TYPE,            	PHX_DIGITAL	
-PHX_CAM_ACTIVE_YLENGTH,    	1024
-PHX_CAM_ACTIVE_XLENGTH,    	1344
-
-
-
-#PHX_CAM_DATA_VALID,        	PHX_ENABLE
-#PHX_CAM_SRC_DEPTH,         	12
-#PHX_DST_FORMAT				PHX_DST_FORMAT_Y12	
-
-# System Specific Settings
-# ------------------------
-
-# Application Specific Settings
-# -----------------------------

@@ -13,6 +13,7 @@ int structInit(sParameterStruct *sSO2Parameters)
 	sSO2Parameters->dHistMinInterval = 350;
 	sSO2Parameters->dHistPercentage = 5;
 	sSO2Parameters->dInterFrameDelay = 10;
+	sSO2Parameters->fid = NULL;
 	return 0;
 }
 
@@ -78,6 +79,8 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 	char *delimeterBuf; /* buffer that holds the line after a specified delimeter */ 
 	int n=1,i=0,delimIndex=0,linebreak=0, valueSize=0;
 	int linenumber=1;
+	double sizeOfImage = 2.7;
+	int dTmp;
 	char cTmp[MAXBUF]; /* a temporal buffer used when strings are read from the config file */
 	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
@@ -123,12 +126,19 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 					sSO2Parameters->dFixTime = atoi(delimeterBuf+1);
 				}
 
+				else if ( strstr( lineBuf, "ImageSize") )
+				{
+					delimeterBuf = strstr(lineBuf,"=");
+					dTmp = atoi(delimeterBuf+1);
+					sSO2Parameters->dfilesize = dTmp;
+					sSO2Parameters->dImagesFile = (int)(dTmp/sizeOfImage);	
+				}
+
 				else if ( strstr( lineBuf, "ExposureTime") )
 				{
 					delimeterBuf = strstr(lineBuf,"=");
 					sSO2Parameters->dExposureTime = atoi(delimeterBuf+1);
 				}
-
 				else if(strstr(lineBuf,"FileNamePrefix"))
 				{
 					delimeterBuf = strstr(lineBuf,"=");
@@ -140,7 +150,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 					/* remove LF */
 					sprintf(sSO2Parameters->cFileNamePrefix,"%s",strtok(cTmp,"\n"));	
 				}
-				else if(strstr(lineBuf,"imagePath"))
+				else if(strstr(lineBuf,"ImagePath"))
 				{
 					delimeterBuf = strstr(lineBuf,"=");
 					if(delimeterBuf[1] == ' ')
