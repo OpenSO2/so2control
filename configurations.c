@@ -7,6 +7,7 @@
 
 int structInit(sParameterStruct *sSO2Parameters)
 {
+	sSO2Parameters->dImageCounter = 0;
 	sSO2Parameters->eStat = PHX_OK;
 	sSO2Parameters->dTriggerPulseWidth = 15;
 	sSO2Parameters->dBufferlength = 1376256;

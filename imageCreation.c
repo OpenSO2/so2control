@@ -43,9 +43,10 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
 	etStat 				eStat			= PHX_OK;	/* Status variable */
 	tHandle 			hCamera			= sSO2Parameters->hCamera;	/* hardware handle of camera */
+	int					status			= 0; /* status variable */
 	int					saveErrCount	= 0;	/* counting how often saving an image failed */
 	int 				startErrCount	= 0;	/* counting how often the start of capture process failed */
-	
+	FILE*				fid = NULL;
 	printf("Starting acquisition...\n");
 	printf("Press a key to exit\n");
 	
@@ -95,7 +96,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 				/* if saving was successful error counter is reset to zero */
 				/* image counter is set +1 */
 				sSO2Parameters->dImageCounter++;
-				printf("Image number %09d is successfully saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
+				
 				saveErrCount = 0;
 			}
 			PHX_Acquire( hCamera, PHX_ABORT, NULL );
@@ -132,21 +133,28 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	char				headerString[HEADER_SIZE];
 	SYSTEMTIME			timeThisImage; /* System time windows.h dependency */
 	char				errbuff[512];
+	char				messBuff[512];
 	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
 	
 	/* create a filename with milliseconds precession -> caution <windows.h> is used her */ 
-	status = createFilename(sSO2Parameters, filename, timeThisImage);
-	if (status <= 0)
+	if (sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
-		/*creating filename failed or filename has length 0 */
-		logError("creating filename failed.");
-		return 1;
-	}
-	else
-	{
-		/* reset status if creating a filename was successful */
-		status = 0;
+		status = createFilename(sSO2Parameters, filename, timeThisImage);
+		if (status <= 0)
+		{
+			/*creating filename failed or filename has length 0 */
+			logError("creating filename failed.");
+			return 1;
+		}
+		else
+		{
+			/* reset status if creating a filename was successful */
+			status = 0;
+			sprintf(messBuff,"%09d Images are saved starting a new File",sSO2Parameters->dImageCounter);
+			logMessage(messBuff);
+			printf("%09d Images are saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
+		}
 	}
 	/* create a Fileheader caution <windows.h> is used her */ 
 	status = createFileheader(headerString, &timeThisImage);
@@ -157,7 +165,10 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	}
 	
 	/*Open a new file for the image (writeable, binary) */
-	imageBuffer = fopen(filename,"wb");
+	imageBuffer = fopen(filename,"ab");
+
+	//fseek(imageBuffer, 0,SEEK_END);
+
 	if (imageBuffer == NULL)
 	{
 		sprintf(errbuff,"create %s on harddrive failed",filename);
@@ -180,6 +191,8 @@ int writeImage(sParameterStruct *sSO2Parameters)
 		
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,imageBuffer);
+
+		//fflush(imageBuffer);
 		fclose(imageBuffer);
 		if ((fwriteCount-fwriteReturn) != 0)
 		{
@@ -217,11 +230,11 @@ time_t TimeFromSystemTime(const SYSTEMTIME * pTime)
 	memset(&tm, 0, sizeof(tm));
 
 	tm.tm_year = pTime->wYear - 1900;
-	tm.tm_mon = pTime->wMonth - 1;
+	tm.tm_mon  = pTime->wMonth - 1;
 	tm.tm_mday = pTime->wDay;
 	tm.tm_hour = pTime->wHour;
-	tm.tm_min = pTime->wMinute;
-	tm.tm_sec = pTime->wSecond;
+	tm.tm_min  = pTime->wMinute;
+	tm.tm_sec  = pTime->wSecond;
 
 	return mktime(&tm);
 }
@@ -273,26 +286,39 @@ int createFileheader(char * header, SYSTEMTIME *time)
 	return 0;
 }
 
-int newFile(sParameterStruct *sSO2Parameters)
+int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 {
 	int			status = 0;
 	char		filename[PHX_MAX_FILE_LENGTH];
+	char		errbuff[512];
 	SYSTEMTIME	time;
 
 	GetSystemTime(&time);
-
+	
 	/* If old file is still open close it first */
-	if (sSO2Parameters->fid != NULL) fclose(sSO2Parameters->fid);
-
+	if (fid != NULL) fclose(fid);
+	
+	/* create new filename */
 	status = createFilename(sSO2Parameters,filename,time);
-	if (status != 0)
+	if (status <= 0)
 	{
 		logError("Creating filename failed.");
 		return status;
 	}
-
-	sSO2Parameters->fid = fopen(filename,"wb");
-
+		else
+	{
+		/* reset status if creating a filename was successful */
+		status = 0;
+	}
+	/* Open new file for images */
+	fid = fopen("blabla.txt","wb");
+	if (fid == NULL)
+	{
+		sprintf(errbuff,"Creation of %s failed",filename);
+		logError(errbuff);
+		return 1;
+	}
+	
 	return status;
 }
 

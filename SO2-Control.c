@@ -36,7 +36,6 @@ int main( int argc, char* argv[] )
 		return 1;
 	}
 	// dunkelstromMessung(&sParameterStruct);
-	printf("Images per file: %d\n",sSO2Parameters.dImagesFile);
 	setExposureTime(&sSO2Parameters,&sControlFlags);
 	
 	state = startAquisition(&sSO2Parameters,&sControlFlags);

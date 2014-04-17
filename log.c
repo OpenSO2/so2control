@@ -29,7 +29,7 @@ int logMessage(char *message)
 	FILE *logfile;
 	char buffer[512];
 	
-
+	/* nameLogFile is a global variable */
 	logfile = fopen(nameLogFile,"a");
 	GetSystemTime(&time);
 	sprintf(buffer,"%02d:%02d:%02d | INFO  | %s \n", time.wHour, time.wMinute, time.wSecond, message);
@@ -44,7 +44,7 @@ int logError(char *message)
 	FILE *logfile;
 	char buffer[512];
 	
-
+	/* nameLogFile is a global variable */
 	logfile = fopen(nameLogFile,"a");
 	GetSystemTime(&time);
 	sprintf(buffer,"%02d:%02d:%02d | ERROR | %s \n", time.wHour, time.wMinute, time.wSecond, message);
@@ -64,7 +64,7 @@ int logExit()
 	fprintf(logfile,"Today is the %02d.%02d.%04d %02d:%02d\n", 
 		logStartTime.wDay, logStartTime.wMonth, logStartTime.wYear, 
 		logStartTime.wHour, logStartTime.wMinute);
-	fprintf(logfile,"The program exited normally this log file ends here\n \n");
+	fprintf(logfile,"The program exited this log file ends here\n \n");
 	fclose(logfile);
 	return 0;
 }

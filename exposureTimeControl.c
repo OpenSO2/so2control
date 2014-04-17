@@ -74,7 +74,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 			case 0 : //printf("starting electronic shutter mode\nExposuretime is set\n");
 					sSO2Parameters->dExposureTime = 0.0000124+(1055-1)*0.000079275;
 					logMessage("Camera is set to electronic shutter mode.");
-					sprintf(messbuff,"Exposure time = %d ms",sSO2Parameters->dExposureTime);
+					sprintf(messbuff,"Exposure time = %f ms",sSO2Parameters->dExposureTime);
 					logMessage(messbuff);
 					break;
 			
@@ -88,7 +88,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 			
 			case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 					logMessage("Camera is set to electronic shutter mode.");
-					sprintf(messbuff,"Exposure time = %d ms",sSO2Parameters->dExposureTime);
+					sprintf(messbuff,"Exposure time = %f ms",sSO2Parameters->dExposureTime);
 					logMessage(messbuff);
 					break;
 			
@@ -418,7 +418,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	}
 	/* save the exposure time in [ms] to control Struct */
 	sSO2Parameters->dExposureTime = FBvalue * 0.0837;
-	sprintf(messbuff,"Exposure time is set to %d", FBvalue * 0.0837);
+	sprintf(messbuff,"Exposure time is set to %f", FBvalue * 0.0837);
 	logMessage(messbuff);
 	sSO2Parameters->eStat = eStat;
 	return eStat;
@@ -515,7 +515,7 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 
 	/* save the exposure time to control Struct */
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
-	sprintf(messbuff,"Exposure time is set to %d", 0.0000124+(SHTvalue-1)*0.000079275);
+	sprintf(messbuff,"Exposure time is set to %f", 0.0000124+(SHTvalue-1)*0.000079275);
 	logMessage(messbuff);
 	sSO2Parameters->eStat = eStat;
 	return eStat;
