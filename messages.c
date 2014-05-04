@@ -1,7 +1,5 @@
 #include"configurations.h"
 
-
-
 void printOpening()
 {
 	printf("*******************************************\n");

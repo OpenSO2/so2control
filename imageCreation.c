@@ -49,12 +49,12 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 	FILE*				fid = NULL;
 	printf("Starting acquisition...\n");
 	printf("Press a key to exit\n");
-	
+
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
 	PHX_Acquire( hCamera, PHX_EXPOSE, NULL );
-	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) 
+	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
 	{
-		
+
 		/* Now start our capture, return control immediately back to program */
 		eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
 		if ( PHX_OK == eStat )
@@ -63,19 +63,19 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 			startErrCount = 0;
 			/* Wait for a user defined period between each camera trigger call*/
 			_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
-			
+
 			/* Wait here until either:
 			 * (a) The user aborts the wait by pressing a key in the console window
 			 * (b) The BufferReady event occurs indicating that the image is complete
 			 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
 			 * Keep calling the sleep function to avoid burning CPU cycles */
-			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() ) 
+			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() )
 			{
 				_PHX_SleepMs(10);
-			} 
+			}
 			/* Reset the buffer ready flag to false for next cycle */
 			sControlFlags->fBufferReady = FALSE;
-			
+
 			/* save the captured image */
 			eStat = writeImage(sSO2Parameters);
 			if ( PHX_OK != eStat )
@@ -96,7 +96,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 				/* if saving was successful error counter is reset to zero */
 				/* image counter is set +1 */
 				sSO2Parameters->dImageCounter++;
-				
+
 				saveErrCount = 0;
 			}
 			PHX_Acquire( hCamera, PHX_ABORT, NULL );
@@ -114,7 +114,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 				return 2;
 			}
 		} // else
-	} // while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow ) 
+	} // while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
 
 	sSO2Parameters->eStat = eStat;
 	return eStat;
@@ -125,8 +125,8 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 int writeImage(sParameterStruct *sSO2Parameters)
 {
 	stImageBuff			stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
-	int					status;		/* Status variable for several return values */ 
-	char				filename[PHX_MAX_FILE_LENGTH]; 
+	int					status;		/* Status variable for several return values */
+	char				filename[PHX_MAX_FILE_LENGTH];
 	int					fwriteCount=2752512; /* (1344*1024*16)/8 = 2752512 Bytes per image 12 bits saved in 16 bits */
 	int					fwriteReturn; /* Return value for the write functions */
 	FILE				*imageBuffer; /* FIle handle for current image */
@@ -136,8 +136,8 @@ int writeImage(sParameterStruct *sSO2Parameters)
 	char				messBuff[512];
 	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
-	
-	/* create a filename with milliseconds precession -> caution <windows.h> is used her */ 
+
+	/* create a filename with milliseconds precession -> caution <windows.h> is used her */
 	if (sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
 		status = createFilename(sSO2Parameters, filename, timeThisImage);
@@ -156,14 +156,14 @@ int writeImage(sParameterStruct *sSO2Parameters)
 			printf("%09d Images are saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
 		}
 	}
-	/* create a Fileheader caution <windows.h> is used her */ 
+	/* create a Fileheader caution <windows.h> is used her */
 	status = createFileheader(headerString, &timeThisImage);
 	if (status != 0)
 	{
 		logError("creating fileheader failed");
 		return 2;
 	}
-	
+
 	/*Open a new file for the image (writeable, binary) */
 	imageBuffer = fopen(filename,"ab");
 
@@ -175,7 +175,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 		logError(errbuff);
 		return 3;
 	}
-	
+
 	/* download the image from the framegrabber */
 	sSO2Parameters->eStat = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &stBuffer );
 	if ( PHX_OK == sSO2Parameters->eStat )
@@ -188,7 +188,7 @@ int writeImage(sParameterStruct *sSO2Parameters)
 			fclose(imageBuffer);
 			return 4;
 		}
-		
+
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		fwriteReturn = fwrite(stBuffer.pvAddress,1,fwriteCount,imageBuffer);
 
@@ -214,12 +214,12 @@ int writeImage(sParameterStruct *sSO2Parameters)
 int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time)
 {
 	int		status;
-	
-	/* write header string with information from system time. windows.h dependency */ 
+
+	/* write header string with information from system time. windows.h dependency */
 	status = sprintf(filename,"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.rbf",sSO2Parameters->cImagePath,
 		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
 		time.wMinute, time.wSecond, time.wMilliseconds);
-	
+
 	return status;
 }
 
@@ -251,7 +251,7 @@ int createFileheader(char * header, SYSTEMTIME *time)
 	WORD	wBPP		= 16;		// Bits pro Pixel
 	WORD	wColorType	= 1;		// Farbtyp 2 = Graustufen, 4 = RGB Farbe ist leider = 1 in beispiel datei
 	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneinträgen (immer 0 )
-	time_t	tDateTime	= TimeFromSystemTime(time);	// Datum und Uhrzeit        
+	time_t	tDateTime	= TimeFromSystemTime(time);	// Datum und Uhrzeit
 	DWORD  dwTimestamp = time->wMilliseconds;		// Zeitstempel in ms
 
 	/* Preset the whole string with zeros */
@@ -294,10 +294,10 @@ int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 	SYSTEMTIME	time;
 
 	GetSystemTime(&time);
-	
+
 	/* If old file is still open close it first */
 	if (fid != NULL) fclose(fid);
-	
+
 	/* create new filename */
 	status = createFilename(sSO2Parameters,filename,time);
 	if (status <= 0)
@@ -318,7 +318,7 @@ int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 		logError(errbuff);
 		return 1;
 	}
-	
+
 	return status;
 }
 

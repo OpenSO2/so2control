@@ -8,7 +8,7 @@
 
 # Camera Specific Settings
 # --------------------------
-PHX_BOARD_TYPE,            	PHX_DIGITAL	
+PHX_BOARD_TYPE,            	PHX_DIGITAL
 PHX_CAM_ACTIVE_YLENGTH,    	1024
 PHX_CAM_ACTIVE_XLENGTH,    	1344
 
@@ -16,7 +16,7 @@ PHX_CAM_ACTIVE_XLENGTH,    	1344
 
 #PHX_CAM_DATA_VALID,        	PHX_ENABLE
 #PHX_CAM_SRC_DEPTH,         	12
-#PHX_DST_FORMAT				PHX_DST_FORMAT_Y12	
+#PHX_DST_FORMAT				PHX_DST_FORMAT_Y12
 
 # System Specific Settings
 # ------------------------

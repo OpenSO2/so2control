@@ -1,10 +1,8 @@
-readme.md
-
 SO2-Control Software
 
 
 Programmierprojekt zur erzeugung einer Bild Aquisitionssoftware fuer die Hamammatsu CCD Camera C8484-16.
-Geschrieben in der Programmiersprache C. Am Institut für Geophysik der Universitaet Hamburg. In der 
+Geschrieben in der Programmiersprache C. Am Institut für Geophysik der Universitaet Hamburg. In der
 Arbeitsgruppe Vulkanologie.
 
 Autoren:
@@ -18,7 +16,7 @@ SO2-Control.c
 		- main()
 	Funktion:
 		- Programmeinstieg, start aller wichtigen Funktionen
-	
+
 configurations.c
 	Inhalt:
 		struct sParameterStruct
@@ -30,12 +28,12 @@ configurations.c
 		defaultConfig()
 		defaultCameraConfig()
 		sendMessage()
-		
+
 	Funktion:
 		- einrichten der Variablen Struckturen
 		- Konfiguration der Kamera
 		- Konfiguration des Framegrabbers
-	
+
 exposureTimeControl.c
 	Inhalt:
 		- setExposureTime()
@@ -45,17 +43,17 @@ exposureTimeControl.c
 		getOneBuffer()
 		evalHist()
 		rountToInt()
-	
+
 	Funktion:
-		
-		
+
+
 
 ImageCreation.c
 	Inhalt:
 		callbackFunction()
 		writeImage()
 		startAquisition()
-	
+
 	Funktion:
 
 

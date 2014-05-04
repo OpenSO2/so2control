@@ -1,14 +1,12 @@
 #include"configurations.h"
 
-
 int dunkelstromMessung(sParameterStruct	*sSO2Parameters)
 {
-
 	// Linse Schlieﬂen
 		// aufforderung  die Linse zu schlieﬂen
 		// bestaetigung abwarten das Linse geschlossen ist.
 	// Belichtungszeit auf Minimum stellen
-	// ein Bild aufnehmen. 
+	// ein Bild aufnehmen.
 	// Bild abspeichern.
 	// Belichtungszeit auf Maximum stellen
 	// ein Bild aufnehmen

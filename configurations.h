@@ -7,7 +7,7 @@
  *	for Program, Camera and Framegrabber
  *
  **********************************************************/
- 
+
 /******************************
  *   HAEDER INCLUDES
  ******************************/
@@ -28,7 +28,7 @@
 /******************************
  *   Structures
  ******************************/
-typedef struct 
+typedef struct
 {
 /* Camera parameters */
 	/* Number of pixels in 1 Image */
@@ -48,11 +48,11 @@ typedef struct
 	/* number of images take */
 	ui32		dImageCounter;
 	/* delay between two frames in [ms] */
-	ui32		dInterFrameDelay; 
+	ui32		dInterFrameDelay;
 	/* length of the triggerpulse in [ms] */
 	ui32		dTriggerPulseWidth;
 	/* contains the Exposuretime in [ms] */
-	double		dExposureTime; 
+	double		dExposureTime;
 	/* contains the name of a Config-file */
 	char		cConfigFileName[MAX_STRING_LENGTH];
 	/* not used right now, should contains a prefix for all images */
@@ -61,7 +61,7 @@ typedef struct
 	char		cImagePath[MAX_STRING_LENGTH];
 	/* A handle to identify the camera */
 	tHandle		hCamera;
-	/* A status variable inherited from the SDK */ 
+	/* A status variable inherited from the SDK */
 	etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */
 	int			dFixTime;
@@ -72,16 +72,16 @@ typedef struct
 	/* Images per file. Calculated from size of file*/
 	int			dImagesFile;
 
-	
+
 }sParameterStruct;
 
 
 typedef struct flagStruct
 {
 	/* Event Flags */
-	volatile tFlag	fBufferReady; 
+	volatile tFlag	fBufferReady;
 	volatile int	dBufferReadyCount;
-	
+
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
 }flagStruct;

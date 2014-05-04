@@ -33,7 +33,7 @@ int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlF
 	}
 	/* initialise the parameterstructure with default values */
 	structInit(sSO2Parameters);
-	
+
 	/* Load thr framegrabber with the phoenix configuration file. The function returns the neccessary camera handle */
 	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera,"configurations//c8484.pcf" , (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL |  PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(sSO2Parameters->eStat != 0)
@@ -42,7 +42,7 @@ int configurationFunktion(sParameterStruct	*sSO2Parameters,flagStruct *sControlF
 		logError("function PHX_CameraConfigLoad(...) failed");
 		return sSO2Parameters->eStat;
 	}
-	
+
 	/* load the default configurations for the framegrabber */
 	eStat = defaultConfig(sSO2Parameters,sControlFlags);
 	if(eStat != PHX_OK)
@@ -77,7 +77,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 {
 	FILE *pFILE; /* filehandle for config file */
 	char *lineBuf;/* buffer that holds the current line of the config file */
-	char *delimeterBuf; /* buffer that holds the line after a specified delimeter */ 
+	char *delimeterBuf; /* buffer that holds the line after a specified delimeter */
 	int n=1,i=0,delimIndex=0,linebreak=0, valueSize=0;
 	int linenumber=1;
 	double sizeOfImage = 2.7;
@@ -86,7 +86,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
 	lineBuf = (char*) malloc(MAXBUF);
-	
+
 	pFILE = fopen(filename,"r");
 
 	if (pFILE!=NULL)
@@ -132,7 +132,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 					delimeterBuf = strstr(lineBuf,"=");
 					dTmp = atoi(delimeterBuf+1);
 					sSO2Parameters->dfilesize = dTmp;
-					sSO2Parameters->dImagesFile = (int)(dTmp/sizeOfImage);	
+					sSO2Parameters->dImagesFile = (int)(dTmp/sizeOfImage);
 				}
 
 				else if ( strstr( lineBuf, "ExposureTime") )
@@ -147,9 +147,9 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 						sprintf(cTmp,"%s",delimeterBuf+2);
 					else
 						sprintf(cTmp,"%s",delimeterBuf+1);
-				
+
 					/* remove LF */
-					sprintf(sSO2Parameters->cFileNamePrefix,"%s",strtok(cTmp,"\n"));	
+					sprintf(sSO2Parameters->cFileNamePrefix,"%s",strtok(cTmp,"\n"));
 				}
 				else if(strstr(lineBuf,"ImagePath"))
 				{
@@ -158,9 +158,9 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 						sprintf(cTmp,"%s",delimeterBuf+2);
 					else
 						sprintf(cTmp,"%s",delimeterBuf+1);
-				
+
 					/* remove LF */
-					sprintf(sSO2Parameters->cImagePath,"%s",strtok(cTmp,"\n"));	
+					sprintf(sSO2Parameters->cImagePath,"%s",strtok(cTmp,"\n"));
 				}
 			} //end if(lineBuf[0] != '#')
 		linenumber++;
@@ -177,7 +177,7 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 		logError(errbuff);
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -224,7 +224,7 @@ int triggerConfig(sParameterStruct	*sSO2Parameters)
 	   sSO2Parameters->eStat = eStat;
 	   return eStat;
    }
-	
+
    /* set the framegrabber that exposure is started by software trigger */
    eParamValue = PHX_EXPTRIG_SWTRIG;
    eStat = PHX_ParameterSet( hCamera, PHX_EXPTRIG_SRC, (void *) &eParamValue );
@@ -234,7 +234,7 @@ int triggerConfig(sParameterStruct	*sSO2Parameters)
 	   sSO2Parameters->eStat = eStat;
 	   return eStat;
    }
-	
+
    logMessage("trigger configuration was successfull");
    return eStat;
 }
@@ -248,7 +248,7 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 	tHandle			hCamera = sSO2Parameters->hCamera;
 
 	/* Camera Communication Settings ( standard serial...)
-	 * These settings are 9600 Baud, 8 data, no parity, 
+	 * These settings are 9600 Baud, 8 data, no parity,
 	 * 1 stop with no flow control */
 
 	eParamValue = PHX_COMMS_DATA_8;
@@ -272,14 +272,14 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 		sSO2Parameters->eStat = eStat;
 		return eStat;
 	}
-	
+
 	/* Image format settings
 	 * 1344x1024, 12-Bit Source, 12-Bit Output,
 	 * make use of the Data valid signal providetd
 	 * by the CameraLink Camera */
-	
-	
-	/* some cameras output a 'Data Enable' control signal to indicate when the data is valid. 
+
+
+	/* some cameras output a 'Data Enable' control signal to indicate when the data is valid.
 	 * this option makes the framegrabber software to use such control signal */
 	eParamValue = PHX_ENABLE;
 	eStat = PHX_ParameterSet(hCamera, PHX_CAM_DATA_VALID, &eParamValue );
@@ -289,7 +289,7 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 		sSO2Parameters->eStat = eStat;
 		return eStat;
 	}
-	
+
 	eParamValue = (etParamValue)12;
 	eStat = PHX_ParameterSet(hCamera, PHX_CAM_SRC_DEPTH, &eParamValue );
 	if ( PHX_OK != eStat )
@@ -326,7 +326,7 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 	eParamValue = PHX_INTRPT_FIFO_OVERFLOW;
 	eStat = PHX_ParameterSet( hCamera, PHX_INTRPT_SET, &eParamValue );
 	if ( PHX_OK != eStat )
-	{	
+	{
 		logError("Set interpretation of FIFO overflows failed");
 		sSO2Parameters->eStat = eStat;
 		return eStat;
@@ -336,7 +336,7 @@ int defaultConfig(sParameterStruct	*sSO2Parameters, flagStruct *sControlFlags)
 
 	/* Setup our own event context */
 	eStat = PHX_ParameterSet( hCamera, PHX_EVENT_CONTEXT, (void *) sControlFlags );
-	if ( PHX_OK != eStat ){	
+	if ( PHX_OK != eStat ){
 		logError("Setup the control flags structure failed");
 		sSO2Parameters->eStat = eStat;
 		return eStat;
@@ -355,7 +355,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 	tHandle			hCamera = sSO2Parameters->hCamera;
 	double			exsposureTime = sSO2Parameters->dExposureTime;
 
-	
+
 	// initialise default vaulues
 	eStat = sendMessage(hCamera, "INI");
 	if ( PHX_OK != eStat )
@@ -364,8 +364,8 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 		logError("sending INI to camera was unsuccessfull");
 		return eStat;
 	}
-	
-	// freerunning or external control mode: 
+
+	// freerunning or external control mode:
 	// N freerun mode, E external
 	eStat = sendMessage(hCamera, "AMD N");
 	if ( PHX_OK != eStat )
@@ -374,7 +374,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 		logError("sending AMD N to camera was unsuccessfull");
 		return eStat;
 	}
-	
+
 	// scanning mode: N Normal, S superpixel
 	eStat = sendMessage(hCamera, "SMD N");
 	if ( PHX_OK != eStat )
@@ -383,7 +383,7 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 		logError("sending SMD N to camera was unsuccessfull");
 		return eStat;
 	}
-		
+
 	//horizontal pixel output: M = 1344
 	eStat = sendMessage(hCamera, "SHA M");
 	if ( PHX_OK != eStat )
@@ -401,14 +401,14 @@ int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 		logError("sending CEG H to camera was unsuccessfull");
 		return eStat;
 	}
-	
+
 	logMessage("configuration of camera was successfull");
 	sSO2Parameters->eStat = eStat;
 	return eStat;
 }
 
 
-int sendMessage(tHandle hCamera, char * inputBuffer) 
+int sendMessage(tHandle hCamera, char * inputBuffer)
 {
 	/* error handling is inverted in this function. cant remember why */
 	etStat eStat = PHX_OK;
@@ -422,7 +422,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 	char	*pInputLineBuffer;
 	pInputLineBuffer  = inputLineBuffer;
 	sprintf(pInputLineBuffer,"%s\r",inputBuffer);
-	
+
 	/* 3 tries before the sending of of the message is considered failed */
 	for(i=0;i<3;i++)
 	{
@@ -430,12 +430,12 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 		InputLineBufferLength = strlen( inputLineBuffer );
 		eParamValue = (etParamValue)InputLineBufferLength;
 		eStat = PHX_CommsTransmit( hCamera, (ui8*) inputLineBuffer, (ui32*) &eParamValue, timeout );
-		if ( PHX_OK == eStat ) 
+		if ( PHX_OK == eStat )
 		{
-			/* if transmitting was successful program waits for incoming messages 
-			 * 0.5s is a good compromise between speed and reliability 
+			/* if transmitting was successful program waits for incoming messages
+			 * 0.5s is a good compromise between speed and reliability
 			 */
- 			do 
+ 			do
 			{
 			_PHX_SleepMs(timeout/50);
 			sleepCycleCounter++;
@@ -443,7 +443,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 			eStat = PHX_ParameterGet( hCamera, PHX_COMMS_INCOMING, &OutputLineBufferLength );
 			/* create a timeout signal if 0.5s are over and no data was recieved */
 			if(sleepCycleCounter > (timeout/10)) eStat = PHX_WARNING_TIMEOUT;
-			
+
 			} while ( 0 == OutputLineBufferLength && PHX_OK == eStat);
 
 			if(PHX_OK == eStat)
@@ -464,9 +464,9 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 				else logError("nothing was received from camera");
 			} // if(PHX_OK == eStat)
 			else logError("nothing was received from camera");
-		} // if ( PHX_OK == eStat ) 
+		} // if ( PHX_OK == eStat )
 		else logError("PHX_CommsTransmit(...) failed");
-			
+
 	} // for(i=0;i<3;i++)
 	logError("sending message failed 3 times");
 	return eStat; /* here return if something FAILED */
