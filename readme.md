@@ -1,73 +1,76 @@
 SO2-Control Software
+====================
+
+SO2 Camera control software written in C, based on the Hamammatsu CCD Camera
+C8484-16. Licenced under MIT.
+
+Contributors:
+- Morten Harms (Universität Hamburg)
+- Johann Jacobsohn (Universität Hamburg)
 
 
-Programmierprojekt zur erzeugung einer Bild Aquisitionssoftware fuer die Hamammatsu CCD Camera C8484-16.
-Geschrieben in der Programmiersprache C. Am Institut für Geophysik der Universitaet Hamburg. In der
-Arbeitsgruppe Vulkanologie.
+Files
+------
+- **SO2-Control.c** - main program
+- **configurations.c|h** - set up structs, configure camera and frame grabber
+- **exposureTimeControl.c|h** - sets and monitors exposure time
+- **imageCreation.c|h** - aquires and saves images
+- **darkCurrent.c|h** - to be implemented
+- **log.c|h** - log messages to file
+- **messages.c|h** - static messages
 
-Autoren:
-	Morten Harms
+Interface:
+----------
+### configurations.c|h
 
+- **struct sParameterStruct** -
+- **struct flagStruct** -
+- **readConfig()** -
+- **configurationFunktion()** -
+- **structInit()** -
+- **triggerConfig()** -
+- **defaultConfig()** -
+- **defaultCameraConfig()** -
+- **sendMessage()** -
 
-Dateien und ihre Bedeutung:
+### exposureTimeControl.c|h
 
-SO2-Control.c
-	Inhalt:
-		- main()
-	Funktion:
-		- Programmeinstieg, start aller wichtigen Funktionen
+- **setExposureTime()** -
+- **fixEposureTime()** -
+- **setElektronicShutter()** -
+- **setFrameBlanking()** -
+- **getOneBuffer()** -
+- **evalHist()** -
+- **rountToInt()** -
 
-configurations.c
-	Inhalt:
-		struct sParameterStruct
-		struct flagStruct
-		readConfig()
-		configurationFunktion()
-		structInit()
-		triggerConfig()
-		defaultConfig()
-		defaultCameraConfig()
-		sendMessage()
+### imageCreation.c|h
 
-	Funktion:
-		- einrichten der Variablen Struckturen
-		- Konfiguration der Kamera
-		- Konfiguration des Framegrabbers
+- **callbackFunction()** -
+- **writeImage()** -
+- **startAquisition()** -
 
-exposureTimeControl.c
-	Inhalt:
-		- setExposureTime()
-		fixEposureTime()
-		setElektronicShutter()
-		setFrameBlanking()
-		getOneBuffer()
-		evalHist()
-		rountToInt()
+### darkCurrent.c|h
 
-	Funktion:
+- **dunkelstromMessung** - To be implemented
 
+### log.c|h
 
+- **initLog()** -
+- **logMessage(char *message)** -
+- **logError(char *message)** -
+- **logExit()** -
 
-ImageCreation.c
-	Inhalt:
-		callbackFunction()
-		writeImage()
-		startAquisition()
+### messages.c|h
 
-	Funktion:
+- **printOpening()** - prints a friendly startup statement to stdout
 
+TODO
+====
 
-
-============ZU=ERREICHENDE=ZIELE============
-
-- Zeitmanagement mit Millisekunden Genauigkeit
-- feststellen der genauen Bildwiederholrate
-	->	Interframedelay etc.
-- bug in ExposureTimeControl
-	->	bei bestimmten Lichtverhältnissen wird keine Belichtungszeit gefunden
-		das Programm springt dann immer zwischen zwei Belichtungszeiten.
-- Dunkelstrommessung implementieren
-	->	So lange das Filterrad sich nicht Computergesteuert drehen laesst ist das schwierig
-		eventuell trotzdem rudimaentaer implementieren
-- erstellen eines Logfiles mit allen relevanten events
-- besseres Fehlermanagement!!!!
+- implement second camera
+- improve time management to millisecond accuracy
+- measure frame rate -> Interframedelay etc.
+- implement dark-frame subtraction
+- implement automated filter wheel control
+- improve error management
+- ExposureTimeControl: improve loop detection
