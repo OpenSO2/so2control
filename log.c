@@ -11,7 +11,10 @@ int initLog()
 	sprintf(nameLogFile,"logs/log_%04d_%02d_%02d_%02d_%02d.txt",logStartTime.wYear,
 		logStartTime.wMonth, logStartTime.wDay, logStartTime.wHour, logStartTime.wMinute);
 
-	logfile = fopen(nameLogFile,"a");
+	logfile = getFile(nameLogFile);
+	if(NULL == logfile){
+		return 1;
+	}
 	fprintf(logfile,"Logfile for SO2-Camera Control Software\n");
 	fprintf(logfile,"Today is the %02d.%02d.%04d %02d:%02d\n",
 		logStartTime.wDay, logStartTime.wMonth, logStartTime.wYear,
@@ -34,6 +37,7 @@ int logMessage(char *message)
 	GetSystemTime(&time);
 	sprintf(buffer,"%02d:%02d:%02d | INFO  | %s \n", time.wHour, time.wMinute, time.wSecond, message);
 	fputs(buffer,logfile);
+	printf(buffer);
 	fclose(logfile);
 	return 0;
 }
@@ -48,6 +52,7 @@ int logError(char *message)
 	logfile = fopen(nameLogFile,"a");
 	GetSystemTime(&time);
 	sprintf(buffer,"%02d:%02d:%02d | ERROR | %s \n", time.wHour, time.wMinute, time.wSecond, message);
+	fprintf(stderr, buffer);
 	fputs(buffer,logfile);
 	fclose(logfile);
 	return 0;
