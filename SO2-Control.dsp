@@ -83,7 +83,75 @@ LINK32=link.exe
 # Name "SO2-Control - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\Common\common.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Common\common.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\configurations.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\configurations.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\darkCurrent.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\darkCurrent.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\exposureTimeControl.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\exposureTimeControl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\imageCreation.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\imageCreation.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\messages.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\messages.h
+# End Source File
+# Begin Source File
+
 SOURCE=".\SO2-Control.c"
+# End Source File
+# Begin Source File
+
+SOURCE=.\Lib\phxil.lib
+# End Source File
+# Begin Source File
+
+SOURCE=.\Lib\phxlw32.lib
+# End Source File
+# Begin Source File
+
+SOURCE=.\Lib\phxbl.lib
 # End Source File
 # End Target
 # End Project
