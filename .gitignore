@@ -1,8 +1,5 @@
-old_data/
-old_files/
-old_program/
 Debug/
-Images/
+images/
 logs/
 *.ncb
 *.opt
