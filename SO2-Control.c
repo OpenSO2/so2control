@@ -34,9 +34,10 @@ int main( int argc, char* argv[] )
 		return 1;
 	}
 	// dunkelstromMessung(&sParameterStruct);
-	setExposureTime(&sSO2Parameters,&sControlFlags);
+	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera );
+	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera2);
 
-	state = startAquisition(&sSO2Parameters,&sControlFlags);
+	state = startAquisition(&sSO2Parameters, &sControlFlags);
 	if (state != 0)
 	{
 		logError("Aquisition failed");
