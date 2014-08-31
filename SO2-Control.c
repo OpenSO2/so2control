@@ -27,7 +27,7 @@ int main( int argc, char* argv[] )
 	memset( &sSO2Parameters, 0, sizeof(sParameterStruct ));
 
 	//function for initialising basic values for sParameterStruct
-	state = configurationFunktion(&sSO2Parameters,&sControlFlags);
+	state = configurationFunktion(&sSO2Parameters, &sControlFlags);
 	if (state != 0)
 	{
 		logError("configuration failed");
@@ -44,10 +44,12 @@ int main( int argc, char* argv[] )
 	}
 
 	/* Now cease all captures */
-	if ( sSO2Parameters.hCamera ) PHX_Acquire( sSO2Parameters.hCamera, PHX_ABORT, NULL );
+	if ( sSO2Parameters.hCamera ) PHX_Acquire( sSO2Parameters.hCamera,  PHX_ABORT, NULL );
+	if ( sSO2Parameters.hCamera2 ) PHX_Acquire( sSO2Parameters.hCamera2, PHX_ABORT, NULL );
 
 	/* Release the Phoenix board */
 	if ( sSO2Parameters.hCamera ) PHX_CameraRelease( &sSO2Parameters.hCamera );
+	if ( sSO2Parameters.hCamera2 ) PHX_CameraRelease( &sSO2Parameters.hCamera2 );
 
 	logExit();
 
