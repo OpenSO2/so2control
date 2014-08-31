@@ -2,6 +2,8 @@
  * of the Hamamatsu CCD-Camera C8484-16
  * it is based on the Active Silicon Framegrabber SDK
  *
+ * @FIXME: make sSO2Parameters->dExposureTime camera dependent; test
+ *
  */
 #include<stdio.h>
 
@@ -13,8 +15,6 @@
 int setExposureTime(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera)
 {
 	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
-	//int				status; /* Status varable for several return values */
-	int				exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
 	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
 	char			messbuff[512];
@@ -506,9 +506,10 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 	}
 
 
-	/* GENAUIGEIT VON DEXPOSURETIME REICHT NICHT AUS!!!!!!!! */
+	/* FIXME: GENAUIGEIT VON DEXPOSURETIME REICHT NICHT AUS!!!!!!!! */
 
 	/* save the exposure time to control Struct */
+	// FIXME: add documention
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
 	sprintf(messbuff,"Exposure time is set to %f", 0.0000124+(SHTvalue-1)*0.000079275);
 	logMessage(messbuff);

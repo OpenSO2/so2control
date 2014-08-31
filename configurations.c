@@ -374,11 +374,9 @@ int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, t
 }
 
 
-
 int defaultCameraConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
-	etStat			eStat = PHX_OK;
-	double			exsposureTime = sSO2Parameters->dExposureTime;
+	etStat eStat = PHX_OK;
 
 	// initialise default vaulues
 	eStat = sendMessage(hCamera, "INI");
