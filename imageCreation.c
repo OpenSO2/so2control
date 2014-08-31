@@ -59,6 +59,10 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 		//~ @FIXME: return codes
 		aquire( sSO2Parameters, sControlFlags, hCamera,  filename);
 		aquire( sSO2Parameters, sControlFlags, hCamera2, filename2);
+
+		// merge both images to correct for particles
+
+
 	} // while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
 
 	sSO2Parameters->eStat = eStat;
@@ -151,7 +155,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 	/* get creation time of image windows.h dependency*/
 	GetSystemTime(&timeThisImage);
 
-	/* create a filename with milliseconds precession -> caution <windows.h> is used her */	
+	/* create a filename with milliseconds precession -> caution <windows.h> is used her */
 	if ( strlen(filename) == 0 || sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
 		// @FIXME filename should have a camera parameter (e.g. _camera1.rbf)

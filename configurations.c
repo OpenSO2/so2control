@@ -375,7 +375,7 @@ int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, t
 
 
 
-int defaultCameraConfig(sParameterStruct *sSO2Parameters, tHandle *hCamera)
+int defaultCameraConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
 	etStat			eStat = PHX_OK;
 	double			exsposureTime = sSO2Parameters->dExposureTime;
