@@ -57,9 +57,7 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
 	{
 		//~ @FIXME: return codes
-		aquire( sSO2Parameters, sControlFlags, hCamera,  filename);
-		aquire( sSO2Parameters, sControlFlags, hCamera2, filename2);
-
+		aquire( sSO2Parameters, sControlFlags, filename, filename2);
 		// merge both images to correct for particles
 
 
@@ -69,18 +67,25 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 	return eStat;
 }
 
-int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera, char *filename)
+
+int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, char *filename, char *filename2)
 {
 	FILE*    fid             = NULL;
 	int      saveErrCount    = 0; /* counting how often saving an image failed */
 	int      startErrCount   = 0; /* counting how often the start of capture process failed */
 	int      status          = 0; /* status variable */
 	etStat   eStat           = PHX_OK; /* Status variable */
-
+	tHandle  hCamera         = sSO2Parameters->hCamera;  /* hardware handle of first camera */
+	tHandle  hCamera2        = sSO2Parameters->hCamera2; /* hardware handle of second camera */
+	SYSTEMTIME   timeNow;         /* System time windows.h dependency */
+	
 	/* Now start our capture, return control immediately back to program */
 	eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
+	eStat = PHX_Acquire( hCamera2, PHX_START, (void*) callbackFunction ); /* PROBLEM HIER MIT 2 MAL CALLBACK FUNCTION??????? */
 	if ( PHX_OK == eStat )
 	{
+		/* get time of image, windows.h dependency*/
+		GetSystemTime(&timeNow);
 		/* if starting the capture was successful reset error counter to zero */
 		startErrCount = 0;
 		/* Wait for a user defined period between each camera trigger call*/
@@ -99,7 +104,8 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle 
 		sControlFlags->fBufferReady = FALSE;
 
 		/* save the captured image */
-		eStat = writeImage(sSO2Parameters, filename, hCamera);
+		eStat = writeImage(sSO2Parameters, filename, hCamera,timeNow);
+		eStat = writeImage(sSO2Parameters, filename2, hCamera2, timeNow);
 		if ( PHX_OK != eStat )
 		{
 			logError("Saving an image failed. This is not fatal");
@@ -109,6 +115,7 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle 
 			{
 				logError("Saving 3 images in a row failed. This is fatal");
 				PHX_Acquire( hCamera, PHX_ABORT, NULL );
+				PHX_Acquire( hCamera2, PHX_ABORT, NULL );
 				sSO2Parameters->eStat = eStat;
 				return 1;
 			}
@@ -122,6 +129,7 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle 
 			saveErrCount = 0;
 		}
 		PHX_Acquire( hCamera, PHX_ABORT, NULL );
+		PHX_Acquire( hCamera2, PHX_ABORT, NULL );
 	} // if ( PHX_OK == eStat )
 	else
 	{
@@ -132,6 +140,7 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle 
 		{
 			logError("starting the acquisition failed 3 times in a row. this is fatal");
 			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+			PHX_Acquire( hCamera2, PHX_ABORT, NULL );
 			sSO2Parameters->eStat = eStat;
 			return 2;
 		}
@@ -140,7 +149,13 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle 
 	return 1;
 }
 
-int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera)
+
+
+
+
+
+
+int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera, SYSTEMTIME timeThisImage)
 {
 	stImageBuff  stBuffer;              /* Buffer in which the image data is stored by the framegrabber */
 	int          status;                /* Status variable for several return values */
@@ -148,18 +163,15 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 	int          fwriteReturn;          /* Return value for the write functions */
 	FILE         *imageBuffer;           /* File handle for current image */
 	char         headerString[HEADER_SIZE];
-	SYSTEMTIME   timeThisImage;         /* System time windows.h dependency */
 	char         errbuff[512];
 	char         messBuff[512];
 
-	/* get creation time of image windows.h dependency*/
-	GetSystemTime(&timeThisImage);
 
 	/* create a filename with milliseconds precession -> caution <windows.h> is used her */
 	if ( strlen(filename) == 0 || sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
 		// @FIXME filename should have a camera parameter (e.g. _camera1.rbf)
-		status = createFilename(sSO2Parameters, filename, timeThisImage);
+		status = createFilename(sSO2Parameters, filename, timeThisImage, hCamera);
 		if (status <= 0)
 		{
 			/*creating filename failed or filename has length 0 */
@@ -170,7 +182,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 		{
 			/* reset status if creating a filename was successful */
 			status = 0;
-			sprintf(messBuff,"%09d Images are saved starting a new File",sSO2Parameters->dImageCounter);
+			sprintf(messBuff,"%09d Image pairs are saved starting a new File",sSO2Parameters->dImageCounter);
 			logMessage(messBuff);
 			printf("%09d Images are saved. Press a key to exit.\n",sSO2Parameters->dImageCounter);
 		}
@@ -231,14 +243,25 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 }
 
 
-int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time)
+int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, tHandle hCamera)
 {
 	int status;
-
-	/* write header string with information from system time. windows.h dependency */
-	status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d.rbf", sSO2Parameters->cImagePath,
-		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
-		time.wMinute, time.wSecond, time.wMilliseconds);
+	
+	/* identify Camera via handle for filename Prefix */	
+	if (hCamera == sSO2Parameters->hCamera)
+	{
+		/* write header string with information from system time for camera A. windows.h dependency */
+		status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_a.rbf", sSO2Parameters->cImagePath,
+			sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
+			time.wMinute, time.wSecond, time.wMilliseconds);
+	}
+	else
+	{
+		/* write header string with information from system time for camera B. windows.h dependency */
+		status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_b.rbf", sSO2Parameters->cImagePath,
+			sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
+			time.wMinute, time.wSecond, time.wMilliseconds);
+	}
 
 	return status;
 }
@@ -319,7 +342,7 @@ int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 	if (fid != NULL) fclose(fid);
 
 	/* create new filename */
-	status = createFilename(sSO2Parameters, filename, time);
+	status = createFilename(sSO2Parameters, filename, time,sSO2Parameters->hCamera);
 	if (status <= 0)
 	{
 		logError("Creating filename failed.");
@@ -342,3 +365,83 @@ int newFile(sParameterStruct *sSO2Parameters,FILE* fid)
 	return status;
 }
 
+
+
+
+
+
+
+
+
+
+
+int old_aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera, char *filename)
+{
+	FILE*    fid             = NULL;
+	int      saveErrCount    = 0; /* counting how often saving an image failed */
+	int      startErrCount   = 0; /* counting how often the start of capture process failed */
+	int      status          = 0; /* status variable */
+	etStat   eStat           = PHX_OK; /* Status variable */
+
+	/* Now start our capture, return control immediately back to program */
+	eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction );
+	if ( PHX_OK == eStat )
+	{
+		/* if starting the capture was successful reset error counter to zero */
+		startErrCount = 0;
+		/* Wait for a user defined period between each camera trigger call*/
+		_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
+
+		/* Wait here until either:
+		 * (a) The user aborts the wait by pressing a key in the console window
+		 * (b) The BufferReady event occurs indicating that the image is complete
+		 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
+		 * Keep calling the sleep function to avoid burning CPU cycles */
+		while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() )
+		{
+			_PHX_SleepMs(10);
+		}
+		/* Reset the buffer ready flag to false for next cycle */
+		sControlFlags->fBufferReady = FALSE;
+
+		/* save the captured image */
+		//eStat = writeImage(sSO2Parameters, filename, hCamera);
+		if ( PHX_OK != eStat )
+		{
+			logError("Saving an image failed. This is not fatal");
+			/* if saving failed somehow more than 3 times program stops */
+			saveErrCount++;
+			if(saveErrCount >= 3)
+			{
+				logError("Saving 3 images in a row failed. This is fatal");
+				PHX_Acquire( hCamera, PHX_ABORT, NULL );
+				sSO2Parameters->eStat = eStat;
+				return 1;
+			}
+		}
+		else
+		{
+			/* if saving was successful error counter is reset to zero */
+			/* image counter is set +1 */
+			sSO2Parameters->dImageCounter++;
+
+			saveErrCount = 0;
+		}
+		PHX_Acquire( hCamera, PHX_ABORT, NULL );
+	} // if ( PHX_OK == eStat )
+	else
+	{
+		logError("Starting the acquisition failed. This is not fatal");
+		/* if starting the capture failed more than 3 times program stops */
+		startErrCount++;
+		if(startErrCount >= 3)
+		{
+			logError("starting the acquisition failed 3 times in a row. this is fatal");
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+			sSO2Parameters->eStat = eStat;
+			return 2;
+		}
+	} // else
+
+	return 1;
+}
