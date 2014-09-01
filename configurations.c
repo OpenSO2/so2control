@@ -348,7 +348,7 @@ int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, t
 	}
 	else logMessage("Image file depth is set to 12-bit");
 
-		/* Enable FIFO Overflow events */
+	/* Enable FIFO Overflow events */
 	eParamValue = PHX_INTRPT_FIFO_OVERFLOW;
 	eStat = PHX_ParameterSet( hCamera, PHX_INTRPT_SET, &eParamValue );
 	if ( PHX_OK != eStat )
