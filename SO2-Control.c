@@ -35,6 +35,9 @@ int main( int argc, char* argv[] )
 	}
 	// dunkelstromMessung(&sParameterStruct);
 	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera );
+
+	/*	Dies ueberschreibt den Wert vom letzten Aufrauf. Entweder benoetigen wir 2 Belichtungszeiten
+		in der Struktur oder wir benutzen eine belichtungszeit fuer beider Kameras */
 	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera2);
 
 	state = startAquisition(&sSO2Parameters, &sControlFlags);
