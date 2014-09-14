@@ -3,6 +3,7 @@
 #include"configurations.h"
 #include"imageCreation.h"
 #include"log.h"
+#include"imageFunctions.h"
 
 #define HEADER_SIZE 64
 
@@ -219,6 +220,11 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 			logError("Writing image header failed");
 			fclose(imageFile);
 			return 4;
+		}
+
+		/* rotate one of the images */
+		if(hCamera == sSO2Parameters->hCamera2){
+			rotate180(stBuffer.pvAddress);
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */

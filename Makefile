@@ -35,3 +35,13 @@ testrun: win run
 
 clean:
 	-rm ${OUTFILE} phxlw32.dll
+
+test:
+	#~ win
+	i586-mingw32msvc-g++ -o test.out Test/imageFunctions.test.cpp
+	wine ./test.out
+	#~ unix
+	g++ -o test.out Test/imageFunctions.test.cpp
+	./test.out
+	#~ cleanup
+	rm test.out
