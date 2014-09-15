@@ -198,7 +198,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 	}
 
 	/*Open a new file for the image (writeable, binary) */
-	imageFile = fopen(filename,"ab");
+	imageFile = fopen(filename,"wb");
 
 	//fseek(imageFile, 0,SEEK_END);
 
@@ -253,10 +253,10 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, tHandle hCamera
 int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, tHandle hCamera)
 {
 	int status;
-	char * camname = (hCamera == sSO2Parameters->hCamera) ? "a" : "b"; /* identify Camera via handle for filename Prefix */
+	char * camname = (hCamera == sSO2Parameters->hCamera) ? "top" : "bot"; /* identify Camera via handle for filename Prefix */
 
 	/* write header string with information from system time for camera B. windows.h dependency */
-	status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.rbf", sSO2Parameters->cImagePath,
+	status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw", sSO2Parameters->cImagePath,
 		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
 		time.wMinute, time.wSecond, time.wMilliseconds, camname);
 
