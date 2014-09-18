@@ -38,24 +38,38 @@ TEST_CASE( "Image functions" ) {
 		float corr12 = calcCorrelation(img1, img2, 9);
 		float corr13 = calcCorrelation(img1, img3, 9);
 		float corr23 = calcCorrelation(img2, img3, 9);
-//~ printf("corr12: %f, corr13: %f, corr23: %f\n", corr12, corr13, corr23);
+
+		//~ printf("corr12: %f, corr13: %f, corr23: %f\n", corr12, corr13, corr23);
+
 		REQUIRE(corr12 < corr13);
 		REQUIRE(corr13 == corr23);
 	}
 
 	SECTION("findDisplacement returns the correct displacement vector"){
-		//~ return;
-		// img 1   img 2   expected displacement:
-		// 0000    1110    1, 1
-		// 0111    1110
-		// 0111    1110
-		// 0111    0000
-		char img1[] = { "0000011101110111" };
-		char img2[] = { "1110111011100000" };
+		// img 1     img 2     expected displacement:
+		// 000000    011100    0, -1
+		// 011100    011100
+		// 011100    011100
+		// 011100    000000
+		// 000000    000000
+		// 000000    000000
+		char img1[] = { "000000011100011100011100000000000000" };
+		char img2[] = { "011100011100011100000000000000000000" };
 
-		struct disp *displacement = findDisplacement(img1, img2, 4, 4);
-		REQUIRE(displacement->x == 1);
-		REQUIRE(displacement->y == 1);
+		struct disp *displacement = findDisplacement(img1, img2, 6, 6);
+		REQUIRE(displacement->x ==  0);
+		REQUIRE(displacement->y == -1);
+	}
+
+	SECTION("findDisplacement returns the correct displacement vector for an image"){
+		//~ FILE *fh = fopen("fixtures/calibrierung_2014_09_15_oben.RBF", "rb");
+		//~ fseek(fh, 64, SEEK_SET);
+		//~ fread(16)
+		//~ fread(imageBuffer, )
+
+
+		//~ REQUIRE(displacement->x == 1);
+		//~ REQUIRE(displacement->y == 1);
 	}
 
 	SECTION("displaceImage returnes a displaced copy of an image buffer"){

@@ -33,8 +33,7 @@ char *rotate180(char *string){
 // calculates the correlation for a set of two images by averaging the squared brightness difference.
 // @TODO: check for better algorithms
 float calcCorrelation(char *img1, char *img2, int length){
-	int i;
-	int skipped = 0;
+	int i, skipped = 0;
 	float correlation = 0.0, diff;
 	for(i = 0; i < length; i++){
 		if(img1[i] == 'a' || img2[i] == 'a'){
@@ -49,35 +48,44 @@ float calcCorrelation(char *img1, char *img2, int length){
 		}
 	}
 	//~ printf("correlation %f for %s and %s and %i values\n", correlation, img1, img2, length);
-	correlation /= (length-skipped);
-	//~ printf("%f", 1.2/1);
-	correlation = 1/correlation;
+	correlation /= length - skipped;
+	correlation = 1/correlation; // invert so that higher values correspond to a better correlation
 	return correlation;
 }
 
 // displace an image by a fixed displacement vector
 int displaceImage(char *imageBuffer, char *displacedimageBuffer, int width, int height, int x, int y){
-	int l = strlen(imageBuffer);
+	int i, row, col, l = strlen(imageBuffer);
 	//~ printf("\n%i\n", l);
 	//~ if(strlen(imageBuffer) != strlen(displacedimageBuffer) ){
 		//~ printf("Error: imagebuffer and displacedimagebuffer are not of the same length: %i != %i \n", strlen(imageBuffer), strlen(displacedimageBuffer));
 	//~ }
-	int i, row, col;
 	for( i = 0; i < l; i++ ){
 		col = i%width;
-		row = i/width + 1;
-		if( col - x > width //
+		row = i/width;
+
+		if(    col - x > width  //
+			|| col - y < 0      //
+			|| row - x < 0      //
 			|| row - y > height //
-			|| col - y < 0
-			|| row - x < 1
+			|| i - x - y*width > 35 // FIXME
+			|| i - x - y*width < 0 // FIXME
 		){
+			//~ printf(" (skipped) ");
 			displacedimageBuffer[i] = 'a';
 		} else {
 			// calc displaced pixel
 			displacedimageBuffer[i] = imageBuffer[ i - x - y*width ];
 		}
+
+		//~ printf("%i>%i|%i%c\n", i, i - x - y*width, displacedimageBuffer[i], displacedimageBuffer[i]);
+
+		//~ if(displacedimageBuffer[i] == 0){
+			//~ displacedimageBuffer[i] = 'a';
+			//~ printf("EOW %c", displacedimageBuffer[i]);
+		//~ }
+
 	}
-	//~ printf("displaced image: %i\n", strlen(displacedimageBuffer) );
 	return 1;
 }
 
@@ -91,11 +99,14 @@ struct disp{
 struct disp *findDisplacement(char *img1, char *img2, int height, int width){
 	struct disp *displacement;
 	displacement = (disp *)malloc(sizeof(struct disp));
+
 	int x, y, displacement_x = 0, displacement_y = 0;
-	float corr = 0.0, correlation = 0.0;
-	char *displacementBuffer;
-	displacementBuffer = (char *)malloc( strlen(img1) * sizeof(char) );
 	int l = strlen(img1);
+
+	float corr = 0.0, correlation = 0.0;
+
+	char *displacementBuffer;
+	displacementBuffer = (char *)malloc( l * sizeof(char) );
 
 	int max_distance = 2;
 
@@ -103,21 +114,21 @@ struct disp *findDisplacement(char *img1, char *img2, int height, int width){
 	for (x = -max_distance + 1; x < max_distance; x++){
 		for (y = -max_distance + 1; y < max_distance; y++){
 			//~ printf("length displacementBuffer %i\n", strlen(displacementBuffer));
-			displaceImage(img2, displacementBuffer, width, height, x, y);
-			//~ printf("displacementBuffer was returned with %i", strlen(displacementBuffer) );
+			displaceImage(img2, displacementBuffer, width, height, x, y); //~ printf("displacementBuffer was returned with %i", strlen(displacementBuffer) );
 			corr = calcCorrelation(img1, displacementBuffer, l);
-			printf("calculated correlation for [%i, %i] : %f (img2: %s, %i)\n", x, y, corr, displacementBuffer, strlen(displacementBuffer) );
+			//~ printf("\n# calculated correlation for [%i, %i] : %f (img1: %s, img2: %s, displ: %s)\n\n", x, y, corr, img1, img2, displacementBuffer );
 			if(corr > correlation){
 				displacement_x = x;
 				displacement_y = y;
+				correlation = corr;
 			}
 		}
 	}
 
 	free(displacementBuffer);
 
-	displacement->x = displacement_x;
-	displacement->y = displacement_y;
+	displacement->x = -displacement_x;
+	displacement->y = -displacement_y;
 
 	return displacement;
 }
