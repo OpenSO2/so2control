@@ -60,8 +60,8 @@ typedef struct
 	/* path to image diretory */
 	char		cImagePath[MAX_STRING_LENGTH];
 	/* handles to identify the cameras */
-	tHandle		hCamera;
-	tHandle		hCamera2;
+	tHandle		hCamera_A;
+	tHandle		hCamera_B;
 	/* A status variable inherited from the SDK */
 	etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */

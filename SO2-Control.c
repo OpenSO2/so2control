@@ -34,11 +34,11 @@ int main( int argc, char* argv[] )
 		return 1;
 	}
 	// dunkelstromMessung(&sParameterStruct);
-	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera );
+	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera_A );
 
 	/*	Dies ueberschreibt den Wert vom letzten Aufrauf. Entweder benoetigen wir 2 Belichtungszeiten
 		in der Struktur oder wir benutzen eine belichtungszeit fuer beider Kameras */
-	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera2);
+	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera_B);
 
 	state = startAquisition(&sSO2Parameters, &sControlFlags);
 	if (state != 0)
@@ -48,12 +48,12 @@ int main( int argc, char* argv[] )
 	}
 
 	/* Now cease all captures */
-	if ( sSO2Parameters.hCamera ) PHX_Acquire( sSO2Parameters.hCamera,  PHX_ABORT, NULL );
-	if ( sSO2Parameters.hCamera2 ) PHX_Acquire( sSO2Parameters.hCamera2, PHX_ABORT, NULL );
+	if ( sSO2Parameters.hCamera_A ) PHX_Acquire( sSO2Parameters.hCamera_A,  PHX_ABORT, NULL );
+	if ( sSO2Parameters.hCamera_B ) PHX_Acquire( sSO2Parameters.hCamera_B, PHX_ABORT, NULL );
 
 	/* Release the Phoenix board */
-	if ( sSO2Parameters.hCamera ) PHX_CameraRelease( &sSO2Parameters.hCamera );
-	if ( sSO2Parameters.hCamera2 ) PHX_CameraRelease( &sSO2Parameters.hCamera2 );
+	if ( sSO2Parameters.hCamera_A ) PHX_CameraRelease( &sSO2Parameters.hCamera_A );
+	if ( sSO2Parameters.hCamera_B ) PHX_CameraRelease( &sSO2Parameters.hCamera_B );
 
 	logExit();
 

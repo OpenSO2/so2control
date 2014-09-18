@@ -8,10 +8,14 @@ void printOpening()
 	printf("*                                         *\n");
 	printf("*******************************************\n");
 	printf("*                                         *\n");
-	printf("* A Program for controling the Hamamatsu  *\n");
-	printf("* C8484-16 CCD Camera.                    *\n");
-	printf("* written by Morten Harms                 *\n");
+	printf("* A control program for SO2 measuring     *\n");
+	printf("* camera based on two Hamamatsu           *\n");
+	printf("* C8484-16 CCD Cameras.                   *\n");
 	printf("*                                         *\n");
+	printf("* written by Johann Jacobson              *\n");
+	printf("* and Morten Harms                        *\n");
+	printf("*                                         *\n");
+	printf("* johann.jacobson(at)zmaw.de              *\n");
 	printf("* morten.harms(at)zmaw.de                 *\n");
 	printf("*                                         *\n");
 	printf("*******************************************\n");

@@ -36,7 +36,7 @@ int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControl
 
 	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handle */
 	// config camera 1
-	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera_A, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(sSO2Parameters->eStat != 0)
 	{
 		/* this is critical if this function returns no camera handle is returned */
@@ -45,7 +45,7 @@ int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControl
 	}
 
 	// config camera 2
-	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera2, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera_B, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(sSO2Parameters->eStat != 0)
 	{
 		/* this is critical if this function returns no camera handle is returned */
@@ -54,13 +54,13 @@ int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControl
 	}
 
 	/* load the default configurations for the framegrabber */
-	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera);
+	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera_A);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera2);
+	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera_B);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultConfig(...) for camera 2 failed");
@@ -68,13 +68,13 @@ int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControl
 	}
 
 	/* load the configurations for the exposure trigger */
-	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera);
+	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
 	if(eStat != PHX_OK)
 	{
 		logError("function triggerConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera2);
+	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
 	if(eStat != PHX_OK)
 	{
 		logError("function triggerConfig(...) for camera 2 failed");
@@ -82,13 +82,13 @@ int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControl
 	}
 
 	/* set the camera with the right options */
-	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera);
+	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultCameraConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera2);
+	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultCameraConfig(...) for camera 2 failed");
