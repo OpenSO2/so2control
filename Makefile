@@ -17,6 +17,7 @@ win: win-lib
 		./configurations.h      ./configurations.c        \
 		./darkCurrent.h         ./darkCurrent.c           \
 		./exposureTimeControl.h ./exposureTimeControl.c   \
+		./imageFunctions.h      ./imageFunctions.c        \
 		./imageCreation.h       ./imageCreation.c         \
 		./log.h                 ./log.c                   \
 		./messages.h            ./messages.c              \

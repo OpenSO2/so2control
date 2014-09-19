@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "imagefunctions.h"
+#include "imageFunctions.h"
 //~
 //~ Image manipulation functions
 //~
