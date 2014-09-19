@@ -22,12 +22,16 @@ int main( int argc, char* argv[] )
 	printOpening();
 
 	/* Initialise control flag structure */
+#
+
+
 	memset( &sControlFlags, 0, sizeof(flagStruct ));
+	
 	/* Initialise parameter structure */
 	memset( &sSO2Parameters, 0, sizeof(sParameterStruct ));
 
 	//function for initialising basic values for sParameterStruct
-	state = configurationFunktion(&sSO2Parameters, &sControlFlags);
+	state = configurationFunction(&sSO2Parameters, &sControlFlags);
 	if (state != 0)
 	{
 		logError("configuration failed");

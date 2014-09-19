@@ -18,7 +18,7 @@ int structInit(sParameterStruct *sSO2Parameters)
 	return 0;
 }
 
-int configurationFunktion(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int configurationFunction(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 {
 	etStat	eStat = PHX_OK;
 	int		status = 0; /* status variable for return values */
@@ -294,7 +294,7 @@ int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, t
 
 	if ( PHX_OK != eStat )
 	{
-		logError("configure serial connection to camera failed");
+		logError("configuration of serial connection to camera failed");
 		sSO2Parameters->eStat = eStat;
 		return eStat;
 	}

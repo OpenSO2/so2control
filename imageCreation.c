@@ -81,8 +81,9 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, char *fi
 	SYSTEMTIME   timeNow;         /* System time windows.h dependency */
 
 	/* Now start our capture, return control immediately back to program */
+	/* @FIXME PROBLEM HIER MIT 2 MAL CALLBACK FUNCTION??????? */
 	eStat = PHX_Acquire( hCamera_A, PHX_START, (void*) callbackFunction );
-	eStat = PHX_Acquire( hCamera_B, PHX_START, (void*) callbackFunction ); /* PROBLEM HIER MIT 2 MAL CALLBACK FUNCTION??????? */
+	eStat = PHX_Acquire( hCamera_B, PHX_START, (void*) callbackFunction ); 
 	if ( PHX_OK == eStat )
 	{
 		/* get time of image, windows.h dependency*/

@@ -86,14 +86,13 @@ typedef struct flagStruct
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
 }flagStruct;
-//typedef struct flagStruct flagStruct;
 
 
  /******************************
  *   FUNCTIONS
  ******************************/
 int readConfig(char *filename, sParameterStruct *sSO2Parameters);
-int configurationFunktion	(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
+int configurationFunction	(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
 int structInit				(sParameterStruct *sSO2Parameters);
 int triggerConfig			(sParameterStruct *sSO2Parameters, tHandle hCamera);
 int defaultConfig			(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera);
