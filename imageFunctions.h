@@ -1,5 +1,12 @@
 #ifndef _IMAGEFUNCTIONS_
 #define _IMAGEFUNCTIONS_
-	char * rotate180(char * string);
+
+	//~ TODO: incorporate into sSO2Parameters?
+	struct disp{
+		int x;
+		int y;
+	};
+
+	int rotateImage(short *Buffer, int length);
 
 #endif
