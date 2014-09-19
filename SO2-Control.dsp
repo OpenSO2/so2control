@@ -123,6 +123,14 @@ SOURCE=.\imageCreation.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\imageFunctions.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\imageFunctions.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\log.c
 # End Source File
 # Begin Source File
