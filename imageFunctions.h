@@ -1,5 +1,4 @@
 #ifndef _IMAGEFUNCTIONS_
 #define _IMAGEFUNCTIONS_
-	char * rotate180(char * string){
-
+	int rotateImage(short *Buffer, int length)
 #endif
