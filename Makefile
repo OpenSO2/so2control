@@ -39,7 +39,7 @@ clean:
 test:
 	#~ unix
 	g++ -o test.out Test/imageFunctions.test.cpp
-	./test.out
+	time ./test.out
 	#~ win
 	i586-mingw32msvc-g++ -o test.out Test/imageFunctions.test.cpp
 	wine ./test.out

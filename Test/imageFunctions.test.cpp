@@ -85,12 +85,11 @@ TEST_CASE( "Image functions" ) {
 	SECTION("rotateImage rotates images"){
 		short *inFile1, *inFile2;
 		int i, l = 1344*1024;
-		inFile1 = readImage("Test/fixtures/unten.raw");
-		inFile2 = readImage("Test/fixtures/unten_turned.raw");
+		inFile1 = readImage("Test/fixtures/oben.raw");
+		inFile2 = readImage("Test/fixtures/oben_rotated.raw");
 		rotateImage(inFile1, l);
 		for(int i=1; i < l; i++){
-			if(inFile1[i-1] != inFile2[i]) printf("%i %i\n", inFile1[i-1], inFile2[i]);
-			//~ REQUIRE( inFile1[i] == inFile2[i+1] );
+			REQUIRE( inFile1[i] == inFile2[i] ); // FIXME: is n bissl langsam
 		}
 	}
 
@@ -148,7 +147,7 @@ TEST_CASE( "Image functions" ) {
 			0,0,0,0,0,0
 		};
 
-		struct disp *displacement = findDisplacement(img1, img2, 6, 6);
+		struct disp *displacement = findDisplacement(img1, img2, 6, 6, 2);
 		REQUIRE(displacement->x ==  0);
 		REQUIRE(displacement->y == -1);
 	}
@@ -159,7 +158,9 @@ TEST_CASE( "Image functions" ) {
 		inFile2 = readImage("Test/fixtures/unten_turned.raw");
 
 		struct disp *displacement;
-		displacement = findDisplacement(inFile1, inFile2, 1024, 1344);
+		displacement = findDisplacement(inFile1, inFile2, 1024, 1344, 20);
+
+		//~ printf("displacement: %i, %i\n", displacement->x, displacement->y);
 
 		REQUIRE(displacement->x == 9); // FIXME: verify
 		REQUIRE(displacement->y == -9); // FIXME: verify

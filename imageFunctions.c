@@ -63,9 +63,13 @@ float calcCorrelation(short *img1, short *img2, int length){
 			//~ printf(" diff: %f (%i, %i), diffsq %f => corr %f, ", diff, img1[i], img2[i], diff*diff, correlation);
 		}
 	}
-	printf("correlation %f for %s and %s and %i values\n", correlation, img1, img2, length);
+
 	correlation /= (float)(length - skipped);
-	//~ printf("\ncorrelation %f (%f) for %i %f values", correlation, 1./correlation, length - skipped, (float)(length - skipped));
+
+	if(length - skipped < 1) return 0.0;
+
+	//~ printf("\ncorrelation %f (%f) for %i values", correlation, 1./correlation, length - skipped);
+
 	correlation = 1/correlation; // invert so that higher values correspond to a better correlation
 	return correlation;
 }
@@ -73,10 +77,7 @@ float calcCorrelation(short *img1, short *img2, int length){
 // displace an image by a fixed displacement vector
 int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width, int height, int x, int y){
 	int i, row, col, l = width * height;
-	//~ printf("\n%i\n", l);
-	//~ if(strlen(imageBuffer) != strlen(displacedimageBuffer) ){
-		//~ printf("Error: imagebuffer and displacedimagebuffer are not of the same length: %i != %i \n", strlen(imageBuffer), strlen(displacedimageBuffer));
-	//~ }
+
 	for( i = 0; i < l; i++ ){
 		col = i%width;
 		row = i/width;
@@ -94,34 +95,27 @@ int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width, in
 			// calc displaced pixel
 			displacedimageBuffer[i] = imageBuffer[ i - x - y*width ];
 		}
-
-		//~ printf("%i>%i|%i%c\n", i, i - x - y*width, displacedimageBuffer[i], displacedimageBuffer[i]);
-
-		//~ if(displacedimageBuffer[i] == 0){
-			//~ displacedimageBuffer[i] = 'a';
-			//~ printf("EOW %c", displacedimageBuffer[i]);
-		//~ }
-
 	}
 	return 1;
 }
 
-
-
 // returns the displacement vector between two images
-struct disp *findDisplacement(short *img1, short *img2, int height, int width){
+struct disp *findDisplacement(short *img1, short *img2, int height, int width, int max_distance){
 	struct disp *displacement;
 
 	int x, y, displacement_x = 0, displacement_y = 0;
 	int l = height*width;
-	int max_distance = 10;
 
 	float corr = 0.0, correlation = 0.0;
 
 	short *displacementBuffer;
 	displacementBuffer = (short *)malloc( l * sizeof(short) );
 
+#ifdef WIN32
 	displacement = malloc(sizeof(struct disp));
+#else
+	displacement = (disp *)malloc(sizeof(struct disp));
+#endif
 
 	//~ calculate the correlation for every displacement in n pixel distance
 	for (x = -max_distance + 1; x < max_distance; x++){
