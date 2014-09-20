@@ -24,18 +24,13 @@ int rotateImage(short *Buffer, int length)
 	if (tempBuffer != NULL)
 	{
 		/* copy Buffer to tempBuffer */
-		
-		/*	length = 2752512
-			programm bricht bei j= 1378288 ab
-		 */
-
-		for (j=0; j < length-1; j++)
+		for (j = 0; j < length; j++)
 		{
 			tempBuffer[j] = Buffer[j];
 		}
 		/* rotate image data */
-		j = length-1;
-		for (i=0; i<length; i++)
+		j = length;
+		for (i = 0; i < length; i++)
 		{
 			j--;
 			Buffer[j] = tempBuffer[i];
@@ -186,7 +181,9 @@ int cmp(const void *ptr1, const void *ptr2) {
 }
 
 // calculates the median
-//~ TODO: rename
+// @FIXME: document
+// @FIXME: write unit test
+// @TODO: rename to something sensible
 int findMedian(short *buffer, int length){
 	int i;
 	short *copy;
@@ -224,6 +221,8 @@ int findMedian(short *buffer, int length){
 	}
 }
 
+// @FIXME: document
+// @FIXME: write unit test
 int posterize(short *buffer, int length){
 	int i;
 	short black = 0;
