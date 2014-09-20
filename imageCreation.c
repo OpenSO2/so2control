@@ -62,7 +62,8 @@ int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParamete
 
 	} // while ( !PhxCommonKbHit() && !sSO2Parameters->fFifoOverFlow )
 
-	sSO2Parameters->eStat = eStat;
+	sParameters_A->eStat = eStat;
+	sParameters_B->eStat = eStat;
 	return eStat;
 }
 
@@ -259,7 +260,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, char cameraIdentifier)
 {
 	int status;
-	char * camname = (ameraIdentifier == 'A') ? "top" : "bot"; /* identify Camera for filename Prefix */
+	char * camname = (cameraIdentifier == 'A') ? "top" : "bot"; /* identify Camera for filename Prefix */
 
 	/* write header string with information from system time for camera B. windows.h dependency */
 	status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw", sSO2Parameters->cImagePath,

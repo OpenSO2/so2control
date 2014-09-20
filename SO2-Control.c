@@ -32,14 +32,14 @@ int main( int argc, char* argv[] )
 	memset( &sParameters_B, 0, sizeof(sParameterStruct ));
 	
 	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handles */
-	state = PHX_CameraConfigLoad( &sParameters_A->hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	state = PHX_CameraConfigLoad( &sParameters_A.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
 		logError("function PHX_CameraConfigLoad(...) for Camera A failed");
 		return state;
 	}
-	state = PHX_CameraConfigLoad( &sParameters_B->hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	state = PHX_CameraConfigLoad( &sParameters_B.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
