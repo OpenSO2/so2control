@@ -12,7 +12,7 @@
 #include"imageCreation.h"
 #include"log.h"
 
-int setExposureTime(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera)
+int setExposureTime(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
 	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
 	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
@@ -59,7 +59,7 @@ int setExposureTime(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags,
 			}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags, hCamera);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer, hCamera);
 		if (eStat != 0)
 		{
 			sSO2Parameters->eStat = eStat;
@@ -78,11 +78,11 @@ int setExposureTime(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags,
 					break;
 
 			case 1: logMessage("Camera is set to frameblanking mode.");
-					setFrameBlanking(sSO2Parameters, sControlFlags, hCamera);
+					setFrameBlanking(sSO2Parameters, hCamera);
 					break;
 
 			case 2: logMessage("Camera is set to electronic shutter mode.");
-					setElektronicShutter(sSO2Parameters, sControlFlags, hCamera);
+					setElektronicShutter(sSO2Parameters, hCamera);
 					break;
 
 			case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
@@ -186,7 +186,7 @@ int fixExposureTime(sParameterStruct *sSO2Parameters, tHandle hCamera)
 	return eStat;
 }
 
-int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagStruct *sControlFlags, tHandle hCamera)
+int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, tHandle hCamera)
 {
 	/*  this function is very similar to startAquisition( ... ) */
 	etStat		eStat			= PHX_OK; /* Status variable */
@@ -215,13 +215,13 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagSt
 			 * (c) The FIFO overflow flag is set indicating that the image is corrupt.
 			 * Keep calling the sleep function to avoid burning CPU cycles
 			 */
-			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() )
+			while ( !sSO2Parameters->fBufferReady && !sSO2Parameters->fFifoOverFlow && !PhxCommonKbHit() )
 			{
 				_PHX_SleepMs(10);
 			}
 
 			/* if BufferReady flag is set, reset it for next image */
-			sControlFlags->fBufferReady = FALSE;
+			sSO2Parameters->fBufferReady = FALSE;
 
 			/* download the buffer and place it in 'stBuffer' */
 			eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
@@ -324,7 +324,7 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 
 
 
-int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera)
+int setFrameBlanking(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
@@ -368,7 +368,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer, sControlFlags, hCamera);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer, hCamera);
 		if ( PHX_OK != eStat )
 		{
 			logError("failed to obtain one image buffer");
@@ -420,7 +420,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	return eStat;
 }
 
-int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera)
+int setElektronicShutter(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
@@ -463,7 +463,7 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer, sControlFlags, hCamera);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer, hCamera);
 		if ( PHX_OK != eStat )
 		{
 			logError("failed to obtain one image buffer");

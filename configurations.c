@@ -18,7 +18,7 @@ int structInit(sParameterStruct *sSO2Parameters)
 	return 0;
 }
 
-int configurationFunction(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int configurationFunction(sParameterStruct *sSO2Parameters)
 {
 	etStat	eStat = PHX_OK;
 	int		status = 0; /* status variable for return values */
@@ -54,13 +54,13 @@ int configurationFunction(sParameterStruct *sSO2Parameters, flagStruct *sControl
 	}
 
 	/* load the default configurations for the framegrabber */
-	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera_A);
+	eStat = defaultConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = defaultConfig(sSO2Parameters, sControlFlags, sSO2Parameters->hCamera_B);
+	eStat = defaultConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultConfig(...) for camera 2 failed");
@@ -268,7 +268,7 @@ int triggerConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 }
 
 
-int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, tHandle hCamera)
+int defaultConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 {
 	etStat          eStat = PHX_OK;   /* Status variable */
 	etParamValue    eParamValue;
@@ -361,7 +361,7 @@ int defaultConfig(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, t
 
 
 	/* Setup our own event context */
-	eStat = PHX_ParameterSet( hCamera, PHX_EVENT_CONTEXT, (void *) sControlFlags );
+	eStat = PHX_ParameterSet( hCamera, PHX_EVENT_CONTEXT, (void *) sSO2Parameters );
 	if ( PHX_OK != eStat ){
 		logError("Setup the control flags structure failed");
 		sSO2Parameters->eStat = eStat;

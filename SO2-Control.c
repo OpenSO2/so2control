@@ -14,7 +14,6 @@ int main( int argc, char* argv[] )
 {
 	/* definition of basic variables */
 	sParameterStruct sSO2Parameters;
-	flagStruct       sControlFlags;
 	int              state;
 //	etParamValue     eParamValue;
 
@@ -25,26 +24,26 @@ int main( int argc, char* argv[] )
 #
 
 
-	memset( &sControlFlags, 0, sizeof(flagStruct ));
+	
 	
 	/* Initialise parameter structure */
 	memset( &sSO2Parameters, 0, sizeof(sParameterStruct ));
 
 	//function for initialising basic values for sParameterStruct
-	state = configurationFunction(&sSO2Parameters, &sControlFlags);
+	state = configurationFunction(&sSO2Parameters);
 	if (state != 0)
 	{
 		logError("configuration failed");
 		return 1;
 	}
 	// dunkelstromMessung(&sParameterStruct);
-	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera_A );
+	setExposureTime(&sSO2Parameters, sSO2Parameters.hCamera_A );
 
 	/*	Dies ueberschreibt den Wert vom letzten Aufrauf. Entweder benoetigen wir 2 Belichtungszeiten
 		in der Struktur oder wir benutzen eine belichtungszeit fuer beider Kameras */
-	setExposureTime(&sSO2Parameters, &sControlFlags, sSO2Parameters.hCamera_B);
+	setExposureTime(&sSO2Parameters, sSO2Parameters.hCamera_B);
 
-	state = startAquisition(&sSO2Parameters, &sControlFlags);
+	state = startAquisition(&sSO2Parameters);
 	if (state != 0)
 	{
 		logError("Aquisition failed");
