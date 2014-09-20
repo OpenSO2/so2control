@@ -9,6 +9,6 @@ int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParamete
 int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME timeThisImage, char cameraIdentifier);
 int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, char cameraIdentifier);
 int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, char *filename_A, char *filename_B);
-int createFileheader(char * header, SYSTEMTIME *time);
+int createFileheader(sParameterStruct *sSO2Parameters, char * header, SYSTEMTIME *time);
 time_t TimeFromSystemTime(const SYSTEMTIME * pTime);
 #endif

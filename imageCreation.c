@@ -166,7 +166,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 {
 	stImageBuff  stBuffer;              /* Buffer in which the image data is stored by the framegrabber */
 	int          status;                /* Status variable for several return values */
-	int          imageBitCount = 1344 * 1024 * 16/8; /* number of pixels times 16 Byte depth in bit */
+	int          imageByteCount = 1344 * 1024 * 16/8; /* number of pixels times 16 Bit depth in Byte */
 	int          fwriteReturn;          /* Return value for the write functions */
 	FILE         *imageFile;            /* File handle for current image */
 	char         headerString[HEADER_SIZE];
@@ -196,7 +196,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 	}
 
 	/* create a Fileheader caution <windows.h> is used here */
-	status = createFileheader(headerString, &timeThisImage);
+	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
 	if (status != 0)
 	{
 		logError("creating fileheader failed");
@@ -230,17 +230,18 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 
 
 		/* rotate one of the images */
+		/* imageByteCount/2 = number of pixels */
 		if(cameraIdentifier == 'A'){
-			rotateImage(stBuffer.pvAddress, imageBitCount);
+			rotateImage(stBuffer.pvAddress, imageByteCount/2);
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		// pvAddress => Virtual address of the image buffer
-		fwriteReturn = fwrite(stBuffer.pvAddress, 1, imageBitCount, imageFile);
+		fwriteReturn = fwrite(stBuffer.pvAddress, 1, imageByteCount, imageFile);
 
 		//fflush(imageFile);
 		fclose(imageFile);
-		if ( imageBitCount != fwriteReturn )
+		if ( imageByteCount != fwriteReturn )
 		{
 			sprintf(errbuff,"Saving Image %s failed\n", filename);
 			logError(errbuff);
@@ -286,7 +287,7 @@ time_t TimeFromSystemTime(const SYSTEMTIME * pTime)
 	return mktime(&tm);
 }
 
-int createFileheader(char * header, SYSTEMTIME *time)
+int createFileheader(sParameterStruct *sSO2Parameters, char * header, SYSTEMTIME *time)
 {
 	/* create a hokawo compatible header */
 
@@ -294,13 +295,13 @@ int createFileheader(char * header, SYSTEMTIME *time)
 	WORD	wByteOrder	= 18761;	// ASCII 'II'
 	WORD	wVersion	= 12597;	// Version des RAW-Formats
 	WORD	wWidth		= 1344;		// Bildbreite in Pixel
-	WORD	wHeight		= 1024;		// Bildhöhe in Pixel
+	WORD	wHeight		= 1024;		// Bildhoehe in Pixel
 	WORD	wBPP		= 16;		// Bits pro Pixel
 	WORD	wColorType	= 1;		// Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software
-	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneinträgen (immer 0 )
+	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneintraegen (immer 0 )
 	time_t	tDateTime	= TimeFromSystemTime(time);	// Datum und Uhrzeit
 	DWORD  dwTimestamp = time->wMilliseconds;		// Zeitstempel in ms
-
+	double	dExposureTime = sSO2Parameters->dExposureTime;
 	/* Preset the whole string with zeros */
 	memset(header,'\0',HEADER_SIZE);
 
@@ -329,6 +330,12 @@ int createFileheader(char * header, SYSTEMTIME *time)
 	header[21] = (char)(dwTimestamp >> 8);
 	header[22] = (char)(dwTimestamp >> 16);
 	header[23] = (char)(dwTimestamp >> 24);
+
+	/* @FIXME: wie macht man das mit floats??? */
+//	header[24] = (char)dExposureTime;
+//	header[25] = (char)(dExposureTime >> 8);
+//	header[26] = (char)(dExposureTime >> 16);
+//	header[27] = (char)(dExposureTime >> 24);
 
 	return 0;
 }

@@ -60,7 +60,7 @@ int main( int argc, char* argv[] )
 	setExposureTime(&sParameters_B);
 
 
-	state = startAquisition(&sParameters_A, &sParameters_A);
+	state = startAquisition(&sParameters_A, &sParameters_B);
 	if (state != 0)
 	{
 		logError("Aquisition failed");

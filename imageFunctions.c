@@ -23,13 +23,17 @@ int rotateImage(short *Buffer, int length)
 	if (tempBuffer != NULL)
 	{
 		/* copy Buffer to tempBuffer */
+		
+		/*	length = 2752512
+			programm bricht bei j= 1378288 ab
+		 */
 
-		for (j=0; j < length; j++)
+		for (j=0; j < length-1; j++)
 		{
 			tempBuffer[j] = Buffer[j];
 		}
 		/* rotate image data */
-		j = length;
+		j = length-1;
 		for (i=0; i<length; i++)
 		{
 			j--;
