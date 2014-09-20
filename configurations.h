@@ -59,9 +59,8 @@ typedef struct
 	char		cFileNamePrefix[MAX_STRING_LENGTH];
 	/* path to image diretory */
 	char		cImagePath[MAX_STRING_LENGTH];
-	/* handles to identify the cameras */
-	tHandle		hCamera_A;
-	tHandle		hCamera_B;
+	/* handles to identify the camera */
+	tHandle		hCamera;
 	/* A status variable inherited from the SDK */
 	etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */
@@ -89,11 +88,11 @@ typedef struct
  /******************************
  *   FUNCTIONS
  ******************************/
-int readConfig(char *filename, sParameterStruct *sSO2Parameters);
-int configurationFunction	(sParameterStruct *sSO2Parameters);
+int readConfig				(char *filename, sParameterStruct *sSO2Parameters);
+int configurations			(sParameterStruct *sSO2Parameters);
 int structInit				(sParameterStruct *sSO2Parameters);
-int triggerConfig			(sParameterStruct *sSO2Parameters, tHandle hCamera);
-int defaultConfig			(sParameterStruct *sSO2Parameters, tHandle hCamera);
-int defaultCameraConfig	(sParameterStruct *sSO2Parameters, tHandle hCamera);
-int sendMessage			(tHandle hCamera, char * inputBuffer);
+int triggerConfig			(sParameterStruct *sSO2Parameters);
+int defaultConfig			(sParameterStruct *sSO2Parameters);
+int defaultCameraConfig		(sParameterStruct *sSO2Parameters);
+int sendMessage				(tHandle hCamera, char * inputBuffer);
 #endif
