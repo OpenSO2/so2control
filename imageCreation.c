@@ -13,7 +13,7 @@ void callbackFunction(
 	void        *pvParams          /* Pointer to user supplied context */
 	)
 {
-	flagStruct *psControlFlags = (flagStruct*) pvParams;
+	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
 
 	(void) hCamera;
 
@@ -39,7 +39,7 @@ void callbackFunction(
 
 
 
-int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int startAquisition(sParameterStruct *sSO2Parameters)
 {
 	etStat   eStat             = PHX_OK; /* Status variable */
 	tHandle  hCamera_A         = sSO2Parameters->hCamera_A;  /* hardware handle of first camera */
@@ -55,21 +55,21 @@ int startAquisition(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
 	PHX_Acquire( hCamera_A,  PHX_EXPOSE, NULL );
 	PHX_Acquire( hCamera_B, PHX_EXPOSE, NULL );
 
-	while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
+	while ( !PhxCommonKbHit() && !sSO2Parameters->fFifoOverFlow )
 	{
 		//~ @FIXME: return codes
-		aquire( sSO2Parameters, sControlFlags, filename, filename2);
+		aquire( sSO2Parameters, filename, filename2);
 		// merge both images to correct for particles
 
 
-	} // while ( !PhxCommonKbHit() && !sControlFlags->fFifoOverFlow )
+	} // while ( !PhxCommonKbHit() && !sSO2Parameters->fFifoOverFlow )
 
 	sSO2Parameters->eStat = eStat;
 	return eStat;
 }
 
 
-int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, char *filename, char *filename2)
+int aquire(sParameterStruct *sSO2Parameters, char *filename, char *filename2)
 {
 	FILE*    fid             = NULL;
 	int      saveErrCount    = 0; /* counting how often saving an image failed */
@@ -98,12 +98,12 @@ int aquire(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags, char *fi
 		 * (b) The BufferReady event occurs indicating that the image is complete
 		 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
 		 * Keep calling the sleep function to avoid burning CPU cycles */
-		while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() )
+		while ( !sSO2Parameters->fBufferReady && !sSO2Parameters->fFifoOverFlow && !PhxCommonKbHit() )
 		{
 			_PHX_SleepMs(10);
 		}
 		/* Reset the buffer ready flag to false for next cycle */
-		sControlFlags->fBufferReady = FALSE;
+		sSO2Parameters->fBufferReady = FALSE;
 
 		/* save the captured image */
 		eStat = writeImage(sSO2Parameters, filename, hCamera_A,timeNow);
