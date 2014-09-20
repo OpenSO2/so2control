@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "imageFunctions.h"
+
 //~
 //~ Image manipulation functions
 //~
@@ -79,6 +80,7 @@ float calcCorrelation(short *img1, short *img2, int length){
 }
 
 // displace an image by a fixed displacement vector
+// FIXME: height/width
 int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width, int height, int x, int y){
 	int i, row, col, l = width * height;
 
@@ -115,7 +117,7 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width, i
 	short *displacementBuffer;
 	displacementBuffer = (short *)malloc( l * sizeof(short) );
 
-#ifdef WIN32
+#ifdef _PHX_WIN32
 	displacement = malloc(sizeof(struct disp));
 #else
 	displacement = (disp *)malloc(sizeof(struct disp));
@@ -146,5 +148,93 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width, i
 	displacement->y = -displacement_y;
 
 	return displacement;
+}
+
+
+
+//
+int getBufferCenter(short *buffer, short *smallBuffer, int height, int width, int smallHeight, int smallWidth){
+	int i;
+	int l = height * width;
+	int start = (height - smallHeight)/2 * width;
+	int end = l - start;
+	int j = 0;
+	int col;
+
+	for(i = start; i < end; i++){ // this cuts off top and bottom
+		col = i%width;
+		if( // this cuts off left and right
+			   col > (width - smallWidth)/2 - 1 // left
+			&& col < (width + smallWidth)/2 // right
+		){
+			smallBuffer[j] = buffer[i];
+			j++;
+		}
+	}
+	return 0;
+}
+
+
+
+int cmp(const void *ptr1, const void *ptr2) {
+	if( *(short *)ptr1 < *(short *)ptr2 )
+		return -1;
+	else if( *(short *)ptr1 > *(short *)ptr2 )
+		return 1;
+	else
+		return 0;
+}
+
+// calculates the median
+//~ TODO: rename
+int findMedian(short *buffer, int length){
+	int i;
+	short *copy;
+	int firstNonBlack;
+	int edgeDiff = 500;
+	int edge = 0;
+
+	// copy buffer
+	copy = (short *)malloc(length * sizeof(short));
+	for(i = 0; i < length; i++){
+		copy[i] = buffer[i];
+	}
+
+	// sort copied buffer
+	qsort(copy, length, sizeof(short), cmp);
+
+	// find brightness edge
+	for(i = 1; i < length; i++){
+		if(copy[i] - copy[i-1] > edgeDiff && copy[i-1] > 100){
+			edge = i;
+			printf("found edge at %i with %i (%i -> %i)\n", edge, copy[edge], copy[i-1], copy[i]);
+			return copy[edge];
+		}
+	}
+
+	printf("no edge found, switching to secondary algorithm!\n");
+
+	//find mean value
+	for(i = 0; i < length; i++){
+		if(copy[i] != 0){
+			firstNonBlack = i;
+			return copy[ (firstNonBlack + length)/2 ];
+		}
+	}
+}
+
+int posterize(short *buffer, int length){
+	int i;
+	short black = 0;
+	short white = 4000;
+	short median = findMedian(buffer, length);
+
+	printf("calculated median: %i\n ", median);
+
+	//~ median = 600;
+	for(i = 0; i < length; i++){
+		buffer[i] = buffer[i] > median ? white : black;
+	}
+	return 0;
 }
 

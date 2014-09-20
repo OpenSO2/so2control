@@ -156,14 +156,47 @@ TEST_CASE( "Image functions" ) {
 		short *inFile1, *inFile2, *outFile;
 		inFile1 = readImage("Test/fixtures/oben.raw");
 		inFile2 = readImage("Test/fixtures/unten_turned.raw");
+		int file_width = 1344;
+		int file_height = 1024;
+		int roi_width = 600;
+		int roi_height = 500;
+		short *center1;
+		center1 = (short *)malloc( roi_width * roi_height * sizeof(short) );
+		short *center2;
+		center2 = (short *)malloc( roi_width * roi_height * sizeof(short) );
+
+		short *outFile1;
+		outFile1 = (short *)malloc( file_width * file_height * sizeof(short) );
+
+		getBufferCenter(inFile1, center1, file_height, file_width, roi_height, roi_width);
+		getBufferCenter(inFile2, center2, file_height, file_width, roi_height, roi_width);
+
+		posterize(center1, roi_height * roi_width); // should be about  400
+		posterize(center2, roi_height * roi_width); // should be about 2000
+
+		//~ for(int i = 1; i < roi_width*roi_height; i++){
+			//~ if(i%100 == 0) printf("%i %i\n", i, center1[i]);
+		//~ }
+
 
 		struct disp *displacement;
-		displacement = findDisplacement(inFile1, inFile2, 1024, 1344, 20);
+		displacement = findDisplacement(center1, center2, roi_height, roi_width, 20);
 
-		//~ printf("displacement: %i, %i\n", displacement->x, displacement->y);
+		printf("calculated displacement: %i, %i\n", displacement->x, displacement->y);
 
-		REQUIRE(displacement->x == 9); // FIXME: verify
-		REQUIRE(displacement->y == -9); // FIXME: verify
+		FILE *outputFID1 = fopen("center1.raw","wb");
+		fwrite(center1, 16, roi_width * roi_height, outputFID1);
+
+		FILE *outputFID2 = fopen("center2.raw","wb");
+		fwrite(center2, 16, roi_width * roi_height, outputFID2);
+
+		displaceImage(inFile1, outFile1, 1344, 1024, displacement->x, displacement->y);
+
+		FILE *outputFID3 = fopen("displ1.raw","wb");
+		fwrite(outFile1, 16, 1024*1344, outputFID3);
+
+		//~ REQUIRE(displacement->x == 9); // FIXME: verify
+		//~ REQUIRE(displacement->y == -9); // FIXME: verify
 	}
 
 	SECTION("displaceImage returnes a displaced copy of an image buffer"){
@@ -190,10 +223,33 @@ TEST_CASE( "Image functions" ) {
 			0,0,0,0,
 			0,0,0,0
 		};
-		displaceImage(img1, displaced, 4, 4, 1, 1);
 
+		displaceImage(img1, displaced, 4, 4, 1, 1);
 		for(int i = 0; i < 16; i++){
 			REQUIRE( displaced[i] == expected[i] );
+		}
+	}
+
+	SECTION("getBufferCenter reduces an image buffer to the center region"){
+		short bigimg[] = {
+			1,2,3,4,
+			5,6,7,8,
+			9,0,1,2,
+			3,4,5,6
+		};
+		short smallimg[] = {
+			1,1,
+			1,1
+		};
+
+		short expected[] = {
+			6,7,
+			0,1
+		};
+
+		getBufferCenter(bigimg, smallimg, 4, 4, 2, 2);
+		for(int i = 0; i < 4; i++){
+			REQUIRE( smallimg[i] == expected[i] );
 		}
 	}
 }
