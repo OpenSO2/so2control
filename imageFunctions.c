@@ -204,21 +204,22 @@ int findMedian(short *buffer, int length){
 	qsort(copy, length, sizeof(short), cmp);
 
 	// find brightness edge
-	for(i = 1; i < length; i++){
-		if(copy[i] - copy[i-1] > edgeDiff && copy[i-1] > 100){
+	int leap = 10000;
+	for(i = leap; i < length; i = i + 10){
+		if(copy[i] - copy[i-leap] > edgeDiff){
 			edge = i;
-			printf("found edge at %i with %i (%i -> %i)\n", edge, copy[edge], copy[i-1], copy[i]);
-			return copy[edge];
+			printf("found edge at %i with %i (%i -> %i)\n", edge, copy[edge], copy[i-leap], copy[i]);
+			return (copy[i] + copy[i-leap])/2;
 		}
 	}
 
-	printf("no edge found, switching to secondary algorithm!\n");
+	printf("no edge detected, switching to secondary algorithm!\n");
 
 	//find mean value
 	for(i = 0; i < length; i++){
 		if(copy[i] != 0){
 			firstNonBlack = i;
-			return copy[ (firstNonBlack + length)/2 ];
+			return copy[ (firstNonBlack + length)/2 ] - 100;
 		}
 	}
 }
@@ -229,9 +230,8 @@ int posterize(short *buffer, int length){
 	short white = 4000;
 	short median = findMedian(buffer, length);
 
-	printf("calculated median: %i\n ", median);
+	printf("calculated median: %i\n", median);
 
-	//~ median = 600;
 	for(i = 0; i < length; i++){
 		buffer[i] = buffer[i] > median ? white : black;
 	}

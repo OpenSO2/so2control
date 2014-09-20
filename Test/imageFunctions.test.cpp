@@ -154,14 +154,16 @@ TEST_CASE( "Image functions" ) {
 
 	SECTION("findDisplacement returns the correct displacement vector for an image"){
 		short *inFile1, *inFile2, *outFile;
-		inFile1 = readImage("Test/fixtures/oben.raw");
-		inFile2 = readImage("Test/fixtures/unten_turned.raw");
+		inFile1 = readImage("Test/fixtures/oben_rotated.raw");
+		inFile2 = readImage("Test/fixtures/unten.raw");
 		int file_width = 1344;
 		int file_height = 1024;
 		int roi_width = 600;
 		int roi_height = 500;
+
 		short *center1;
 		center1 = (short *)malloc( roi_width * roi_height * sizeof(short) );
+
 		short *center2;
 		center2 = (short *)malloc( roi_width * roi_height * sizeof(short) );
 
@@ -171,29 +173,37 @@ TEST_CASE( "Image functions" ) {
 		getBufferCenter(inFile1, center1, file_height, file_width, roi_height, roi_width);
 		getBufferCenter(inFile2, center2, file_height, file_width, roi_height, roi_width);
 
-		posterize(center1, roi_height * roi_width); // should be about  400
-		posterize(center2, roi_height * roi_width); // should be about 2000
+		FILE *outputFID10 = fopen("center1.raw","wb");
+		fwrite(center1, 16, roi_width * roi_height, outputFID10);
+
+		FILE *outputFID11 = fopen("center2.raw","wb");
+		fwrite(center2, 16, roi_width * roi_height, outputFID11);
+
+		posterize(center1, roi_height * roi_width);
+		posterize(center2, roi_height * roi_width);
 
 		//~ for(int i = 1; i < roi_width*roi_height; i++){
 			//~ if(i%100 == 0) printf("%i %i\n", i, center1[i]);
 		//~ }
 
-
 		struct disp *displacement;
-		displacement = findDisplacement(center1, center2, roi_height, roi_width, 20);
+		displacement = findDisplacement(center1, center2, roi_height, roi_width, 40);
 
 		printf("calculated displacement: %i, %i\n", displacement->x, displacement->y);
 
-		FILE *outputFID1 = fopen("center1.raw","wb");
+		FILE *outputFID1 = fopen("center1_poster.raw","wb");
 		fwrite(center1, 16, roi_width * roi_height, outputFID1);
 
-		FILE *outputFID2 = fopen("center2.raw","wb");
+		FILE *outputFID2 = fopen("center2_poster.raw","wb");
 		fwrite(center2, 16, roi_width * roi_height, outputFID2);
 
 		displaceImage(inFile1, outFile1, 1344, 1024, displacement->x, displacement->y);
 
 		FILE *outputFID3 = fopen("displ1.raw","wb");
 		fwrite(outFile1, 16, 1024*1344, outputFID3);
+
+		FILE *outputFID4 = fopen("orig1.raw","wb");
+		fwrite(inFile2, 16, 1024*1344, outputFID4);
 
 		//~ REQUIRE(displacement->x == 9); // FIXME: verify
 		//~ REQUIRE(displacement->y == -9); // FIXME: verify
