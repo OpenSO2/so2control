@@ -18,7 +18,7 @@ int structInit(sParameterStruct *sSO2Parameters)
 	return 0;
 }
 
-int configurationFunction(sParameterStruct *sSO2Parameters)
+int configurations(sParameterStruct *sSO2Parameters)
 {
 	etStat	eStat = PHX_OK;
 	int		status = 0; /* status variable for return values */
@@ -34,66 +34,30 @@ int configurationFunction(sParameterStruct *sSO2Parameters)
 	/* initialise the parameterstructure with default values */
 	structInit(sSO2Parameters);
 
-	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handle */
-	// config camera 1
-	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera_A, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
-	if(sSO2Parameters->eStat != 0)
-	{
-		/* this is critical if this function returns no camera handle is returned */
-		logError("function PHX_CameraConfigLoad(...) failed");
-		return sSO2Parameters->eStat;
-	}
-
-	// config camera 2
-	sSO2Parameters->eStat = PHX_CameraConfigLoad( &sSO2Parameters->hCamera_B, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
-	if(sSO2Parameters->eStat != 0)
-	{
-		/* this is critical if this function returns no camera handle is returned */
-		logError("function PHX_CameraConfigLoad(...) failed");
-		return sSO2Parameters->eStat;
-	}
-
 	/* load the default configurations for the framegrabber */
-	eStat = defaultConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
+	eStat = defaultConfig(sSO2Parameters);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = defaultConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
-	if(eStat != PHX_OK)
-	{
-		logError("function defaultConfig(...) for camera 2 failed");
-		return eStat;
-	}
 
 	/* load the configurations for the exposure trigger */
-	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
+	eStat = triggerConfig(sSO2Parameters);
 	if(eStat != PHX_OK)
 	{
 		logError("function triggerConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = triggerConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
-	if(eStat != PHX_OK)
-	{
-		logError("function triggerConfig(...) for camera 2 failed");
-		return eStat;
-	}
 
 	/* set the camera with the right options */
-	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera_A);
+	eStat = defaultCameraConfig(sSO2Parameters);
 	if(eStat != PHX_OK)
 	{
 		logError("function defaultCameraConfig(...) for camera 1 failed");
 		return eStat;
 	}
-	eStat = defaultCameraConfig(sSO2Parameters, sSO2Parameters->hCamera_B);
-	if(eStat != PHX_OK)
-	{
-		logError("function defaultCameraConfig(...) for camera 2 failed");
-		return eStat;
-	}
+
 
 	/* name of Configfile is hard coded maybe change this sometime */
 	status = readConfig("configurations//SO2Config.conf", sSO2Parameters);
@@ -210,14 +174,15 @@ int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 }
 
 
-int triggerConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
+int triggerConfig(sParameterStruct *sSO2Parameters)
 {
 	/* in my opinion this function is the most complicated shit in the whole programm ;) */
 
 	etStat          eStat                   = PHX_OK; /* Status variable */
 	etParamValue    eParamValue;
 	ui32            dwTriggerPulseWidthUs   = sSO2Parameters->dTriggerPulseWidth;
-
+	tHandle			hCamera = sSO2Parameters->hCamera;
+	
 	/* Enable the CCIO port as an output.
 	* This call is benign on Camera Link boards as CCIO is, by definition,
 	* an output only port. CCIO := Camera Control Input Output
@@ -268,11 +233,12 @@ int triggerConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 }
 
 
-int defaultConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
+int defaultConfig(sParameterStruct *sSO2Parameters)
 {
 	etStat          eStat = PHX_OK;   /* Status variable */
 	etParamValue    eParamValue;
-
+	tHandle			hCamera = sSO2Parameters->hCamera;
+	
 	/* Camera Communication Settings ( standard serial...)
 	 * These settings are 9600 Baud, 8 data, no parity,
 	 * 1 stop with no flow control */
@@ -374,10 +340,11 @@ int defaultConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
 }
 
 
-int defaultCameraConfig(sParameterStruct *sSO2Parameters, tHandle hCamera)
+int defaultCameraConfig(sParameterStruct *sSO2Parameters)
 {
-	etStat eStat = PHX_OK;
-
+	etStat			eStat = PHX_OK;
+	tHandle			hCamera = sSO2Parameters->hCamera;
+	
 	// initialise default vaulues
 	eStat = sendMessage(hCamera, "INI");
 	if ( PHX_OK != eStat )
