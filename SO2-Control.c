@@ -16,21 +16,14 @@ int main( int argc, char* argv[] )
 	sParameterStruct sParameters_A;
 	sParameterStruct sParameters_B;
 	int              state;
-//	etParamValue     eParamValue;
 
 	/* print welcome message in terminal */
 	printOpening();
 
-	/* Initialise control flag structure */
-#
-
-
-	
-	
 	/* Initialise parameter structures */
-	memset( &sParameters_A, 0, sizeof(sParameterStruct ));
-	memset( &sParameters_B, 0, sizeof(sParameterStruct ));
-	
+	memset( &sParameters_A, 0, sizeof(sParameterStruct) );
+	memset( &sParameters_B, 0, sizeof(sParameterStruct) );
+
 	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handles */
 	state = PHX_CameraConfigLoad( &sParameters_A.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 	if(state != 0)
@@ -46,7 +39,7 @@ int main( int argc, char* argv[] )
 		logError("function PHX_CameraConfigLoad(...) for Camera B failed");
 		return state;
 	}
-	
+
 	//function for initialising basic values for sParameterStruct
 	state = configurations(&sParameters_A);
 	state = configurations(&sParameters_B);
@@ -59,7 +52,6 @@ int main( int argc, char* argv[] )
 	setExposureTime(&sParameters_A);
 	setExposureTime(&sParameters_B);
 
-
 	state = startAquisition(&sParameters_A, &sParameters_B);
 	if (state != 0)
 	{
@@ -68,7 +60,7 @@ int main( int argc, char* argv[] )
 	}
 
 	/* Now cease all captures */
-	if ( sParameters_A.hCamera ) PHX_Acquire( sParameters_A.hCamera,  PHX_ABORT, NULL );
+	if ( sParameters_A.hCamera ) PHX_Acquire( sParameters_A.hCamera, PHX_ABORT, NULL );
 	if ( sParameters_B.hCamera ) PHX_Acquire( sParameters_B.hCamera, PHX_ABORT, NULL );
 
 	/* Release the Phoenix board */

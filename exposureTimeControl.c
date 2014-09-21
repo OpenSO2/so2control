@@ -188,7 +188,7 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 	return eStat;
 }
 
-int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer)
+int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
 	etStat		eStat			= PHX_OK; /* Status variable */
@@ -339,7 +339,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters)
 	char			messbuff[512];
 	char			errbuff[512];
 	tHandle			hCamera = sSO2Parameters->hCamera;
-	
+
 	/* Switching to Frameblanking mode */
 	eStat = sendMessage(hCamera,"NMD F");
 	if ( PHX_OK != eStat )
@@ -436,7 +436,7 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters)
 	char			messbuff[512];
 	char			errbuff[512];
 	tHandle			hCamera = sSO2Parameters->hCamera;
-	
+
 	/* Switching to Electronic Shutter mode */
 	eStat = sendMessage(hCamera,"NMD S");
 	if ( PHX_OK != eStat )
