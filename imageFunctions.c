@@ -112,11 +112,7 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width, i
 	short *displacementBuffer;
 	displacementBuffer = (short *)malloc( l * sizeof(short) );
 
-#ifdef _PHX_WIN32
 	displacement = malloc(sizeof(struct disp));
-#else
-	displacement = (disp *)malloc(sizeof(struct disp));
-#endif
 
 	//~ calculate the correlation for every displacement in n pixel distance
 	for (x = -max_distance + 1; x < max_distance; x++){

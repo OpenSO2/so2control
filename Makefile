@@ -38,10 +38,10 @@ clean:
 
 test:
 	#~ unix
-	g++                  -o test.out Test/imageFunctions.test.cpp
+	gcc                  -o test.out Test/imageFunctions.test.c
 	time ./test.out
 	#~ win
-	i586-mingw32msvc-g++ -o test.out Test/imageFunctions.test.cpp
+	i586-mingw32msvc-gcc -o test.out Test/imageFunctions.test.c
 	wine ./test.out
 	#~ cleanup
 	rm test.out
