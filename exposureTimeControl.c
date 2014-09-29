@@ -1,9 +1,6 @@
 /* Function for the automatic control of the exposure time
- * of the Hamamatsu CCD-Camera C8484-16
- * it is based on the Active Silicon Framegrabber SDK
- *
- * @FIXME: make sSO2Parameters->dExposureTime camera dependent; test
- *
+ * of the Hamamatsu CCD-Camera C8484-16.
+ * This code is based on the Active Silicon Framegrabber SDK.
  */
 #include<stdio.h>
 
