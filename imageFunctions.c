@@ -186,6 +186,7 @@ int findMedian(short *buffer, int length){
 	int firstNonBlack;
 	int edgeDiff = 500;
 	int edge = 0;
+	int leap = 10000;
 
 	// copy buffer
 	copy = (short *)malloc(length * sizeof(short));
@@ -197,7 +198,6 @@ int findMedian(short *buffer, int length){
 	qsort(copy, length, sizeof(short), cmp);
 
 	// find brightness edge
-	int leap = 10000;
 	for(i = leap; i < length; i = i + 10){
 		if(copy[i] - copy[i-leap] > edgeDiff){
 			edge = i;
