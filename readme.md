@@ -8,7 +8,6 @@ Contributors:
 - Morten Harms (Universität Hamburg)
 - Johann Jacobsohn (Universität Hamburg)
 
-
 Files
 ------
 - **SO2-Control.c** - main program
@@ -49,6 +48,13 @@ Interface:
 - **writeImage()** -
 - **startAquisition()** -
 
+### imageFunctions.c|h
+
+- **rotateImage()** -
+- **findDisplacement()** -
+- **displaceImage()** -
+- **calcCorrelation()** -
+
 ### darkCurrent.c|h
 
 - **dunkelstromMessung** - To be implemented
@@ -67,20 +73,68 @@ Interface:
 TODO
 ====
 
-- johann: bilder verarbeiten
-- johann: Bug: neue Datei anlegen
-- johann: Bug: Kamera in Bildnamen oder Header
-- morten: Bilder gleichzeitig aufnehmen oder Zeitdifferenz messen
-- morten: Zeitstempel direkt nach aufnahme setzen
-- Belichtungszeit? -> Matthias 
-- Zeitsynchro/Batterie -> Matthias
-Mi: Kamera bauen
-Do: testen
-Fr: packen
---
-- morten: improve time management to millisecond accuracy
-- morten: measure frame rate -> Interframedelay etc.
-- johann: implement automated filter wheel control
-- johann: implement dark-frame subtraction
-- morten: improve error management
-- morten: ExposureTimeControl: improve loop detection
+- image flipped
+- distance correction
+- vignette correction
+- Zeitstempel direkt nach aufnahme setzen
+- Belichtungszeit? -> Matthias
+- improve time management to millisecond accuracy
+- measure frame rate -> Interframedelay etc.
+- implement automated filter wheel control
+- implement dark-frame subtraction
+- improve error management
+- ExposureTimeControl: improve loop detection
+- online evaluation
+- cleanup make target
+- fix <windows.h> SYSTEMTIME dependency
+- port to linux
+- "--start-new-measurement" - neuen Ordner anlegen, neues Logfile
+- Parameter wie "FixTime" lieber als Konstanten?
+- don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
+
+
+Approximate program flow:
+-------------------------
+
+```
+---------------------------------------------------------------------------
+|                         PHX_CameraConfigLoad                            |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                             configurations                              |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                            setExposureTime                              |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                            startAquisition                              |
+|                                                                         |
+| main loop until keypress                                           <-.  |
+|    . reset exposure time every exposureTimeCheckIntervall * seconds   \ |
+|    . aquire both image                                                | |
+|        . start two captures, set callback functions                   | |
+|        . wait in 10ms increments until callback is received           | |
+|        . writeImage                                                   | |
+|    . process data                                                     | |
+|           \                                                           / |
+|            ----------------------------------------------------------`  |
+|                                                                         |
+---------------------------------------------------------------------------
+                                   ↧
+---------------------------------------------------------------------------
+|                          Cease all captures                             |
+---------------------------------------------------------------------------
+                                   ↧
+---------------------------------------------------------------------------
+|                       Release the Phoenix board                         |
+---------------------------------------------------------------------------
+```
+
+
+
+
+
+Korrekturfaktur = Strahlungsfluss durch Filter x empfindlichkeit bei Filterwellenlänge * Belichtungszeitdifferenz
