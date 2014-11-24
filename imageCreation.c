@@ -158,10 +158,6 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 
 
 
-
-
-
-
 int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME timeThisImage, char cameraIdentifier)
 {
 	stImageBuff  stBuffer;              /* Buffer in which the image data is stored by the framegrabber */

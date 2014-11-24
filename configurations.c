@@ -58,7 +58,6 @@ int configurations(sParameterStruct *sSO2Parameters)
 		return eStat;
 	}
 
-
 	/* name of Configfile is hard coded maybe change this sometime */
 	status = readConfig("configurations//SO2Config.conf", sSO2Parameters);
 	if(status != 0) logError("readConfig(...) failed");

@@ -13,10 +13,10 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
 	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
+	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
 	char			messbuff[512];
 	char			errbuff[512];
-	tHandle			hCamera = sSO2Parameters->hCamera;
 
 	/* pre-set the buffer with zeros */
 	memset( &stBuffer, 0, sizeof(stImageBuff) );
@@ -103,12 +103,12 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 int fixExposureTime(sParameterStruct *sSO2Parameters)
 {
 	int			exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
+	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
 	etStat		eStat			= PHX_OK; /* Phoenix status variable */
 	int			shutterSpeed	= 1; /* in case something went wrong this value is accepted by both modi */
 	char		message[9];
 	char		messbuff[512];
 	char		errbuff[512];
-	tHandle		hCamera = sSO2Parameters->hCamera;
 
 	/* before doing anything check if exposure time is within the limits */
 	if ( exposureTime < 2.4 || exposureTime > 1004400)
@@ -189,8 +189,9 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
 	etStat		eStat			= PHX_OK; /* Status variable */
+	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
 	int 		startErrCount	= 0; /* counting how often the start of capture process failed */
-	tHandle			hCamera = sSO2Parameters->hCamera;
+
 	/* Initiate a software trigger of the exposure control signal
 	 * see triggerConfig()
 	 */
@@ -326,6 +327,7 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 int setFrameBlanking(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
+	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
 	char			message[9]; /* Message buffer for communication with camera */
 	int				timeSwitch	= 1; /* Integer switch to switch between exposure modi */
@@ -335,7 +337,6 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters)
 	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
 	char			messbuff[512];
 	char			errbuff[512];
-	tHandle			hCamera = sSO2Parameters->hCamera;
 
 	/* Switching to Frameblanking mode */
 	eStat = sendMessage(hCamera,"NMD F");
@@ -423,6 +424,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters)
 int setElektronicShutter(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
+	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
 	char			message[9]; /* Message buffer for communication with camera */
 	int				timeSwitch 	= 1; /* Integer switch to switch between exposure modi */
@@ -432,7 +434,6 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters)
 	int 			switchMemory2 = 3; /* need to store the information over 2 loop-cycles */
 	char			messbuff[512];
 	char			errbuff[512];
-	tHandle			hCamera = sSO2Parameters->hCamera;
 
 	/* Switching to Electronic Shutter mode */
 	eStat = sendMessage(hCamera,"NMD S");
