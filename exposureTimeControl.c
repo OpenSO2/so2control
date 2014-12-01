@@ -1,7 +1,6 @@
 /* Function for the automatic control of the exposure time
- * of the Hamamatsu CCD-Camera C8484-16
- * it is based on the Active Silicon Framegrabber SDK
- *
+ * of the Hamamatsu CCD-Camera C8484-16.
+ * This code is based on the Active Silicon Framegrabber SDK.
  */
 #include<stdio.h>
 
@@ -10,11 +9,9 @@
 #include"imageCreation.h"
 #include"log.h"
 
-int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int setExposureTime(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
-	//int				status; /* Status varable for several return values */
-	int				exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
 	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
 	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
 	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
@@ -22,7 +19,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	char			errbuff[512];
 
 	/* pre-set the buffer with zeros */
-	memset( &stBuffer, 0, sizeof(stImageBuff ));
+	memset( &stBuffer, 0, sizeof(stImageBuff) );
 
 	if(sSO2Parameters->dFixTime != 0)
 	{
@@ -60,7 +57,7 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 			}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer);
 		if (eStat != 0)
 		{
 			sSO2Parameters->eStat = eStat;
@@ -79,11 +76,11 @@ int setExposureTime( sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 					break;
 
 			case 1: logMessage("Camera is set to frameblanking mode.");
-					setFrameBlanking(sSO2Parameters, sControlFlags);
+					setFrameBlanking(sSO2Parameters);
 					break;
 
 			case 2: logMessage("Camera is set to electronic shutter mode.");
-					setElektronicShutter(sSO2Parameters, sControlFlags);
+					setElektronicShutter(sSO2Parameters);
 					break;
 
 			case 3: logError("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
@@ -188,7 +185,7 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 	return eStat;
 }
 
-int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagStruct *sControlFlags)
+int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
 	etStat		eStat			= PHX_OK; /* Status variable */
@@ -218,13 +215,13 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff	*stBuffer, flagSt
 			 * (c) The FIFO overflow flag is set indicating that the image is corrupt.
 			 * Keep calling the sleep function to avoid burning CPU cycles
 			 */
-			while ( !sControlFlags->fBufferReady && !sControlFlags->fFifoOverFlow && !PhxCommonKbHit() )
+			while ( !sSO2Parameters->fBufferReady && !sSO2Parameters->fFifoOverFlow && !PhxCommonKbHit() )
 			{
 				_PHX_SleepMs(10);
 			}
 
 			/* if BufferReady flag is set, reset it for next image */
-			sControlFlags->fBufferReady = FALSE;
+			sSO2Parameters->fBufferReady = FALSE;
 
 			/* download the buffer and place it in 'stBuffer' */
 			eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
@@ -327,7 +324,7 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 
 
 
-int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int setFrameBlanking(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
 	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
@@ -372,7 +369,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer);
 		if ( PHX_OK != eStat )
 		{
 			logError("failed to obtain one image buffer");
@@ -424,7 +421,7 @@ int setFrameBlanking(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags
 	return eStat;
 }
 
-int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags)
+int setElektronicShutter(sParameterStruct *sSO2Parameters)
 {
 	etStat			eStat		= PHX_OK; /* Phoenix status variable */
 	tHandle			hCamera		= sSO2Parameters->hCamera; /* hardware handle for camera */
@@ -468,7 +465,7 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
-		eStat = getOneBuffer(sSO2Parameters, &stBuffer,sControlFlags);
+		eStat = getOneBuffer(sSO2Parameters, &stBuffer);
 		if ( PHX_OK != eStat )
 		{
 			logError("failed to obtain one image buffer");
@@ -511,9 +508,10 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters, flagStruct *sControlF
 	}
 
 
-	/* GENAUIGEIT VON DEXPOSURETIME REICHT NICHT AUS!!!!!!!! */
+	/* FIXME: GENAUIGEIT VON DEXPOSURETIME REICHT NICHT AUS!!!!!!!! */
 
 	/* save the exposure time to control Struct */
+	// FIXME: add documention
 	sSO2Parameters->dExposureTime = 0.0000124+(SHTvalue-1)*0.000079275;
 	sprintf(messbuff,"Exposure time is set to %f", 0.0000124+(SHTvalue-1)*0.000079275);
 	logMessage(messbuff);

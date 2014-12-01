@@ -1,0 +1,267 @@
+#define CATCH_CONFIG_RUNNER
+#include "fct.h"
+#include "unistd.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// helper
+short *readImage(const char *inputFilename){
+	FILE *inputFID, *outputFID;
+	int i, j, xlength, ylength, depth, numElements;
+	char *headerBuffer;
+	short *inputBuffer;
+
+	inputFID = fopen(inputFilename,"rb");
+	if ( inputFID != NULL)
+	{
+		/* later: read var from header */
+		xlength = 1344;
+		ylength = 1024;
+		depth = sizeof(short);
+
+		/* allocate space for header Buffer */
+		headerBuffer = (char *)malloc(64*sizeof(char));
+
+		/* allocate space for input Buffer */
+		inputBuffer = (short *)malloc(xlength * ylength * sizeof(short));
+
+		if ( inputBuffer != NULL)
+		{
+			/* read header from file */
+			fread(headerBuffer, sizeof(char), 64, inputFID);
+			/* read image data from file */
+			numElements = fread(inputBuffer, depth, xlength * ylength, inputFID);
+
+			if (numElements != xlength*ylength)
+			{
+				printf("not enough elements read from file\n");
+				printf(" %i elements read from %s\n", numElements, inputFilename);
+			}
+
+			free(headerBuffer);
+		}
+
+		else
+		{
+			printf("close file %s failed \n",inputFilename);
+		}
+	}
+	else
+	{
+		printf("open file %s failed.\n",inputFilename);
+	}
+	return inputBuffer;
+}
+
+
+// code to be tested
+#include "../imageFunctions.c"
+
+FCT_BGN()
+{
+	FCT_SUITE_BGN("Image functions"){
+		FCT_TEST_BGN( "rotateImage reverses an array" ) {
+			short a[] = { 1, 0 };
+			short b[] = { 0, 1 };
+			int l = 2, i;
+			rotateImage(a, l);
+			for(i = 0; i < l; i++){
+				fct_chk( a[i] == b[i] );
+			}
+		}
+		FCT_TEST_END();
+
+		FCT_TEST_BGN("rotateImage rotates images"){
+			short *inFile1, *inFile2;
+			int i, l = 1344*1024;
+			inFile1 = readImage("Test/fixtures/oben.raw");
+			inFile2 = readImage("Test/fixtures/oben_rotated.raw");
+			rotateImage(inFile1, l);
+			for(i = 1; i < l; i++){
+				fct_chk( inFile1[i] == inFile2[i] ); // FIXME: is n bissl langsam
+			}
+		}
+		FCT_TEST_END();
+
+		FCT_TEST_BGN("calcCorrelation calculates a correlation between two images"){
+			// img 1  img 2  img 3  expected correlation:
+			// 000    110    011    corr1/2 < corr1/3 == corr2/3
+			// 011    110    011
+			// 011    000    000
+			short img1[] = {
+				0,0,0,
+				0,1,1,
+				0,1,1
+			};
+			short img2[] = {
+				1,1,0,
+				1,1,0,
+				0,0,0
+			};
+			short img3[] = {
+				0,1,1,
+				0,1,1,
+				0,0,0
+			};
+
+			float corr12 = calcCorrelation(img1, img2, 9);
+			float corr13 = calcCorrelation(img1, img3, 9);
+			float corr23 = calcCorrelation(img2, img3, 9);
+
+			fct_chk(corr12 < corr13);
+			fct_chk(corr13 == corr23);
+		}
+		FCT_TEST_END();
+
+		FCT_TEST_BGN("findDisplacement returns the correct displacement vector"){
+			// img 1     img 2     expected displacement:
+			// 000000    011100    0, -1
+			// 011100    011100
+			// 011100    011100
+			// 011100    000000
+			// 000000    000000
+			// 000000    000000
+			short img1[] = {
+				0,0,0,0,0,0,
+				0,1,1,1,0,0,
+				0,1,1,1,0,0,
+				0,1,1,1,0,0,
+				0,0,0,0,0,0,
+				0,0,0,0,0,0
+			};
+			short img2[] = {
+				0,1,1,1,0,0,
+				0,1,1,1,0,0,
+				0,1,1,1,0,0,
+				0,0,0,0,0,0,
+				0,0,0,0,0,0,
+				0,0,0,0,0,0
+			};
+
+			struct disp *displacement = findDisplacement(img1, img2, 6, 6, 2);
+			fct_chk(displacement->x ==  0);
+			fct_chk(displacement->y == -1);
+		}
+		FCT_TEST_END();
+
+		// FIXME: far too slow
+		FCT_TEST_BGN("findDisplacement returns the correct displacement vector for an image"){
+			short *inFile1, *inFile2, *outFile;
+			inFile1 = readImage("Test/fixtures/oben_rotated.raw");
+			inFile2 = readImage("Test/fixtures/unten.raw");
+			int file_width = 1344;
+			int file_height = 1024;
+			int roi_width = 600;
+			int roi_height = 500;
+
+			short *center1;
+			center1 = (short *)malloc( roi_width * roi_height * sizeof(short) );
+
+			short *center2;
+			center2 = (short *)malloc( roi_width * roi_height * sizeof(short) );
+
+			short *outFile1;
+			outFile1 = (short *)malloc( file_width * file_height * sizeof(short) );
+
+			getBufferCenter(inFile1, center1, file_height, file_width, roi_height, roi_width);
+			getBufferCenter(inFile2, center2, file_height, file_width, roi_height, roi_width);
+
+			FILE *outputFID10 = fopen("center1.raw","wb");
+			fwrite(center1, 16, roi_width * roi_height, outputFID10);
+
+			FILE *outputFID11 = fopen("center2.raw","wb");
+			fwrite(center2, 16, roi_width * roi_height, outputFID11);
+
+			posterize(center1, roi_height * roi_width);
+			posterize(center2, roi_height * roi_width);
+
+			//~ for(int i = 1; i < roi_width*roi_height; i++){
+				//~ if(i%100 == 0) printf("%i %i\n", i, center1[i]);
+			//~ }
+
+			struct disp *displacement;
+			displacement = findDisplacement(center1, center2, roi_height, roi_width, 40);
+
+			//~ printf("calculated displacement: %i, %i\n", displacement->x, displacement->y);
+
+			FILE *outputFID1 = fopen("center1_poster.raw","wb");
+			fwrite(center1, 16, roi_width * roi_height, outputFID1);
+
+			FILE *outputFID2 = fopen("center2_poster.raw","wb");
+			fwrite(center2, 16, roi_width * roi_height, outputFID2);
+
+			displaceImage(inFile1, outFile1, 1344, 1024, displacement->x, displacement->y);
+
+			FILE *outputFID3 = fopen("displ1.raw","wb");
+			fwrite(outFile1, 16, 1024*1344, outputFID3);
+
+			FILE *outputFID4 = fopen("orig1.raw","wb");
+			fwrite(inFile2, 16, 1024*1344, outputFID4);
+
+			fct_chk(displacement->x == 9); // FIXME: verify
+			fct_chk(displacement->y == -8); // FIXME: verify
+		}
+		FCT_TEST_END();
+
+		FCT_TEST_BGN("displaceImage returnes a displaced copy of an image buffer"){
+			// img 1      expected
+			// 1 1 1 0    -1-1-1-1
+			// 1 1 1 0    -1 1 1 1
+			// 1 1 1 0    -1 1 1 1
+			// 0 0 0 0    -1 1 1 1
+			short img1[] = {
+				1,1,1,0,
+				1,1,1,0,
+				1,1,1,0,
+				0,0,0,0
+			};
+			short expected[] = {
+				5000,5000,5000,5000,
+				5000,1,1,1,
+				5000,1,1,1,
+				5000,1,1,1
+			};
+			short displaced[] = {
+				0,0,0,0,
+				0,0,0,0,
+				0,0,0,0,
+				0,0,0,0
+			};
+			int i;
+
+			displaceImage(img1, displaced, 4, 4, 1, 1);
+			for(i = 0; i < 16; i++){
+				fct_chk( displaced[i] == expected[i] );
+			}
+		}
+		FCT_TEST_END();
+
+		FCT_TEST_BGN("getBufferCenter reduces an image buffer to the center region"){
+			short bigimg[] = {
+				1,2,3,4,
+				5,6,7,8,
+				9,0,1,2,
+				3,4,5,6
+			};
+			short smallimg[] = {
+				1,1,
+				1,1
+			};
+			short expected[] = {
+				6,7,
+				0,1
+			};
+			int i;
+
+			getBufferCenter(bigimg, smallimg, 4, 4, 2, 2);
+			for(i = 0; i < 4; i++){
+				fct_chk( smallimg[i] == expected[i] );
+			}
+		}
+		FCT_TEST_END();
+	}
+	FCT_SUITE_END();
+}
+FCT_END();

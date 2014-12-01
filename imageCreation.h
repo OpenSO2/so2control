@@ -4,11 +4,11 @@
 /******************************
  *   FUNCTIONS
  ******************************/
-void callbackFunction	( tHandle hCamera, ui32 dwInterruptMask, void *pvParams );
-int writeImage			(sParameterStruct *sSO2Parameters);
-int startAquisition	(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
-int createFilename(sParameterStruct *sSO2Parameters,char * filename, SYSTEMTIME time);
-int newFile(sParameterStruct *sSO2Parameters, FILE* fid);
-int createFileheader(char * header, SYSTEMTIME *time);
+void callbackFunction( tHandle hCamera, ui32 dwInterruptMask, void *pvParams );
+int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B);
+int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME timeThisImage, char cameraIdentifier);
+int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, char cameraIdentifier);
+int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, char *filename_A, char *filename_B);
+int createFileheader(sParameterStruct *sSO2Parameters, char * header, SYSTEMTIME *time);
 time_t TimeFromSystemTime(const SYSTEMTIME * pTime);
 #endif

@@ -9,7 +9,7 @@
  **********************************************************/
 
 /******************************
- *   HAEDER INCLUDES
+ *   HEADER INCLUDES
  ******************************/
 #include<stdio.h>
 #include <math.h>
@@ -72,30 +72,27 @@ typedef struct
 	/* Images per file. Calculated from size of file*/
 	int			dImagesFile;
 
-
-}sParameterStruct;
-
-
-typedef struct flagStruct
-{
+	/* ~Callback stuff~ */
+	
 	/* Event Flags */
 	volatile tFlag	fBufferReady;
 	volatile int	dBufferReadyCount;
 
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
-}flagStruct;
-//typedef struct flagStruct flagStruct;
+
+}sParameterStruct;
+
 
 
  /******************************
  *   FUNCTIONS
  ******************************/
-int readConfig(char *filename, sParameterStruct *sSO2Parameters);
-int configurationFunktion	(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
+int readConfig				(char *filename, sParameterStruct *sSO2Parameters);
+int configurations			(sParameterStruct *sSO2Parameters);
 int structInit				(sParameterStruct *sSO2Parameters);
 int triggerConfig			(sParameterStruct *sSO2Parameters);
-int defaultConfig			(sParameterStruct *sSO2Parameters, flagStruct *sControlFlags);
-int defaultCameraConfig	(sParameterStruct *sSO2Parameters);
-int sendMessage			(tHandle hCamera, char * inputBuffer);
+int defaultConfig			(sParameterStruct *sSO2Parameters);
+int defaultCameraConfig		(sParameterStruct *sSO2Parameters);
+int sendMessage				(tHandle hCamera, char * inputBuffer);
 #endif

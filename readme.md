@@ -8,7 +8,6 @@ Contributors:
 - Morten Harms (Universität Hamburg)
 - Johann Jacobsohn (Universität Hamburg)
 
-
 Files
 ------
 - **SO2-Control.c** - main program
@@ -49,6 +48,13 @@ Interface:
 - **writeImage()** -
 - **startAquisition()** -
 
+### imageFunctions.c|h
+
+- **rotateImage()** -
+- **findDisplacement()** -
+- **displaceImage()** -
+- **calcCorrelation()** -
+
 ### darkCurrent.c|h
 
 - **dunkelstromMessung** - To be implemented
@@ -67,10 +73,68 @@ Interface:
 TODO
 ====
 
-- implement second camera
+- image flipped
+- distance correction
+- vignette correction
+- Zeitstempel direkt nach aufnahme setzen
+- Belichtungszeit? -> Matthias
 - improve time management to millisecond accuracy
 - measure frame rate -> Interframedelay etc.
-- implement dark-frame subtraction
 - implement automated filter wheel control
+- implement dark-frame subtraction
 - improve error management
 - ExposureTimeControl: improve loop detection
+- online evaluation
+- cleanup make target
+- fix <windows.h> SYSTEMTIME dependency
+- port to linux
+- "--start-new-measurement" - neuen Ordner anlegen, neues Logfile
+- Parameter wie "FixTime" lieber als Konstanten?
+- don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
+
+
+Approximate program flow:
+-------------------------
+
+```
+---------------------------------------------------------------------------
+|                         PHX_CameraConfigLoad                            |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                             configurations                              |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                            setExposureTime                              |
+---------------------------------------------------------------------------
+                                    ↧
+---------------------------------------------------------------------------
+|                            startAquisition                              |
+|                                                                         |
+| main loop until keypress                                           <-.  |
+|    . reset exposure time every exposureTimeCheckIntervall * seconds   \ |
+|    . aquire both image                                                | |
+|        . start two captures, set callback functions                   | |
+|        . wait in 10ms increments until callback is received           | |
+|        . writeImage                                                   | |
+|    . process data                                                     | |
+|           \                                                           / |
+|            ----------------------------------------------------------`  |
+|                                                                         |
+---------------------------------------------------------------------------
+                                   ↧
+---------------------------------------------------------------------------
+|                          Cease all captures                             |
+---------------------------------------------------------------------------
+                                   ↧
+---------------------------------------------------------------------------
+|                       Release the Phoenix board                         |
+---------------------------------------------------------------------------
+```
+
+
+
+
+
+Korrekturfaktur = Strahlungsfluss durch Filter x empfindlichkeit bei Filterwellenlänge * Belichtungszeitdifferenz
