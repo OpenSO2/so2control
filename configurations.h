@@ -9,7 +9,7 @@
  **********************************************************/
 
 /******************************
- *   HAEDER INCLUDES
+ *   HEADER INCLUDES
  ******************************/
 #include<stdio.h>
 #include <math.h>
@@ -59,7 +59,7 @@ typedef struct
 	char		cFileNamePrefix[MAX_STRING_LENGTH];
 	/* path to image diretory */
 	char		cImagePath[MAX_STRING_LENGTH];
-	/* handles to identify the camera */
+	/* A handle to identify the camera */
 	tHandle		hCamera;
 	/* A status variable inherited from the SDK */
 	etStat		eStat;
