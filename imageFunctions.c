@@ -215,6 +215,7 @@ int findMedian(short *buffer, int length){
 			return copy[ (firstNonBlack + length)/2 ] - 100;
 		}
 	}
+	return 0;
 }
 
 // @FIXME: document

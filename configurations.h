@@ -80,7 +80,9 @@ typedef struct
 
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
-
+	
+	/* Camera identifier */
+	char identifier;
 }sParameterStruct;
 
 
@@ -89,8 +91,8 @@ typedef struct
  *   FUNCTIONS
  ******************************/
 int readConfig				(char *filename, sParameterStruct *sSO2Parameters);
-int configurations			(sParameterStruct *sSO2Parameters);
-int structInit				(sParameterStruct *sSO2Parameters);
+int configurations			(sParameterStruct *sSO2Parameters, char identifier);
+int structInit				(sParameterStruct *sSO2Parameters, char identifier);
 int triggerConfig			(sParameterStruct *sSO2Parameters);
 int defaultConfig			(sParameterStruct *sSO2Parameters);
 int defaultCameraConfig		(sParameterStruct *sSO2Parameters);

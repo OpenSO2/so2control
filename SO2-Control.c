@@ -41,13 +41,14 @@ int main( int argc, char* argv[] )
 	}
 
 	//function for initialising basic values for sParameterStruct
-	state = configurations(&sParameters_A);
-	state = configurations(&sParameters_B);
+	state = configurations(&sParameters_A, 'a');
+	state = configurations(&sParameters_B,'b');
 	if (state != 0)
 	{
 		logError("configuration failed");
 		return 1;
 	}
+
 	// dunkelstromMessung(&sParameterStruct);
 	setExposureTime(&sParameters_A);
 	setExposureTime(&sParameters_B);

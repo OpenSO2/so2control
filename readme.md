@@ -91,6 +91,7 @@ TODO
 - "--start-new-measurement" - neuen Ordner anlegen, neues Logfile
 - Parameter wie "FixTime" lieber als Konstanten?
 - don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
+- wir brauchen einen Camera Identifier in der config-Struktur.
 
 
 Approximate program flow:

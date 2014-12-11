@@ -5,7 +5,7 @@
 #include"log.h"
 
 
-int structInit(sParameterStruct *sSO2Parameters)
+int structInit(sParameterStruct *sSO2Parameters,char identifier)
 {
 	sSO2Parameters->dImageCounter = 0;
 	sSO2Parameters->eStat = PHX_OK;
@@ -15,24 +15,28 @@ int structInit(sParameterStruct *sSO2Parameters)
 	sSO2Parameters->dHistPercentage = 5;
 	sSO2Parameters->dInterFrameDelay = 10;
 	sSO2Parameters->fid = NULL;
+	sSO2Parameters->identifier = identifier;
 	return 0;
 }
 
-int configurations(sParameterStruct *sSO2Parameters)
+int configurations(sParameterStruct *sSO2Parameters, char identifier)
 {
 	etStat	eStat = PHX_OK;
 	int		status = 0; /* status variable for return values */
 
 	/*starting the logfile */
-	status = initLog();
-	if(status != 0)
+	if(identifier == 'a')
 	{
-		/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
-		printf("creating a logfile failed. Program is aborting...\n");
-		return status;
+		status = initLog();
+		if(status != 0)
+		{
+			/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
+			printf("creating a logfile failed. Program is aborting...\n");
+			return status;
+		}
 	}
 	/* initialise the parameterstructure with default values */
-	structInit(sSO2Parameters);
+	structInit(sSO2Parameters, identifier);
 
 	/* load the default configurations for the framegrabber */
 	eStat = defaultConfig(sSO2Parameters);
