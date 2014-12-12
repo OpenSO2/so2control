@@ -86,7 +86,6 @@ typedef struct
 }sParameterStruct;
 
 
-
  /******************************
  *   FUNCTIONS
  ******************************/

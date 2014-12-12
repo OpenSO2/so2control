@@ -77,16 +77,20 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 	etStat		eStat			= PHX_OK; /* Status variable */
 	tHandle		hCamera_A		= sParameters_A->hCamera;  /* hardware handle of first camera */
 	tHandle		hCamera_B		= sParameters_B->hCamera; /* hardware handle of second camera */
-	SYSTEMTIME	timeNow; /* System time windows.h dependency */
-
+	timeStruct  timeNow;
+	
+	/* @FIXME: bin mir nicht sicher ob das notwendig ist... C... */
+	memset(&timeNow, 0, sizeof(timeNow));
+	
 	/* Now start our capture, return control immediately back to program */
 	/* @FIXME PROBLEM HIER MIT 2 MAL CALLBACK FUNCTION??????? */
 	eStat = PHX_Acquire( hCamera_A, PHX_START, (void*) callbackFunction );
 	eStat = PHX_Acquire( hCamera_B, PHX_START, (void*) callbackFunction ); 
 	if ( PHX_OK == eStat )
 	{
-		/* get time of image, windows.h dependency*/
-		GetSystemTime(&timeNow);
+		
+		/* get current time with milliseconds precision */
+		getTime(&timeNow);
 		/* if starting the capture was successful reset error counter to zero */
 		startErrCount = 0;
 		/* Wait for a user defined period between each camera trigger call*/
@@ -158,7 +162,7 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 
 
 
-int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME timeThisImage, char cameraIdentifier)
+int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct timeThisImage, char cameraIdentifier)
 {
 	stImageBuff  stBuffer;              /* Buffer in which the image data is stored by the framegrabber */
 	int          status;                /* Status variable for several return values */
@@ -170,7 +174,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 	char         messBuff[512];
 	tHandle		hCamera		= sSO2Parameters->hCamera;
 
-	/* create a filename with milliseconds precession -> caution <windows.h> is used her */
+	
 	if ( strlen(filename) == 0 || sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
 		// @FIXME filename should have a camera parameter (e.g. _camera1.rbf)
@@ -191,7 +195,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 		}
 	}
 
-	/* create a Fileheader caution <windows.h> is used here */
+	
 	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
 	if (status != 0)
 	{
@@ -254,36 +258,57 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, SYSTEMTIME time
 }
 
 
-int createFilename(sParameterStruct *sSO2Parameters, char * filename, SYSTEMTIME time, char cameraIdentifier)
+int createFilename(sParameterStruct *sSO2Parameters, char * filename, timeStruct time, char cameraIdentifier)
 {
 	int status;
 	char * camname = (cameraIdentifier == 'A') ? "top" : "bot"; /* identify Camera for filename Prefix */
 
-	/* write header string with information from system time for camera B. windows.h dependency */
+	/* write header string with information from system time for camera B. */
 	status = sprintf(filename, "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw", sSO2Parameters->cImagePath,
-		sSO2Parameters->cFileNamePrefix, time.wYear, time.wMonth, time.wDay, time.wHour,
-		time.wMinute, time.wSecond, time.wMilliseconds, camname);
+		sSO2Parameters->cFileNamePrefix, time.year, time.mon, time.day, time.hour,
+		time.min, time.sec, time.milli, camname);
 
 	return status;
 }
 
-time_t TimeFromSystemTime(const SYSTEMTIME * pTime)
+/* WINDOWS VERSION */
+int getTime(timeStruct *pTS)
 {
-	/* copied from: http://forums.codeguru.com/showthread.php?139510-Converting-SYSTEMTIME-to-time_t */
+	/* Abhaengikeit von 'windows.h' */
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+	systemTimeToTime_struct(&time,pTS);
+	return 0;
+}
+
+time_t TimeFromTimeStruct(const timeStruct * pTime)
+{
 	struct tm tm;
 	memset(&tm, 0, sizeof(tm));
 
-	tm.tm_year = pTime->wYear - 1900;
-	tm.tm_mon  = pTime->wMonth - 1;
-	tm.tm_mday = pTime->wDay;
-	tm.tm_hour = pTime->wHour;
-	tm.tm_min  = pTime->wMinute;
-	tm.tm_sec  = pTime->wSecond;
+	tm.tm_year = pTime->year - 1900;
+	tm.tm_mon  = pTime->mon - 1;
+	tm.tm_mday = pTime->day;
+	tm.tm_hour = pTime->hour;
+	tm.tm_min  = pTime->min;
+	tm.tm_sec  = pTime->sec;
 
 	return mktime(&tm);
 }
+int systemTimeToTime_struct(SYSTEMTIME * pTime, timeStruct * pTS)
+{
+	pTS->year = pTime->wYear;
+	pTS->mon  = pTime->wMonth;
+	pTS->day = pTime->wDay;
+	pTS->hour = pTime->wHour;
+	pTS->min  = pTime->wMinute;
+	pTS->sec  = pTime->wSecond;
+	pTS->milli = pTime->wMilliseconds;
+	
+	return 0;
+}
 
-int createFileheader(sParameterStruct *sSO2Parameters, char * header, SYSTEMTIME *time)
+int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct *time)
 {
 	/* create a hokawo compatible header */
 
@@ -295,8 +320,8 @@ int createFileheader(sParameterStruct *sSO2Parameters, char * header, SYSTEMTIME
 	WORD	wBPP		= 16;		// Bits pro Pixel
 	WORD	wColorType	= 1;		// Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software
 	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneintraegen (immer 0 )
-	time_t	tDateTime	= TimeFromSystemTime(time);	// Datum und Uhrzeit
-	DWORD  dwTimestamp = time->wMilliseconds;		// Zeitstempel in ms
+	time_t	tDateTime	= TimeFromTimeStruct(time);	// Datum und Uhrzeit
+	DWORD  dwTimestamp = time->milli;		// Zeitstempel in ms
 	double	dExposureTime = sSO2Parameters->dExposureTime;
 	/* Preset the whole string with zeros */
 	memset(header,'\0',HEADER_SIZE);
