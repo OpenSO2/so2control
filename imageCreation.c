@@ -1,12 +1,16 @@
+#ifdef win32
+#include<windows.h>
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include<time.h>
 #include"configurations.h"
 #include"imageCreation.h"
 #include"log.h"
 #include"imageFunctions.h"
 
-#ifdef win32
-#include<windows.h>
-#endif
+
 #define HEADER_SIZE 64
 
 void callbackFunction(
@@ -273,45 +277,6 @@ int createFilename(sParameterStruct *sSO2Parameters, char * filename, timeStruct
 	return status;
 }
 
-#ifdef win32
-/* WINDOWS VERSION */
-int getTime(timeStruct *pTS)
-{
-	/* Abhaengikeit von 'windows.h' */
-	SYSTEMTIME time;
-	GetSystemTime(&time);
-	systemTimeToTimStruct(&time,pTS);
-	return 0;
-}
-
-int systemTimeToTimStruct(SYSTEMTIME * pTime, timeStruct * pTS)
-{
-	pTS->year = pTime->wYear;
-	pTS->mon  = pTime->wMonth;
-	pTS->day = pTime->wDay;
-	pTS->hour = pTime->wHour;
-	pTS->min  = pTime->wMinute;
-	pTS->sec  = pTime->wSecond;
-	pTS->milli = pTime->wMilliseconds;
-	
-	return 0;
-}
-#endif
-
-time_t TimeFromTimeStruct(const timeStruct * pTime)
-{
-	struct tm tm;
-	memset(&tm, 0, sizeof(tm));
-
-	tm.tm_year = pTime->year - 1900;
-	tm.tm_mon  = pTime->mon - 1;
-	tm.tm_mday = pTime->day;
-	tm.tm_hour = pTime->hour;
-	tm.tm_min  = pTime->min;
-	tm.tm_sec  = pTime->sec;
-
-	return mktime(&tm);
-}
 
 int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct *time)
 {
@@ -365,3 +330,73 @@ int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct
 
 	return 0;
 }
+
+
+time_t TimeFromTimeStruct(const timeStruct * pTime)
+{
+	struct tm tm;
+	memset(&tm, 0, sizeof(tm));
+
+	tm.tm_year = pTime->year - 1900;
+	tm.tm_mon  = pTime->mon - 1;
+	tm.tm_mday = pTime->day;
+	tm.tm_hour = pTime->hour;
+	tm.tm_min  = pTime->min;
+	tm.tm_sec  = pTime->sec;
+
+	return mktime(&tm);
+}
+
+
+#ifdef win32
+
+
+/* WINDOWS VERSION */
+int getTime(timeStruct *pTS)
+{
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+	pTS->year 	= time.wYear;
+	pTS->mon  	= time.wMonth;
+	pTS->day  	= time.wDay;
+	pTS->hour 	= time.wHour;
+	pTS->min  	= time.wMinute;
+	pTS->sec 	= time.wSecond;
+	pTS->milli	= time.wMilliseconds;
+	return 0;
+}
+
+#else
+
+
+/* POSIX VERSION */
+int getTime(timeStruct *pTS)
+{
+	time_t				seconds;
+	long				milliseconds;
+	struct tm			tm;
+	struct timespec		spec;
+	int 				stat;
+	
+	stat = clock_gettime(,&spec);
+	if (stat != 0)
+	{
+		logError("clock_gettime failed. (posix) \n");
+		return 1;
+	}
+	
+	milliseconds = round(spec.tv_nsec / 1.0e6);
+	seconds = spec.tv_sec);
+	tm = gmtime((&seconds);
+	
+	pTime->year  = tm.tm_year + 1900;
+	pTime->mon   = tm.tm_mon +1;
+	pTime->day   = tm.tm_mday;
+	pTime->hour  = tm.tm_hour;
+	pTime->min   = tm.tm_min;
+	pTime->sec   = tm.tm_sec;
+	pTime->milli = milliseconds;
+	return 0;
+}
+#endif
+

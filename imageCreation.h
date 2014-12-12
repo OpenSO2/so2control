@@ -32,8 +32,5 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct *time);
 int getTime(timeStruct *pTS);
 time_t TimeFromTimeStruct(const timeStruct * pTime);
-#ifdef win32 
-int systemTimeToTimStruct(SYSTEMTIME * pTime, timeStruct * pTS);
-#endif
 
 #endif
