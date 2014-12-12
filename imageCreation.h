@@ -2,6 +2,10 @@
 #define _IMAGECREATION_
 #include"configurations.h"
 
+/* @FIXME: sollte unbedingt spaeter global definiert werden */
+#define win32
+
+
 /******************************
  *   Structures
  ******************************/
@@ -27,6 +31,9 @@ int createFilename(sParameterStruct *sSO2Parameters, char * filename, timeStruct
 int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, char *filename_A, char *filename_B);
 int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct *time);
 int getTime(timeStruct *pTS);
-int systemTimeToTime_struct(SYSTEMTIME * pTime, timeStruct * pTS);
 time_t TimeFromTimeStruct(const timeStruct * pTime);
+#ifdef win32 
+int systemTimeToTimStruct(SYSTEMTIME * pTime, timeStruct * pTS);
+#endif
+
 #endif

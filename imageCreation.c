@@ -1,10 +1,12 @@
-#include<windows.h>
 #include<time.h>
 #include"configurations.h"
 #include"imageCreation.h"
 #include"log.h"
 #include"imageFunctions.h"
 
+#ifdef win32
+#include<windows.h>
+#endif
 #define HEADER_SIZE 64
 
 void callbackFunction(
@@ -271,15 +273,30 @@ int createFilename(sParameterStruct *sSO2Parameters, char * filename, timeStruct
 	return status;
 }
 
+#ifdef win32
 /* WINDOWS VERSION */
 int getTime(timeStruct *pTS)
 {
 	/* Abhaengikeit von 'windows.h' */
 	SYSTEMTIME time;
 	GetSystemTime(&time);
-	systemTimeToTime_struct(&time,pTS);
+	systemTimeToTimStruct(&time,pTS);
 	return 0;
 }
+
+int systemTimeToTimStruct(SYSTEMTIME * pTime, timeStruct * pTS)
+{
+	pTS->year = pTime->wYear;
+	pTS->mon  = pTime->wMonth;
+	pTS->day = pTime->wDay;
+	pTS->hour = pTime->wHour;
+	pTS->min  = pTime->wMinute;
+	pTS->sec  = pTime->wSecond;
+	pTS->milli = pTime->wMilliseconds;
+	
+	return 0;
+}
+#endif
 
 time_t TimeFromTimeStruct(const timeStruct * pTime)
 {
@@ -294,18 +311,6 @@ time_t TimeFromTimeStruct(const timeStruct * pTime)
 	tm.tm_sec  = pTime->sec;
 
 	return mktime(&tm);
-}
-int systemTimeToTime_struct(SYSTEMTIME * pTime, timeStruct * pTS)
-{
-	pTS->year = pTime->wYear;
-	pTS->mon  = pTime->wMonth;
-	pTS->day = pTime->wDay;
-	pTS->hour = pTime->wHour;
-	pTS->min  = pTime->wMinute;
-	pTS->sec  = pTime->wSecond;
-	pTS->milli = pTime->wMilliseconds;
-	
-	return 0;
 }
 
 int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct *time)
