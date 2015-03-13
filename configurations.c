@@ -413,7 +413,7 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 	char	outputLineBuffer[_PHX_LINE_SIZE];
 	char	*pInputLineBuffer;
 	pInputLineBuffer  = inputLineBuffer;
-	sprintf(pInputLineBuffer,"%s\r",inputBuffer);
+	sprintf(pInputLineBuffer, "%s\r", inputBuffer);
 
 	/* 3 tries before the sending of of the message is considered failed */
 	for(i=0;i<3;i++)
@@ -443,15 +443,18 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 				/* if data is recieved, download the data */
 				eParamValue = (etParamValue)OutputLineBufferLength;
 				eStat = PHX_CommsReceive( hCamera, (ui8*) outputLineBuffer, (ui32*) &eParamValue, timeout );
+				sprintf(outputLineBuffer, "%s\r", outputLineBuffer); // FIXME: Test under windows
 				if(PHX_OK == eStat)
 				{
-					if(strcmp(inputLineBuffer,outputLineBuffer) != 0)
+					if(strcmp(inputLineBuffer, outputLineBuffer) != 0)
 					{
 						/* if cameras answer equals input string, exit successfull */
 						//printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
 						return 0; /* here return of SUCCESS */
 					}
-					else logError("String send and string receive were not equal");
+					else { 
+						logError( "String send and string receive were not equal.");
+					}
 				} // if(PHX_OK == eStat)
 				else logError("nothing was received from camera");
 			} // if(PHX_OK == eStat)

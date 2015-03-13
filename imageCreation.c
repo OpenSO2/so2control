@@ -1,4 +1,4 @@
-#ifdef win32
+#ifdef _PHX_WIN32 
 #include<windows.h>
 #else
 #define _POSIX_C_SOURCE 200809L
@@ -282,16 +282,16 @@ int createFileheader(sParameterStruct *sSO2Parameters, char * header, timeStruct
 {
 	/* create a hokawo compatible header */
 
-	WORD	wID			= 23130;	// Hex 5A5A
-	WORD	wByteOrder	= 18761;	// ASCII 'II'
-	WORD	wVersion	= 12597;	// Version des RAW-Formats
-	WORD	wWidth		= 1344;		// Bildbreite in Pixel
-	WORD	wHeight		= 1024;		// Bildhoehe in Pixel
-	WORD	wBPP		= 16;		// Bits pro Pixel
-	WORD	wColorType	= 1;		// Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software
-	WORD	wPalEntryNo = 0;		// Anzahl von Paletteneintraegen (immer 0 )
+	short	wID			= 23130;	// Hex 5A5A
+	short	wByteOrder	= 18761;	// ASCII 'II'
+	short	wVersion	= 12597;	// Version des RAW-Formats
+	short	wWidth		= 1344;		// Bildbreite in Pixel
+	short	wHeight		= 1024;		// Bildhoehe in Pixel
+	short	wBPP		= 16;		// Bits pro Pixel
+	short	wColorType	= 1;		// Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software
+	short	wPalEntryNo = 0;		// Anzahl von Paletteneintraegen (immer 0 )
 	time_t	tDateTime	= TimeFromTimeStruct(time);	// Datum und Uhrzeit
-	DWORD  dwTimestamp = time->milli;		// Zeitstempel in ms
+	int dwTimestamp = time->milli;		// Zeitstempel in ms
 	double	dExposureTime = sSO2Parameters->dExposureTime;
 	/* Preset the whole string with zeros */
 	memset(header,'\0',HEADER_SIZE);
@@ -348,7 +348,7 @@ time_t TimeFromTimeStruct(const timeStruct * pTime)
 }
 
 
-#ifdef win32
+#ifdef _PHX_WIN32 
 
 
 /* WINDOWS VERSION */
@@ -368,17 +368,16 @@ int getTime(timeStruct *pTS)
 
 #else
 
-
 /* POSIX VERSION */
 int getTime(timeStruct *pTS)
 {
 	time_t				seconds;
 	long				milliseconds;
-	struct tm			tm;
+	struct tm			*tm;
 	struct timespec		spec;
 	int 				stat;
 	
-	stat = clock_gettime(,&spec);
+	stat = clock_gettime(CLOCK_REALTIME,&spec);
 	if (stat != 0)
 	{
 		logError("clock_gettime failed. (posix) \n");
@@ -386,16 +385,16 @@ int getTime(timeStruct *pTS)
 	}
 	
 	milliseconds = round(spec.tv_nsec / 1.0e6);
-	seconds = spec.tv_sec);
-	tm = gmtime((&seconds);
+	seconds = spec.tv_sec;
+	tm = gmtime(&seconds);
 	
-	pTime->year  = tm.tm_year + 1900;
-	pTime->mon   = tm.tm_mon +1;
-	pTime->day   = tm.tm_mday;
-	pTime->hour  = tm.tm_hour;
-	pTime->min   = tm.tm_min;
-	pTime->sec   = tm.tm_sec;
-	pTime->milli = milliseconds;
+	pTS->year  = tm->tm_year + 1900;
+	pTS->mon   = tm->tm_mon +1;
+	pTS->day   = tm->tm_mday;
+	pTS->hour  = tm->tm_hour;
+	pTS->min   = tm->tm_min;
+	pTS->sec   = tm->tm_sec;
+	pTS->milli = milliseconds;
 	return 0;
 }
 #endif

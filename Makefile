@@ -1,7 +1,21 @@
-OUTFILE = output.exe
+OUTFILE = so-camera.exe
 
-build:
-	gcc -Wall -D _PHX_LINUX -I./Include -I./Common SO2-Control.c
+lin:
+	gcc -lm -D _PHX_POSIX -D _PHX_LINUX -D LINUX -D NDEBUG -D DEBUG \
+		-I/usr/local/active_silicon/phx_sdk-6.23/include     \
+		-I./Common                                      \
+		./Common/common.h       ./Common/common.c       \
+		./configurations.h      ./configurations.c      \
+		./darkCurrent.h         ./darkCurrent.c         \
+		./exposureTimeControl.h ./exposureTimeControl.c \
+		./imageFunctions.h      ./imageFunctions.c      \
+		./imageCreation.h       ./imageCreation.c       \
+		./log.h                 ./log.c                 \
+		./messages.h            ./messages.c            \
+		./SO2-Control.c                                 \
+		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lpfw \
+		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lphx \
+		-o ${OUTFILE}
 
 win-phoenix:
 	#~ mcs  -unsafe -target:library Common/PhxCommon.cs

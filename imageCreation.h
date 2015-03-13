@@ -2,10 +2,6 @@
 #define _IMAGECREATION_
 #include"configurations.h"
 
-/* @FIXME: sollte unbedingt spaeter global definiert werden */
-#define win32
-
-
 /******************************
  *   Structures
  ******************************/
