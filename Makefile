@@ -1,8 +1,9 @@
 OUTFILE = so-camera.exe
+LINUXSDKPATH = /usr/local/active_silicon/phx_sdk-6.23
 
 lin:
-	gcc -lm -D _PHX_POSIX -D _PHX_LINUX -D LINUX -D NDEBUG -D DEBUG \
-		-I/usr/local/active_silicon/phx_sdk-6.23/include     \
+	gcc -lm -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
+		-I${LINUXSDKPAT}/include     \
 		-I./Common                                      \
 		./Common/common.h       ./Common/common.c       \
 		./configurations.h      ./configurations.c      \
@@ -13,8 +14,8 @@ lin:
 		./log.h                 ./log.c                 \
 		./messages.h            ./messages.c            \
 		./SO2-Control.c                                 \
-		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lpfw \
-		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lphx \
+		-L${LINUXSDKPAT}/lib/linux64 -lpfw \
+		-L${LINUXSDKPAT}/lib/linux64 -lphx \
 		-o ${OUTFILE}
 
 win-phoenix:

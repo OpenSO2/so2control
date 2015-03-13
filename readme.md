@@ -86,8 +86,6 @@ TODO
 - ExposureTimeControl: improve loop detection
 - online evaluation
 - cleanup make target
-- fix <windows.h> SYSTEMTIME dependency
-- port to linux
 - "--start-new-measurement" - neuen Ordner anlegen, neues Logfile
 - Parameter wie "FixTime" lieber als Konstanten?
 - don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
