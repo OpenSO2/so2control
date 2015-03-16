@@ -54,9 +54,9 @@ clean:
 test:
 	#~ unix
 	gcc                  -o test.out Test/imageFunctions.test.c
-	time ./test.out
+	./test.out
 	#~ win
-	i586-mingw32msvc-gcc -o test.out Test/imageFunctions.test.c
-	wine ./test.out
+	#~ i586-mingw32msvc-gcc -o test.out Test/imageFunctions.test.c
+	#~ wine ./test.out
 	#~ cleanup
 	rm test.out

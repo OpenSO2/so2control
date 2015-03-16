@@ -8,6 +8,9 @@ Contributors:
 - Morten Harms (Universität Hamburg)
 - Johann Jacobsohn (Universität Hamburg)
 
+Status:
+[![Build Status](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/status.png)](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/latest)
+
 Files
 ------
 - **SO2-Control.c** - main program
@@ -90,6 +93,10 @@ TODO
 - Parameter wie "FixTime" lieber als Konstanten?
 - don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
 - wir brauchen einen Camera Identifier in der config-Struktur.
+- document linux & windows configuration (Puppet? Chef?)
+- document hardware
+- Tests
+- Linting über splint
 
 
 Approximate program flow:
