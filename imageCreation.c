@@ -1,4 +1,4 @@
-#ifdef _PHX_WIN32 
+#ifdef WIN32
 #include<windows.h>
 #else
 #define _POSIX_C_SOURCE 200809L
@@ -84,17 +84,17 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 	tHandle		hCamera_A		= sParameters_A->hCamera;  /* hardware handle of first camera */
 	tHandle		hCamera_B		= sParameters_B->hCamera; /* hardware handle of second camera */
 	timeStruct  timeNow;
-	
+
 	/* @FIXME: bin mir nicht sicher ob das notwendig ist... C... */
 	memset(&timeNow, 0, sizeof(timeNow));
-	
+
 	/* Now start our capture, return control immediately back to program */
 	/* @FIXME PROBLEM HIER MIT 2 MAL CALLBACK FUNCTION??????? */
 	eStat = PHX_Acquire( hCamera_A, PHX_START, (void*) callbackFunction );
-	eStat = PHX_Acquire( hCamera_B, PHX_START, (void*) callbackFunction ); 
+	eStat = PHX_Acquire( hCamera_B, PHX_START, (void*) callbackFunction );
 	if ( PHX_OK == eStat )
 	{
-		
+
 		/* get current time with milliseconds precision */
 		getTime(&timeNow);
 		/* if starting the capture was successful reset error counter to zero */
@@ -178,9 +178,9 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 	char         headerString[HEADER_SIZE];
 	char         errbuff[512];
 	char         messBuff[512];
-	tHandle		hCamera		= sSO2Parameters->hCamera;
+	tHandle	     hCamera = sSO2Parameters->hCamera;
 
-	
+
 	if ( strlen(filename) == 0 || sSO2Parameters->dImageCounter%sSO2Parameters->dImagesFile == 0 || sSO2Parameters->dImageCounter == 0)
 	{
 		// @FIXME filename should have a camera parameter (e.g. _camera1.rbf)
@@ -201,7 +201,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 		}
 	}
 
-	
+
 	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
 	if (status != 0)
 	{
@@ -348,7 +348,7 @@ time_t TimeFromTimeStruct(const timeStruct * pTime)
 }
 
 
-#ifdef _PHX_WIN32 
+#ifdef WIN32
 
 
 /* WINDOWS VERSION */
@@ -376,18 +376,18 @@ int getTime(timeStruct *pTS)
 	struct tm			*tm;
 	struct timespec		spec;
 	int 				stat;
-	
-	stat = clock_gettime(CLOCK_REALTIME,&spec);
+
+	stat = clock_gettime(CLOCK_REALTIME, &spec);
 	if (stat != 0)
 	{
 		logError("clock_gettime failed. (posix) \n");
 		return 1;
 	}
-	
+
 	milliseconds = round(spec.tv_nsec / 1.0e6);
 	seconds = spec.tv_sec;
 	tm = gmtime(&seconds);
-	
+
 	pTS->year  = tm->tm_year + 1900;
 	pTS->mon   = tm->tm_mon +1;
 	pTS->day   = tm->tm_mday;
