@@ -7,6 +7,7 @@
 #else
 	#include <termios.h>
 	#include <stdio.h>
+	#include <string.h>
 
 	int kbhit(void);
 	int kbhit(void) {
