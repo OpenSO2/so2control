@@ -1,10 +1,11 @@
+#include<string.h>
 #include"configurations.h"
 #include"messages.h"
 #include"imageCreation.h"
 #include"exposureTimeControl.h"
 #include"log.h"
 /* explanation of prefixes:
- * d = Integer (ui32) (int)
+ * d = Integer (int)
  * e = Status-Value (eStat) or Parameter-Value (etParamValue)
  * f = Flag (tFlag)
  * s = Structurs (struct)
@@ -20,40 +21,55 @@ int main( int argc, char* argv[] )
 	/* print welcome message in terminal */
 	printOpening();
 
+	/*starting the logfile */
+	state = initLog();
+	if(state != 0)
+	{
+		/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
+		printf("creating a logfile failed. Program is aborting...\n");
+		return state;
+	}
+
 	/* Initialise parameter structures */
 	memset( &sParameters_A, 0, sizeof(sParameterStruct) );
 	memset( &sParameters_B, 0, sizeof(sParameterStruct) );
 
-	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handles */
-	state = PHX_CameraConfigLoad( &sParameters_A.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	/* initiate camera */
+	state = camera_init(&sParameters_A.hCamera);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
-		logError("function PHX_CameraConfigLoad(...) for Camera A failed");
+		logError("camera_init for Camera A failed");
 		return state;
 	}
-	state = PHX_CameraConfigLoad( &sParameters_B.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_B | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	state = camera_init(&sParameters_B.hCamera);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
-		logError("function PHX_CameraConfigLoad(...) for Camera B failed");
+		logError("camera_init for Camera B failed");
 		return state;
 	}
 
-	//function for initialising basic values for sParameterStruct
+	/* function for initialising basic values for sParameterStruct */
 	state = configurations(&sParameters_A, 'a');
-	state = configurations(&sParameters_B,'b');
+	state = configurations(&sParameters_B, 'b');
 	if (state != 0)
 	{
 		logError("configuration failed");
 		return 1;
 	}
 
-	// dunkelstromMessung(&sParameterStruct);
+	/* set exposure */
 	setExposureTime(&sParameters_A);
 	setExposureTime(&sParameters_B);
 
+	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
+	// @FIXME: set exposure times independently
+	camera_get( sParameters_A.hCamera, NULL );
+	camera_get( sParameters_B.hCamera, NULL );
+
 	state = startAquisition(&sParameters_A, &sParameters_B);
+	logMessage("Aquisition stopped");
 	if (state != 0)
 	{
 		logError("Aquisition failed");
@@ -61,12 +77,8 @@ int main( int argc, char* argv[] )
 	}
 
 	/* Now cease all captures */
-	if ( sParameters_A.hCamera ) PHX_Acquire( sParameters_A.hCamera, PHX_ABORT, NULL );
-	if ( sParameters_B.hCamera ) PHX_Acquire( sParameters_B.hCamera, PHX_ABORT, NULL );
-
-	/* Release the Phoenix board */
-	if ( sParameters_A.hCamera ) PHX_CameraRelease( &sParameters_A.hCamera );
-	if ( sParameters_B.hCamera ) PHX_CameraRelease( &sParameters_B.hCamera );
+	if ( sParameters_A.hCamera ) camera_stop( sParameters_B.hCamera );
+	if ( sParameters_A.hCamera ) camera_stop( sParameters_B.hCamera );
 
 	logExit();
 

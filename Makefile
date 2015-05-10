@@ -1,23 +1,31 @@
 OUTFILE = so-camera.exe
 LINUXSDKPATH = /usr/local/active_silicon/phx_sdk-6.23
 WINSDKPATH = C:/
-FILES = ./Common/common.h       ./Common/common.c       \
-		./configurations.h      ./configurations.c      \
-		./darkCurrent.h         ./darkCurrent.c         \
-		./exposureTimeControl.h ./exposureTimeControl.c \
-		./imageFunctions.h      ./imageFunctions.c      \
-		./imageCreation.h       ./imageCreation.c       \
-		./log.h                 ./log.c                 \
-		./messages.h            ./messages.c            \
-		./SO2-Control.c
+FILES = ./src/common.h          ./src/common.c       \
+		./src/camera/mock/camera.h ./src/camera/mock/camera.c \
+		./src/camera/mock/configurations.h      ./src/camera/mock/configurations.c      \
+		./src/filterwheel/custom/darkCurrent.h         ./src/filterwheel/custom/darkCurrent.c         \
+		./src/exposureTimeControl.h ./src/exposureTimeControl.c \
+		./src/processing/imageFunctions.h      ./src/processing/imageFunctions.c      \
+		./src/imageCreation.h       ./src/imageCreation.c       \
+		./src/log/custom/log.h                 ./src/log/custom/log.c                 \
+		./src/log/messages.h            ./src/log/messages.c            \
+		./src/kbhit.c \
+		./src/SO2-Control.c
 
 lin:
-	gcc -lm -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
+	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
+		-Isrc/camera/mock \
+		-Isrc \
+		-Isrc/processing \
 		-I${LINUXSDKPATH}/include                \
-		 ${FILES}                                \
-		-L${LINUXSDKPATH}/lib/linux64 -lpfw      \
-		-L${LINUXSDKPATH}/lib/linux64 -lphx      \
+		-Isrc/log                         \
+		-Isrc/log/custom                         \
+		${FILES}                                \
+		-lm  \
 		-o ${OUTFILE}
+		#~ -L${LINUXSDKPATH}/lib/linux64 -lpfw      \
+		#~ -L${LINUXSDKPATH}/lib/linux64 -lphx      \
 
 win:
 	i586-mingw32msvc-gcc -D _PHX_WIN32 -D "WIN32" \

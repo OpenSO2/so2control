@@ -17,7 +17,6 @@
 
 
 
-
 /******************************
  *   MACROS
  ******************************/
@@ -46,7 +45,7 @@ typedef struct
 	/* not used right now. should contain a value for image noise */
 	ui32		dDarkCurrent;
 	/* number of images take */
-	ui32		dImageCounter;
+	int			dImageCounter;
 	/* delay between two frames in [ms] */
 	ui32		dInterFrameDelay;
 	/* length of the triggerpulse in [ms] */
@@ -62,7 +61,7 @@ typedef struct
 	/* A handle to identify the camera */
 	tHandle		hCamera;
 	/* A status variable inherited from the SDK */
-	etStat		eStat;
+	//~ etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */
 	int			dFixTime;
 	/* File identifier for current images */
@@ -73,14 +72,14 @@ typedef struct
 	int			dImagesFile;
 
 	/* ~Callback stuff~ */
-	
+
 	/* Event Flags */
 	volatile tFlag	fBufferReady;
 	volatile int	dBufferReadyCount;
 
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
-	
+
 	/* Camera identifier */
 	char identifier;
 }sParameterStruct;

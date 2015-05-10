@@ -1,6 +1,7 @@
 #ifndef _IMAGECREATION_
 #define _IMAGECREATION_
 #include"configurations.h"
+#include<time.h>
 
 /******************************
  *   Structures
