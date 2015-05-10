@@ -1,74 +1,29 @@
 /*
- * See https://github.com/wrathematics/kbhit/blob/master/src/kbhit.c
+ * See http://www.undertec.de/blog/2009/05/kbhit-und-getch-fur-linux.html
  */
 
-/* This Source Code Form is subject to the terms of the BSD 2-Clause
- * License. If a copy of the this license was not distributed with this
- * file, you can obtain one from http://opensource.org/licenses/BSD-2-Clause. */
-
-// Copyright 2014, Schmidt
-
-#define OS_WINDOWS (defined(_WIN32) || defined(__WIN32__) || defined(_WIN64) || defined(__TOS_WIN__) || defined(__WINDOWS__))
-
-
-#if OS_WINDOWS
-#include <conio.h>
+#if WIN32
+	#include <conio.h>
 #else
-#include <termios.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <stdio.h>
+	#include <termios.h>
+	#include <stdio.h>
 
-
-void changemode(int dir)
-{
-  static struct termios oldt, newt;
-
-  if (dir == 1)
-  {
-    tcgetattr(STDIN_FILENO, &oldt);
-
-    newt = oldt;
-
-    newt.c_lflag &= ~(ICANON | ECHO);
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-  }
-  else
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-
-}
-
-int getch()
-{
-  int ch;
-
-  changemode(1);
-
-  ch = getchar();
-
-  changemode(0);
-
-  return ch;
-}
-
-
-int kbhit()
-{
-  struct timeval tv;
-  fd_set rdfs;
-
-  tv.tv_sec = 0;
-  tv.tv_usec = 0;
-
-  FD_ZERO(&rdfs);
-  FD_SET (STDIN_FILENO, &rdfs);
-
-  select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-  printf("kbhit! -%i-", FD_ISSET(STDIN_FILENO, &rdfs));
-
-  return FD_ISSET(STDIN_FILENO, &rdfs);
-}
+	int kbhit(void);
+	int kbhit(void) {
+		struct termios term, oterm;
+		int fd = 0;
+		int c = 0;
+		tcgetattr(fd, &oterm);
+		memcpy(&term, &oterm, sizeof(term));
+		term.c_lflag = term.c_lflag & (!ICANON);
+		term.c_cc[VMIN] = 0;
+		term.c_cc[VTIME] = 1;
+		tcsetattr(fd, TCSANOW, &term);
+		c = getchar();
+		tcsetattr(fd, TCSANOW, &oterm);
+		if (c != -1)
+			ungetc(c, stdin);
+		return ((c != -1) ? 1 : 0);
+	}
 
 #endif
