@@ -45,3 +45,6 @@ int camera_get( tHandle handle, short **stBuffer )
 int camera_setExposure( tHandle handle, stImageBuff stBuffer ){
 	return 0;
 }
+int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
+	return 0;
+}

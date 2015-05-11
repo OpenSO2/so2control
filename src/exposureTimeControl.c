@@ -11,12 +11,12 @@
 
 int setExposureTime(sParameterStruct *sSO2Parameters)
 {
-	int				status 			= 0; /* status variable */
-	int				timeSwitch		= 0; /* Integer switch to switch between exposure modi */
-	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
-	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
-	char			messbuff[512];
-	char			errbuff[512];
+	int         status         = 0; /* status variable */
+	int         timeSwitch     = 0; /* Integer switch to switch between exposure modi */
+	tHandle     hCamera        = sSO2Parameters->hCamera; /* hardware handle for camera */
+	stImageBuff stBuffer;      /* Buffer where the Framegrabber stores the image */
+	char        messbuff[512];
+	char        errbuff[512];
 
 	/* pre-set the buffer with zeros */
 	memset( &stBuffer, 0, sizeof(stImageBuff) );
@@ -25,40 +25,13 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	{
 		/* Check if exposure time is declared fix in the config file if so set it.*/
 		logMessage("Set program to use a fix exposure time.");
-		// FIXME:
-		//~ status = fixExposureTime(sSO2Parameters);
-		if (status != 0) return 1;
+		return camera_setExposure(sSO2Parameters);
 	}
 	else
 	{
-		/* NMD: N, S, F
-		 * N = Normal, S = Electronic Shutter, F = Frameblanking
-		 * Speed:
-		 * Frameblanking FBL: 1 - 12
-		 * Electronic Shutter SHT = 1 - 1055
-		 * FBL > SHT
-		 * for conversion to milliseconds see camera manual
-		 */
-
-		/* Pre-set the Camera with a medium exposure time */
-		status = sendMessage(hCamera, "NMD S");
-		if (0 != status )
-		{
-			logError("setting camera to electronic shutter mode failed");
-			return status;
-		}
-
-		status = sendMessage(hCamera, "SHT 1055");
-		if (0 != status )
-		{
-			logError("setting SHT value 1055 failed");
-			return status;
-		}
-
 		/* Acquire first buffer to decide between FBL or SHT */
-
-//~ FIXME:
-status = camera_get(sSO2Parameters->hCamera, &stBuffer);
+		//~ FIXME:
+		status = camera_get(sSO2Parameters->hCamera, &stBuffer);
 		//~ status = getOneBuffer(sSO2Parameters, &stBuffer);
 		if (status != 0)
 		{
@@ -67,28 +40,37 @@ status = camera_get(sSO2Parameters->hCamera, &stBuffer);
 		/* calculate histogram to test for over or under exposition */
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
 
-		camera_setExposure(hCamera, timeSwitch);
+		camera_setExposureSwitch(hCamera, timeSwitch);
 	}
 	return 0;
 }
 
 
+
+/*
+ *
+ * timeSwitch:
+ *    - 0 neither over- nor underexposed
+ *    - 1 underexposed
+ *    - 2 overexposed
+ *    - 3 over- and underexposed
+ *
+ *
+ * bufferlength = 1344 x 1024 number of pixels
+ * Image date is stored in 12-bit data within 16-bit data
+ * datatyp 'short' in Visual Studio v6.0 represents 16 bit in memory
+ * this might be different on different compilers.
+ * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
+ */
 int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch)
 {
-	/* bufferlength = 1344 x 1024 number of pixels
-	 * Image date is stored in 12-bit data within 16-bit data
-	 * datatyp 'short' in Visual Studio v6.0 represents 16 bit in memory
-	 * this might be different on different compilers.
-	 * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
-	 */
-
 	int		bufferlength 	= sSO2Parameters->dBufferlength;
 	int		percentage		= sSO2Parameters->dHistPercentage;
 	int		intervalMin		= sSO2Parameters->dHistMinInterval;
-	int		histogram[4096]	={0};
+	int		histogram[4096]	= {0};
 	int		summe 			= 0;
 	int		i;
-	short	temp			=0;
+	short	temp			= 0;
 	short	*shortBuffer;
 
 	/* shortBuffer gets the address of the image data assigned
