@@ -38,4 +38,7 @@ typedef struct {
 #endif
 
 #endif
+<<<<<<< HEAD
 
+=======
+>>>>>>> add documentation & clean up
