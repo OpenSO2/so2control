@@ -1,7 +1,38 @@
 
 int camera_init(handle){
-	/* Load the framegrabber with the phoenix configuration file. The function returns the necessary camera handles */
-	return PHX_CameraConfigLoad( &sParameters_A.hCamera, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	int status = 0;
+
+	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
+	status = PHX_CameraConfigLoad( &handle, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	if (0 != status )
+	{
+		logError("loading camera config failed");
+		return status;
+	}
+
+	/* Pre-set the Camera with a medium exposure time
+	 * NMD: N, S, F
+	 * N = Normal, S = Electronic Shutter, F = Frameblanking
+	 * Speed:
+	 * Frameblanking FBL: 1 - 12
+	 * Electronic Shutter SHT = 1 - 1055
+	 * FBL > SHT
+	 * for conversion to milliseconds see camera manual
+	 */
+
+	status = sendMessage(hCamera, "NMD S");
+	if (0 != status )
+	{
+		logError("setting camera to electronic shutter mode failed");
+		return status;
+	}
+
+	status = sendMessage(hCamera, "SHT 1055");
+	if (0 != status )
+	{
+		logError("setting SHT value 1055 failed");
+		return status;
+	}
 }
 
 int camera_abort( handle ){
@@ -13,12 +44,8 @@ int camera_stop( handle ){
 }
 
 int camera_get(hCamera, &stBuffer){
-	eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, &stBuffer );
-	if( OK == eStat ){
-
-	}
+	return PHX_Acquire( hCamera, PHX_BUFFER_GET, &stBuffer );
 }
-
 
 
 int fixExposureTime(sParameterStruct *sSO2Parameters)
@@ -102,7 +129,7 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 
 
 
-int camera_setExposure(sParameterStruct *sSO2Parameters, int timeSwitch){
+int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
 	switch(timeSwitch)
 	{
 		case 0 : //printf("starting electronic shutter mode\nExposuretime is set\n");

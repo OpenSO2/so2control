@@ -64,10 +64,6 @@ int main( int argc, char* argv[] )
 	setExposureTime(&sParameters_B);
 
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
-	// @FIXME: set exposure times independently
-	camera_get( sParameters_A.hCamera, NULL );
-	camera_get( sParameters_B.hCamera, NULL );
-
 	state = startAquisition(&sParameters_A, &sParameters_B);
 	logMessage("Aquisition stopped");
 	if (state != 0)
