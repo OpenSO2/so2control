@@ -27,14 +27,13 @@ int main( int argc, char* argv[] )
 	if(state != 0)
 	{
 		/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
-		printf("creating a logfile failed. Program is aborting...\n");
+		logError("creating a logfile failed. Program is aborting...\n");
 		return state;
 	}
 
 	/* Initialise parameter structures */
 	memset( &sParameters_A, 0, sizeof(sParameterStruct) );
 	memset( &sParameters_B, 0, sizeof(sParameterStruct) );
-printf("init a \n");
 
 	structInit(&sParameters_A, 'a');
 	structInit(&sParameters_B, 'b');
@@ -46,7 +45,7 @@ printf("init a \n");
 		logError("camera_init for Camera A failed");
 		return state;
 	}
-printf("init b \n");
+
 	state = camera_init(&sParameters_B);
 	if(state != 0)
 	{
@@ -54,7 +53,6 @@ printf("init b \n");
 		logError("camera_init for Camera B failed");
 		return state;
 	}
-printf("init done \n");
 
 	/* function for initialising basic values for sParameterStruct */
 	state = configurations(&sParameters_A, 'a');

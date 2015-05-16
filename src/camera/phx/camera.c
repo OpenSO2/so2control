@@ -9,11 +9,9 @@
 int camera_init(sParameterStruct *pvParams){
 	int status = 0;
 	int channel = pvParams->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
-printf("camera init cam %c\n", pvParams->identifier);
 	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
 	status = PHX_CameraConfigLoad( &pvParams->hCamera, "src/camera/phx/c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | channel | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 
-printf("14\n");
 	if (0 != status )
 	{
 		logError("loading camera config failed");
@@ -59,21 +57,14 @@ int camera_stop( tHandle handle ){
 int camera_get(tHandle hCamera, short **stBuffer){
 	int status;
 	stImageBuff buffythevampireslayer;
-    printf("CAMERA1: %p %p \n", buffythevampireslayer.pvAddress, *stBuffer);
-	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
-    printf("CAMERA-: %p \n", buffythevampireslayer.pvAddress);
-	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
-    printf("CAMERA2: %p \n", buffythevampireslayer.pvAddress);
 	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
 	*stBuffer = buffythevampireslayer.pvAddress;
-    printf("CAMERA2: %p %p \n", buffythevampireslayer.pvAddress, *stBuffer);
 
 	return status;
 }
 
 
 int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(tHandle handle, ui32 dwInterruptMask, void *pvParams) ){
-printf("CAMCAM: trigger");
 	return PHX_Acquire( handle, PHX_START, (void*) callbackFunction );
 }
 
