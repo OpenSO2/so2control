@@ -13,7 +13,7 @@
 #include"imageCreation.h"
 #include"log.h"
 #include"imageFunctions.h"
-//~ #include"common.c"
+
 
 #define HEADER_SIZE 64
 
@@ -26,26 +26,26 @@ void callbackFunction(
 	)
 {
 	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
-	//~ (void) hCamera;
+	(void) hCamera;
 
 	/* Handle the Buffer Ready event */
-	//~ if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
+	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
 		/* Increment the Display Buffer Ready Count */
 		psControlFlags->fBufferReady = TRUE;
 		psControlFlags->dBufferReadyCount++;
-	//~ }
+	}
 	/* Fifo Overflow */
-	//~ if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-		//~ psControlFlags->fFifoOverFlow = TRUE;
-	//~ }
+	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
+		psControlFlags->fFifoOverFlow = TRUE;
+	}
 
 	/* Note:
 	 * The callback routine may be called with more than 1 event flag set.
 	 * Therefore all possible events must be handled here.
 	 */
-	//~ if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
-	//~ {
-	//~ }
+	if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
+	{
+	}
 }
 
 
@@ -83,7 +83,6 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 	/* Now start our capture, return control immediately back to program */
 	status = camera_trigger( hCamera_A, sParameters_A, (void*) &callbackFunction );
 	status = camera_trigger( hCamera_B, sParameters_B, (void*) &callbackFunction );
-
 
 	if ( !status )
 	{
@@ -157,7 +156,7 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 
 int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct timeThisImage, char cameraIdentifier)
 {
-	short       *stBuffer;              /* Buffer in which the image data is stored by the framegrabber */
+	stImageBuff  stBuffer;              /* Buffer in which the image data is stored by the framegrabber */
 	int          status;                /* Status variable for several return values */
 	int          imageByteCount = 1344 * 1024 * 16/8; /* number of pixels times 16 Bit depth in Byte */
 	int          fwriteReturn;          /* Return value for the write functions */
@@ -166,8 +165,6 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 	char         errbuff[512];
 	char         messBuff[512];
 	tHandle	     hCamera = sSO2Parameters->hCamera;
-
-	stBuffer == 0;
 
 	if(sSO2Parameters->dImagesFile == 0 && strlen(filename) ){
 		logError("dImagesFile cannot be 0. This is fatal.");
@@ -231,12 +228,12 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 		/* rotate one of the images */
 		/* imageByteCount/2 = number of pixels */
 		if(cameraIdentifier == 'A'){
-			rotateImage(stBuffer, imageByteCount/2);
+			rotateImage(stBuffer.pvAddress, imageByteCount/2);
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		// pvAddress => Virtual address of the image buffer
-		fwriteReturn = fwrite(stBuffer, 1, imageByteCount, imageFile);
+		fwriteReturn = fwrite(stBuffer.pvAddress, 1, imageByteCount, imageFile);
 
 		//fflush(imageFile);
 		fclose(imageFile);
@@ -249,14 +246,10 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 	}
 	else
 	{
-		sprintf(errbuff, "downloading Image %s from framegrabber failed", filename);
+		sprintf(errbuff,"downloading Image %s from framegrabber failed",filename);
 		logError(errbuff);
 		return 6;
 	}
-
-	// release buffer
-	free(stBuffer);
-
 	return 0;
 }
 
