@@ -23,23 +23,27 @@
  *
  */
 
+#include<phx_api.h>
+#include<phx_os.h>
+#include"configurations.h"
+/**
+ *
+ */
+int camera_init(sParameterStruct *pvParams);
 
 /**
  *
  */
-int camera_init(hCamera)
+int camera_uninit(tHandle hCamera);
 
 /**
  *
  */
-int camera_uninit(hCamera)
+int camera_get( tHandle handle, short **stBuffer );
 
 /**
  *
  */
-int camera_get(hCamera)
+int camera_abort(tHandle hCamera);
 
-/**
- *
- */
-int camera_abort(hCamera)
+int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch);

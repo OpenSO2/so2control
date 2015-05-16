@@ -1,10 +1,13 @@
+
+#include<phx_api.h>
+#include<phx_os.h>
 #include"configurations.h"
 #include<string.h>
 #define MAXBUF 1024
 #include"log.h"
 
 
-int structInit(sParameterStruct *sSO2Parameters,char identifier)
+int structInit(sParameterStruct *sSO2Parameters, char identifier)
 {
 	sSO2Parameters->dImageCounter = 0;
 	sSO2Parameters->dTriggerPulseWidth = 15;
@@ -21,9 +24,6 @@ int configurations(sParameterStruct *sSO2Parameters, char identifier)
 {
 	etStat	eStat = OK;
 	int		status = 0; /* status variable for return values */
-
-	/* initialise the parameterstructure with default values */
-	structInit(sSO2Parameters, identifier);
 
 	/* load the default configurations for the framegrabber */
 	eStat = defaultConfig(sSO2Parameters);

@@ -11,6 +11,9 @@
 /******************************
  *   HEADER INCLUDES
  ******************************/
+
+#include<phx_api.h>
+#include<phx_os.h>
 #include<stdio.h>
 #include <math.h>
 #include"common.h"

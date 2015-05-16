@@ -11,8 +11,9 @@
 /******************************
  *   HEADER INCLUDES
  ******************************/
+
 #include<stdio.h>
-#include <math.h>
+#include<math.h>
 #include"common.h"
 
 
@@ -43,13 +44,13 @@ typedef struct
 	 */
 	int			dHistPercentage;
 	/* not used right now. should contain a value for image noise */
-	ui32		dDarkCurrent;
+	int		dDarkCurrent;
 	/* number of images take */
 	int			dImageCounter;
 	/* delay between two frames in [ms] */
-	ui32		dInterFrameDelay;
+	int		dInterFrameDelay;
 	/* length of the triggerpulse in [ms] */
-	ui32		dTriggerPulseWidth;
+	int		dTriggerPulseWidth;
 	/* contains the Exposuretime in [ms] */
 	double		dExposureTime;
 	/* contains the name of a Config-file */

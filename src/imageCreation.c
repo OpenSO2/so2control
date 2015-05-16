@@ -21,7 +21,7 @@
 // FIXME: clean up callback...
 void callbackFunction(
 	tHandle     hCamera,           /* Camera handle. */
-	ui32        dwInterruptMask,   /* Interrupt mask. */
+	int        dwInterruptMask,   /* Interrupt mask. */
 	void        *pvParams          /* Pointer to user supplied context */
 	)
 {

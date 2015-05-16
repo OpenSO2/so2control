@@ -1,9 +1,19 @@
+#include<phx_api.h>
+#include<phx_os.h>
 
-int camera_init(handle){
+#include<string.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include"configurations.h"
+
+int camera_init(sParameterStruct *pvParams){
 	int status = 0;
-
+	int channel = pvParams->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
+printf("camera init cam %c\n", pvParams->identifier);
 	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
-	status = PHX_CameraConfigLoad( &handle, "configurations//c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | PHX_CHANNEL_A | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	status = PHX_CameraConfigLoad( &pvParams->hCamera, "src/camera/phx/c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | channel | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+
+printf("14\n");
 	if (0 != status )
 	{
 		logError("loading camera config failed");
@@ -18,7 +28,7 @@ int camera_init(handle){
 	 * Electronic Shutter SHT = 1 - 1055
 	 * FBL > SHT
 	 * for conversion to milliseconds see camera manual
-	 */
+	 *
 
 	status = sendMessage(hCamera, "NMD S");
 	if (0 != status )
@@ -33,18 +43,38 @@ int camera_init(handle){
 		logError("setting SHT value 1055 failed");
 		return status;
 	}
+/**/
+	return status;
 }
 
-int camera_abort( handle ){
-	PHX_Acquire( handle, PHX_ABORT, NULL );
+int camera_abort( tHandle handle ){
+	return PHX_Acquire( handle, PHX_ABORT, NULL );
 }
 
-int camera_stop( handle ){
-	PHX_CameraRelease( handle );
+int camera_stop( tHandle handle ){
+	PHX_CameraRelease( &handle );
+	return 0;
 }
 
-int camera_get(hCamera, &stBuffer){
-	return PHX_Acquire( hCamera, PHX_BUFFER_GET, &stBuffer );
+int camera_get(tHandle hCamera, short **stBuffer){
+	int status;
+	stImageBuff buffythevampireslayer;
+    printf("CAMERA1: %p %p \n", buffythevampireslayer.pvAddress, *stBuffer);
+	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
+    printf("CAMERA-: %p \n", buffythevampireslayer.pvAddress);
+	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
+    printf("CAMERA2: %p \n", buffythevampireslayer.pvAddress);
+	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
+	*stBuffer = buffythevampireslayer.pvAddress;
+    printf("CAMERA2: %p %p \n", buffythevampireslayer.pvAddress, *stBuffer);
+
+	return status;
+}
+
+
+int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(tHandle handle, ui32 dwInterruptMask, void *pvParams) ){
+printf("CAMCAM: trigger");
+	return PHX_Acquire( handle, PHX_START, (void*) callbackFunction );
 }
 
 
@@ -57,6 +87,7 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 	char		message[9];
 	char		messbuff[512];
 	char		errbuff[512];
+	etStat          eStat;
 
 	/* before doing anything check if exposure time is within the limits */
 	if ( exposureTime < 2.4 || exposureTime > 1004400)
@@ -129,13 +160,99 @@ int fixExposureTime(sParameterStruct *sSO2Parameters)
 
 
 
+int camera_setExposure(sParameterStruct *sSO2Parameters)
+{
+	int			exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
+	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
+	etStat		eStat			= PHX_OK; /* Phoenix status variable */
+	int			shutterSpeed	= 1; /* in case something went wrong this value is accepted by both modi */
+	char		message[9];
+	char		messbuff[512];
+	char		errbuff[512];
+
+	/* before doing anything check if exposure time is within the limits */
+	if ( exposureTime < 2.4 || exposureTime > 1004400)
+	{
+		logError("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
+		eStat = PHX_ERROR_OUT_OF_RANGE;
+		return eStat;
+	}
+
+	if (exposureTime <= 83560)
+	{	//===========ELECTRONIC=SHUTTER==========
+
+		shutterSpeed = roundToInt(((exposureTime - 2.4)/79.275)+1);
+		sprintf(message,"SHT %d",shutterSpeed);
+
+		// N normal, S Shutter, F frameblanking
+		eStat = sendMessage(hCamera, "NMD S");
+		if ( PHX_OK != eStat )
+		{
+			logError("setting camera to electronic shutter mode failed");
+			return eStat;
+		}
+
+		// Shutter speed, 1 - 1055
+		eStat = sendMessage(hCamera, message);
+		if ( PHX_OK != eStat )
+		{
+			sprintf(errbuff,"setting SHT value to %d failed (exposuretime %d ms)",shutterSpeed,exposureTime);
+			logError(errbuff);
+			return eStat;
+		}
+		else
+		{
+			exposureTime = (int)(2.4 + (shutterSpeed-1) * 79.275);
+			sprintf(messbuff,"Camera uses electronic shutter mode. exposure time is: %d ms",exposureTime);
+			logMessage(messbuff);
+		}
+	}
+	else
+	{	//===========FRAME=BLANKING==========
+
+		shutterSpeed = roundToInt(exposureTime/83700);
+		sprintf(message,"FBL %d",shutterSpeed);
+
+		// N normal, S Shutter, F frameblanking
+		eStat = sendMessage(hCamera, "NMD F");
+		if ( PHX_OK != eStat )
+		{
+			logError("Setting camera to frameblanking mode failed");
+			return eStat;
+		}
+
+		// Shutter speed, 1 - 12
+		eStat = sendMessage(hCamera, message);
+		if ( PHX_OK != eStat )
+		{
+			sprintf(errbuff,"setting FBL value to %d failed (exposuretime %d ms)",shutterSpeed,exposureTime);
+			logError(errbuff);
+			return eStat;
+		}
+		else
+		{
+			exposureTime = shutterSpeed * 83700;
+			sprintf(messbuff,"Camera uses Frameblanking mode. exposure time is: %d ms",exposureTime);
+			logMessage(messbuff);
+		}
+	}
+	return eStat;
+}
+
+
 int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
+	etStat			eStat 			= PHX_OK; /* Phoenix status variable */
+	tHandle			hCamera 		= sSO2Parameters->hCamera; /* hardware handle for camera */
+	stImageBuff		stBuffer; /* Buffer where the Framegrabber stores the image */
+	char			messbuff[512];
+	char			errbuff[512];
+
 	switch(timeSwitch)
 	{
 		case 0 : //printf("starting electronic shutter mode\nExposuretime is set\n");
 				sSO2Parameters->dExposureTime = 0.0000124+(1055-1)*0.000079275;
 				logMessage("Camera is set to electronic shutter mode.");
-				sprintf(messbuff,"Exposure time = %f ms",sSO2Parameters->dExposureTime);
+				sprintf(messbuff, "Exposure time = %f ms",sSO2Parameters->dExposureTime);
 				logMessage(messbuff);
 				break;
 
@@ -167,11 +284,42 @@ int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
  */
 
 
+// FIXME: clean up callback...
+void callbackFunction2(
+	tHandle     hCamera,           /* Camera handle. */
+	int        dwInterruptMask,   /* Interrupt mask. */
+	void        *pvParams          /* Pointer to user supplied context */
+	)
+{
+	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
+	(void) hCamera;
+
+	/* Handle the Buffer Ready event */
+	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
+		/* Increment the Display Buffer Ready Count */
+		psControlFlags->fBufferReady = TRUE;
+		psControlFlags->dBufferReadyCount++;
+	}
+	/* Fifo Overflow */
+	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
+		psControlFlags->fFifoOverFlow = TRUE;
+	}
+
+	/* Note:
+	 * The callback routine may be called with more than 1 event flag set.
+	 * Therefore all possible events must be handled here.
+	 */
+	if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
+	{
+	}
+}
+
+
 
 int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
-	int			status			= 0; /* Status variable */
+	etStat		eStat			= PHX_OK; /* Status variable */
 	tHandle		hCamera			= sSO2Parameters->hCamera; /* hardware handle for camera */
 	int 		startErrCount	= 0; /* counting how often the start of capture process failed */
 
@@ -183,13 +331,13 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 	do
 	{
 		/* start capture, hand over callback function*/
-		status = camera_trigger( hCamera, (void*) callbackFunction );
-		if ( 0 == status )
+		eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction2 );
+		if ( PHX_OK == eStat )
 		{
 			/* if starting the capture was successful reset error counter to zero */
 			startErrCount = 0;
 			/* Wait for a user defined period between each camera trigger call*/
-			sleepMs( sSO2Parameters->dInterFrameDelay );
+			_PHX_SleepMs( sSO2Parameters->dInterFrameDelay );
 
 			/* Wait here until either:
 			 * (a) The user aborts the wait by pressing a key in the console window
@@ -200,25 +348,25 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 			 */
 			while ( !sSO2Parameters->fBufferReady && !sSO2Parameters->fFifoOverFlow && !kbhit() )
 			{
-				sleepMs(10);
+				_PHX_SleepMs(10);
 			}
 
 			/* if BufferReady flag is set, reset it for next image */
 			sSO2Parameters->fBufferReady = FALSE;
 
 			/* download the buffer and place it in 'stBuffer' */
-			status = camera_get( hCamera );
-			if ( 0 != status )
-			{
-				logError("acquisition of one buffer for calculating the exposuretime failed (not fatal)");
-				/* stopping the acquisition */
-				camera_abort(hCamera);
-				return eStat;
-			}
+			eStat = PHX_Acquire( hCamera, PHX_BUFFER_GET, stBuffer );
+				if ( PHX_OK != eStat )
+				{
+					logError("acquisition of one buffer for calculating the exposuretime failed (not fatal)");
+					/* stopping the acquisition */
+					PHX_Acquire( hCamera, PHX_ABORT, NULL );
+					return eStat;
+				}
 
 			/* stopping the acquisition */
-			camera_abort(hCamera);
-		} // if ( OK == eStat )
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
+		} // if ( PHX_OK == eStat )
 		else
 		{
 			logError("starting acquisition for calculating the exposuretime failed (not fatal)");
@@ -227,10 +375,10 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 			if(startErrCount >= 3)
 			{
 				logError("Acquiring one buffer for calculating the exposuretime failed 3 times in a row. (fatal)");
-				camera_abort(hCamera);
+				PHX_Acquire( hCamera, PHX_ABORT, NULL );
 				return eStat;
 			}
-			camera_abort(hCamera);
+			PHX_Acquire( hCamera, PHX_ABORT, NULL );
 		} // else
 	/* loops only if something went wrong */
 	} while (startErrCount != 0);

@@ -2,9 +2,9 @@ OUTFILE = so-camera.exe
 LINUXSDKPATH = /usr/local/active_silicon/phx_sdk-6.23
 WINSDKPATH = C:/
 FILES = ./src/common.h          ./src/common.c       \
-		./src/camera/mock/camera.h ./src/camera/mock/camera.c \
-		./src/camera/mock/configurations.h      ./src/camera/mock/configurations.c      \
-		./src/filterwheel/custom/darkCurrent.h         ./src/filterwheel/custom/darkCurrent.c         \
+		./src/camera/phx/camera.h ./src/camera/phx/camera.c \
+		./src/camera/phx/configurations.h      ./src/camera/phx/configurations.c      \
+		./src/filterwheel/custom/darkCurrent.h ./src/filterwheel/custom/darkCurrent.c         \
 		./src/exposureTimeControl.h ./src/exposureTimeControl.c \
 		./src/processing/imageFunctions.h      ./src/processing/imageFunctions.c      \
 		./src/imageCreation.h       ./src/imageCreation.c       \
@@ -24,13 +24,35 @@ MOCK_FILES = ./src/common.h          ./src/common.c       \
 		./src/log/messages.h            ./src/log/messages.c            \
 		./src/kbhit.c \
 		./src/SO2-Control.c
+FILES_MO = ./src/common.h          ./src/common.c       \
+		./src/camera/mock/camera.h ./src/camera/mock/camera.c \
+		./src/camera/mock/configurations.h      ./src/camera/mock/configurations.c      \
+		./src/filterwheel/custom/darkCurrent.h         ./src/filterwheel/custom/darkCurrent.c         \
+		./src/exposureTimeControl.h ./src/exposureTimeControl.c \
+		./src/processing/imageFunctions.h      ./src/processing/imageFunctions.c      \
+		./src/imageCreation.h       ./src/imageCreation.c       \
+		./src/log/custom/log.h                 ./src/log/custom/log.c                 \
+		./src/log/messages.h            ./src/log/messages.c            \
+		./src/kbhit.c \
+		./src/SO2-Control.c
+
+mo:
+	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
+		-Isrc/camera/mock \
+		-Isrc \
+		-Isrc/processing \
+		-I${LINUXSDKPATH}/include                \
+		-Isrc/log                         \
+		-Isrc/log/custom                         \
+		${FILES_MO}                                \
+		-lm  \
+		-o ${OUTFILE}
 
 mock:
 	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
 		-Isrc/camera/mock \
 		-Isrc \
 		-Isrc/processing \
-		-I${LINUXSDKPATH}/include                \
 		-Isrc/log                         \
 		-Isrc/log/custom                         \
 		${MOCK_FILES}                                \
@@ -38,17 +60,18 @@ mock:
 		-o ${OUTFILE}
 
 lin:
-	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX \
-		-Isrc/camera/mock \
+	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX -D PHX \
+		-I/usr/local/active_silicon/phx_sdk-6.23/include                \
+		-Isrc/camera/phx \
 		-Isrc \
 		-Isrc/processing \
-		-I${LINUXSDKPATH}/include                \
 		-Isrc/log                         \
 		-Isrc/log/custom                         \
 		${FILES}                                \
 		-lm  \
-		-L${LINUXSDKPATH}/lib/linux64 -lpfw      \
-		-L${LINUXSDKPATH}/lib/linux64 -lphx      \
+		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lpfw      \
+		-L/usr/local/active_silicon/phx_sdk-6.23/lib/linux64 -lphx      \
+		-g \
 		-o ${OUTFILE}
 
 win:

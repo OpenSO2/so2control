@@ -4,6 +4,7 @@
  */
 #include<stdio.h>
 #include<string.h>
+#include"camera.h"
 #include"exposureTimeControl.h"
 #include"configurations.h"
 #include"imageCreation.h"
@@ -20,7 +21,7 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 
 	/* pre-set the buffer with zeros */
 	memset( &stBuffer, 0, sizeof(stImageBuff) );
-
+printf("24\n");
 	if(sSO2Parameters->dFixTime != 0)
 	{
 		/* Check if exposure time is declared fix in the config file if so set it.*/
@@ -31,16 +32,18 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	{
 		/* Acquire first buffer to decide between FBL or SHT */
 		//~ FIXME:
-		status = camera_get(sSO2Parameters->hCamera, &stBuffer);
-		//~ status = getOneBuffer(sSO2Parameters, &stBuffer);
+		// status = camera_get(sSO2Parameters->hCamera, &stBuffer.pvAddress);
+		status = getOneBuffer(sSO2Parameters, &stBuffer);
 		if (status != 0)
 		{
 			return status;
 		}
 		/* calculate histogram to test for over or under exposition */
+printf("42\n");
 		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
-
-		camera_setExposureSwitch(hCamera, timeSwitch);
+printf("44\n");
+		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
+printf("46\n");
 	}
 	return 0;
 }
@@ -72,26 +75,33 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 	int		i;
 	short	temp			= 0;
 	short	*shortBuffer;
+printf("78\n");
 
 	/* shortBuffer gets the address of the image data assigned
 	 * since shortBuffer is of datatyp 'short'
 	 * shortbuffer++ will set the pointer 16 bits forward
 	 */
-	 shortBuffer = stBuffer->pvAddress;
+	shortBuffer = stBuffer->pvAddress;
+printf("85\n");
 
 	/* scanning the whole buffer and creating a histogram */
-	 for(i=0;i<bufferlength;i++)
+	for(i=0; i < bufferlength; i++)
 	{
+//printf("90\n");
 		temp = *shortBuffer;
+//printf("92\n");
 		histogram[temp]++;
+//printf("94\n");
 		shortBuffer++;
 	}
 
+printf("100\n");
 	/* sum over a through config file given interval to check if image is underexposed */
-	for(i=0;i<intervalMin;i++)
+	for(i=0; i < intervalMin; i++)
 	{
 		summe = summe + histogram[i];
 	}
+printf("100\n");
 
 	/* pre-set the switch to 0 if image is neither over or under exposed it remains 0 */
 	*timeSwitch = 0;
@@ -118,5 +128,6 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 			*timeSwitch = 2;
 		}
 	}
+printf("expotime: index %i\n", *timeSwitch);
 	return 0;
 }

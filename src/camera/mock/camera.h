@@ -22,13 +22,20 @@
  * - camera_uninit -> PHX_CameraRelease
  *
  */
-
 #include<common.h>
+#include "configurations.h"
+
+
+
+#ifndef TRUE
+#define TRUE     (1==1)
+#define FALSE    (!TRUE)
+#endif
 
 /**
  *
  */
-int camera_init(tHandle hCamera);
+int camera_init(sParameterStruct *pvParams);
 
 /**
  *
@@ -38,7 +45,7 @@ int camera_uninit(tHandle hCamera);
 /**
  *
  */
-int camera_get(tHandle hCamera);
+int camera_get(tHandle hCamera, short **stBuffer);
 
 /**
  *

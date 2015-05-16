@@ -1,4 +1,5 @@
 #include<string.h>
+#include<camera.h>
 #include"configurations.h"
 #include"messages.h"
 #include"imageCreation.h"
@@ -33,22 +34,27 @@ int main( int argc, char* argv[] )
 	/* Initialise parameter structures */
 	memset( &sParameters_A, 0, sizeof(sParameterStruct) );
 	memset( &sParameters_B, 0, sizeof(sParameterStruct) );
+printf("init a \n");
 
+	structInit(&sParameters_A, 'a');
+	structInit(&sParameters_B, 'b');
 	/* initiate camera */
-	state = camera_init(&sParameters_A.hCamera);
+	state = camera_init(&sParameters_A);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
 		logError("camera_init for Camera A failed");
 		return state;
 	}
-	state = camera_init(&sParameters_B.hCamera);
+printf("init b \n");
+	state = camera_init(&sParameters_B);
 	if(state != 0)
 	{
 		/* this is critical if this function fails no camera handle is returned */
 		logError("camera_init for Camera B failed");
 		return state;
 	}
+printf("init done \n");
 
 	/* function for initialising basic values for sParameterStruct */
 	state = configurations(&sParameters_A, 'a');
