@@ -1,3 +1,11 @@
+/*
+ * This file provides support for the Silicon Active Framegrabber vie the
+ * PHX SDK, thus this file is mostly just a wrapper:
+ *
+ * - camera_init -> PHX_CameraConfigLoad
+ * - camera_get  -> PHX_Acquire
+ * - camera_uninit -> PHX_CameraRelease
+ */
 #include<phx_api.h>
 #include<phx_os.h>
 
@@ -8,34 +16,22 @@
 
 
 void PHXcallbackFunction(
-       tHandle     hCamera,           /* Camera handle. */
-       int        dwInterruptMask,   /* Interrupt mask. */
-       void        *pvParams          /* Pointer to user supplied context */
-       )
-{
-       sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
-       (void) hCamera;
+	tHandle     hCamera,           /* Camera handle. */
+	int        dwInterruptMask,   /* Interrupt mask. */
+	void        *pvParams          /* Pointer to user supplied context */
+){
+	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
+	(void) hCamera;
 
-       /* Handle the Buffer Ready event */
-       if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
-               /* Increment the Display Buffer Ready Count */
-//               psControlFlags->fBufferReady = TRUE;
-//               psControlFlags->dBufferReadyCount++;
-       }
-       /* Fifo Overflow */
-       if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-//               psControlFlags->fFifoOverFlow = TRUE;
-       }
+	/* Fifo Overflow */
+	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
+		psControlFlags->fFifoOverFlow = TRUE;
+	}
 
-       /* Note:
-        * The callback routine may be called with more than 1 event flag set.
-        * Therefore all possible events must be handled here.
-        */
-       if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
-       {
-       }
-
-	callbackFunction(psControlFlags);
+	/* Handle the Buffer Ready event */
+	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
+		callbackFunction(psControlFlags);
+	}
 }
 
 
