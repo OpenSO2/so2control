@@ -79,19 +79,18 @@ int camera_abort( tHandle handle ){
 }
 
 int camera_stop( tHandle handle ){
-	PHX_CameraRelease( &handle );
-	return 0;
+	return PHX_CameraRelease( &handle );
 }
 
-int camera_get(tHandle hCamera, short **stBuffer){
+int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer )
 	int status;
+	tHandle hCamera = sSO2Parameters->hCamera;
 	stImageBuff buffythevampireslayer;
 	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
 	*stBuffer = buffythevampireslayer.pvAddress;
 
 	return status;
 }
-
 
 int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(sParameterStruct *psControlFlags) ){
 	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );

@@ -32,7 +32,7 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	{
 		/* Acquire first buffer to decide between FBL or SHT */
 		//~ FIXME:
-		status = camera_get(sSO2Parameters->hCamera, &stBuffer);
+		status = camera_get(sSO2Parameters, &stBuffer);
 		if (status != 0)
 		{
 			return status;

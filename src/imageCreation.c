@@ -185,7 +185,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 	}
 
 	/* download the image from the framegrabber */
-	status = camera_get(hCamera, &stBuffer);
+	status = camera_get(sSO2Parameters, &stBuffer);
 
 	if ( OK == status )
 	{

@@ -32,7 +32,7 @@ int camera_uninit(tHandle hCamera);
 /**
  *
  */
-int camera_get( tHandle handle, short **stBuffer );
+int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer );
 
 /**
  *
