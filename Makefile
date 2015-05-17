@@ -2,7 +2,7 @@ OUTFILE = so-camera.exe
 LINUXSDKPATH = /usr/local/active_silicon/phx_sdk-6.23
 WINSDKPATH = C:/
 FILES = ./src/common.h          ./src/common.c       \
-		./src/camera/phx/camera.h ./src/camera/phx/camera.c \
+		./src/camera/camera.h ./src/camera/phx/camera.c \
 		./src/camera/phx/configurations.h      ./src/camera/phx/configurations.c      \
 		./src/filterwheel/custom/darkCurrent.h ./src/filterwheel/custom/darkCurrent.c         \
 		./src/exposureTimeControl.h ./src/exposureTimeControl.c \
@@ -39,6 +39,7 @@ mock:
 lin:
 	gcc -D _PHX_POSIX -D _PHX_LINUX -D POSIX -D PHX \
 		-I/usr/local/active_silicon/phx_sdk-6.23/include                \
+		-Isrc/camera \
 		-Isrc/camera/phx \
 		-Isrc \
 		-Isrc/processing \

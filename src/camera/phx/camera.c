@@ -82,11 +82,11 @@ int camera_stop( tHandle handle ){
 	return PHX_CameraRelease( &handle );
 }
 
-int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer )
+int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer ){
 	int status;
-	tHandle hCamera = sSO2Parameters->hCamera;
 	stImageBuff buffythevampireslayer;
-	status = PHX_Acquire( hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
+
+	status = PHX_Acquire( sSO2Parameters->hCamera, PHX_BUFFER_GET, &buffythevampireslayer );
 	*stBuffer = buffythevampireslayer.pvAddress;
 
 	return status;
