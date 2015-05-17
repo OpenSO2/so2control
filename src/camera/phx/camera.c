@@ -6,6 +6,39 @@
 #include<stdlib.h>
 #include"configurations.h"
 
+
+void PHXcallbackFunction(
+       tHandle     hCamera,           /* Camera handle. */
+       int        dwInterruptMask,   /* Interrupt mask. */
+       void        *pvParams          /* Pointer to user supplied context */
+       )
+{
+       sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
+       (void) hCamera;
+
+       /* Handle the Buffer Ready event */
+       if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
+               /* Increment the Display Buffer Ready Count */
+//               psControlFlags->fBufferReady = TRUE;
+//               psControlFlags->dBufferReadyCount++;
+       }
+       /* Fifo Overflow */
+       if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
+//               psControlFlags->fFifoOverFlow = TRUE;
+       }
+
+       /* Note:
+        * The callback routine may be called with more than 1 event flag set.
+        * Therefore all possible events must be handled here.
+        */
+       if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
+       {
+       }
+
+	callbackFunction(psControlFlags);
+}
+
+
 int camera_init(sParameterStruct *pvParams){
 	int status = 0;
 	int channel = pvParams->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
@@ -64,10 +97,9 @@ int camera_get(tHandle hCamera, short **stBuffer){
 }
 
 
-int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(tHandle handle, ui32 dwInterruptMask, void *pvParams) ){
-	return PHX_Acquire( handle, PHX_START, (void*) callbackFunction );
+int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(sParameterStruct *psControlFlags) ){
+	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );
 }
-
 
 int fixExposureTime(sParameterStruct *sSO2Parameters)
 {

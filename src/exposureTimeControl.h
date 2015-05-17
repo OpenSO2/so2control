@@ -6,5 +6,5 @@
 #define _EXPOSURETIMECONTROL_
 #include"configurations.h"
 	int setExposureTime( sParameterStruct *sSO2Parameters);
-	int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch);
+	int evalHist(short *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch);
 #endif

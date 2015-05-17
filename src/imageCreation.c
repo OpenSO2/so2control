@@ -17,38 +17,11 @@
 
 #define HEADER_SIZE 64
 
-
-// FIXME: clean up callback...
-void callbackFunction(
-	tHandle     hCamera,           /* Camera handle. */
-	int        dwInterruptMask,   /* Interrupt mask. */
-	void        *pvParams          /* Pointer to user supplied context */
-	)
+void callbackFunction( sParameterStruct *psControlFlags )
 {
-	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
-	(void) hCamera;
-
-	/* Handle the Buffer Ready event */
-	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
-		/* Increment the Display Buffer Ready Count */
-		psControlFlags->fBufferReady = TRUE;
-		psControlFlags->dBufferReadyCount++;
-	}
-	/* Fifo Overflow */
-	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-		psControlFlags->fFifoOverFlow = TRUE;
-	}
-
-	/* Note:
-	 * The callback routine may be called with more than 1 event flag set.
-	 * Therefore all possible events must be handled here.
-	 */
-	if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
-	{
-	}
+	psControlFlags->fBufferReady = TRUE;
+	psControlFlags->dBufferReadyCount++; /* Increment the Display Buffer Ready Count */
 }
-
-
 
 int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B)
 {

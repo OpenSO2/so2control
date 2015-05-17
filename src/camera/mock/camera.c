@@ -19,9 +19,9 @@ int camera_stop( tHandle handle ){
 	return 0;
 }
 
-int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(tHandle handle, ui32 dwInterruptMask, void *pvParams) ){
+int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(void *pvParams) ){
 	sleepMs(100);
-	callbackFunction(handle, 1, pvParams);
+	callbackFunction(pvParams);
 
 	return 0;
 }

@@ -15,7 +15,7 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	int         status         = 0; /* status variable */
 	int         timeSwitch     = 0; /* Integer switch to switch between exposure modi */
 	tHandle     hCamera        = sSO2Parameters->hCamera; /* hardware handle for camera */
-	stImageBuff stBuffer;      /* Buffer where the Framegrabber stores the image */
+	short *stBuffer;      /* Buffer where the Framegrabber stores the image */
 	char        messbuff[512];
 	char        errbuff[512];
 
@@ -32,15 +32,14 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	{
 		/* Acquire first buffer to decide between FBL or SHT */
 		//~ FIXME:
-		// status = camera_get(sSO2Parameters->hCamera, &stBuffer.pvAddress);
-		status = getOneBuffer(sSO2Parameters, &stBuffer);
+		status = camera_get(sSO2Parameters->hCamera, &stBuffer);
 		if (status != 0)
 		{
 			return status;
 		}
 		/* calculate histogram to test for over or under exposition */
 
-		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
+		evalHist(stBuffer, sSO2Parameters, &timeSwitch);
 
 		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
 
@@ -65,7 +64,7 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
  * this might be different on different compilers.
  * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
  */
-int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch)
+int evalHist(short *stBuffer, sParameterStruct *sSO2Parameters, int *timeSwitch)
 {
 	int		bufferlength 	= sSO2Parameters->dBufferlength;
 	int		percentage		= sSO2Parameters->dHistPercentage;
@@ -80,7 +79,7 @@ int evalHist(stImageBuff *stBuffer, sParameterStruct *sSO2Parameters, int *timeS
 	 * since shortBuffer is of datatyp 'short'
 	 * shortbuffer++ will set the pointer 16 bits forward
 	 */
-	shortBuffer = stBuffer->pvAddress;
+	shortBuffer = stBuffer;
 
 	/* scanning the whole buffer and creating a histogram */
 	for(i=0; i < bufferlength; i++)
