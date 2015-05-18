@@ -46,10 +46,12 @@ project( so2-camera )
 #~ add_definitions ("-Wold-style-definition")
 #~ add_definitions ("-std=c99")
 
+
+add_definitions(-DPOSIX)
+
 include_directories(
 	./src
 	./src/camera
-	./src/camera/mock
 	./src/filterwheel/custom
 	./src/processing
 	./src/log/custom
@@ -79,25 +81,50 @@ set(SRCFILES
 option(mock "mock" none)
 if(${mock} STREQUAL "camera")
 	MESSAGE( "mock " ${mock} )
+	include_directories(
+		./src/camera/mock
+	)
+
 	set(CAMERASRC
 		./src/camera/mock/camera.c
 		./src/camera/mock/configurations.h
 		./src/camera/mock/configurations.c
 	)
+
 else(${mock} STREQUAL "camera")
+
+	add_definitions(-D_PHX_LINUX)
+	add_definitions(-D_PHX_POSIX)
+	add_definitions(-DPHX)
+
+	include_directories(
+		/usr/local/active_silicon/phx_sdk-6.23/include
+	)
+
+	include_directories(
+		./src/camera/phx
+	)
+
 	set(CAMERASRC
 		./src/camera/phx/camera.c
 		./src/camera/phx/configurations.h
 		./src/camera/phx/configurations.c
 	)
 
-	include_directories(
-		/usr/local/active_silicon/phx_sdk-6.23/include
-	)
+	# set the path to the library folder
+	link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
+
 endif(${mock} STREQUAL "camera")
+
+
 
 # executables
 add_executable( so2-camera ${CAMERASRC} ${SRCFILES} )
+
+if(NOT ${mock} STREQUAL "camera")
+	# link the libraries to the executable
+	target_link_libraries (so2-camera pfw phx)
+endif(${mock} STREQUAL "camera")
 
 find_library(M_LIB m)
 target_link_libraries(so2-camera ${M_LIB})
