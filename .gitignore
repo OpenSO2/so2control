@@ -1,4 +1,7 @@
 Debug/
 *.ncb
 *.opt
-*.plg
+*.plgMakefile
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
