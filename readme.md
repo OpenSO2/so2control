@@ -19,15 +19,6 @@ All Dependencies are optional.
 For a technical documentation see [the `readme.md` in `src`](src/readme.md).
 
 
-Support for Framegrabbers/Cameras:
-----------------------------------
-
-Currently, only Phonix Framegrabbers are supported using the Active
-Silicon SDK. This Dependency however is isolated to
-`src/camera/phx/camera.c`. Using another Framegrabber/Camera/SDK
-thus entails rewriting that file (e.g. `src/camera/mock/camera.c`).
-
-
 Building:
 ---------
 
@@ -73,6 +64,21 @@ There are some (run time) configuration options in
 configurations/SO2Config.conf.
 
 
+
+Supported Framegrabbers/Cameras:
+----------------------------------
+
+Currently, only Active Silicon Framegrabbers are supported using the Active
+Silicon Phonix SDK. This dependency however is isolated to
+`src/camera/phx/camera.c`. Using another Framegrabber/Camera/SDK
+thus entails rewriting that file (i.e. `src/camera/mock/camera.c`).
+For development, the camera subsystem can be mocked using
+
+```
+$ cmake . -Dmock=camera
+```
+
+which circumvents this dependency.
 
 [jj]: johann.jacobsohn@uni-hamburg.de
 [opencv]: http://opencv.org/

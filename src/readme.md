@@ -21,6 +21,13 @@ implementation, which improves test- and readability.
 Each subsystem has its own readme with further documentation.
 
 
+Mocking:
+--------
+
+For development and testing every component can be
+[mocked/faked](http://en.wikipedia.org/wiki/Mock_object).
+
+
 
 Approximate program flow:
 -------------------------
