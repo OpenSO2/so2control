@@ -10,15 +10,15 @@ int camera_init(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 
-int camera_abort( tHandle handle ){
+int camera_abort(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 
-int camera_stop( tHandle handle ){
+int camera_stop(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 
-int camera_trigger( tHandle handle, sParameterStruct *sSO2Parameters, void (*callbackFunction)(void *sSO2Parameters) ){
+int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(void *sSO2Parameters) ){
 	sleepMs(100);
 	callbackFunction(sSO2Parameters);
 
@@ -64,7 +64,7 @@ int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer )
 	return 0;
 }
 
-int camera_setExposure( tHandle handle, stImageBuff stBuffer ){
+int camera_setExposure(sParameterStruct *sSO2Parameters, stImageBuff stBuffer ){
 	return 0;
 }
 
@@ -72,20 +72,9 @@ int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
 	return 0;
 }
 
-
-
-int triggerConfig(sParameterStruct *sSO2Parameters)
+int camera_config(sParameterStruct *sSO2Parameters)
 {
 	return 0;
 }
 
-int defaultConfig(sParameterStruct *sSO2Parameters)
-{
-	return 0;
-}
-
-int defaultCameraConfig(sParameterStruct *sSO2Parameters)
-{
-	return 0;
-}
 

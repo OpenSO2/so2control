@@ -73,11 +73,13 @@ int camera_init(sParameterStruct *sSO2Parameters){
 	return status;
 }
 
-int camera_abort( tHandle handle ){
+int camera_abort(sParameterStruct *sSO2Parameters){
+	tHandle handle = sSO2Parameters->hCamera;
 	return PHX_Acquire( handle, PHX_ABORT, NULL );
 }
 
 int camera_stop( tHandle handle ){
+	tHandle handle = sSO2Parameters->hCamera;
 	return PHX_CameraRelease( &handle );
 }
 
@@ -91,7 +93,8 @@ int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer ){
 	return status;
 }
 
-int camera_trigger( tHandle handle, sParameterStruct *sSO2Parameters, void (*callbackFunction)(sParameterStruct *sSO2Parameters) ){
+int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(sParameterStruct *sSO2Parameters) ){
+	tHandle handle = sSO2Parameters->hCamera;
 	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );
 }
 
@@ -836,3 +839,4 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 	logError("sending message failed 3 times");
 	return eStat; /* here return if something FAILED */
 }
+ 

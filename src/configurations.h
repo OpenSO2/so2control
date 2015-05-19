@@ -61,8 +61,6 @@ typedef struct
 	char		cImagePath[MAX_STRING_LENGTH];
 	/* A handle to identify the camera */
 	tHandle		hCamera;
-	/* A status variable inherited from the SDK */
-	//~ etStat		eStat;
 	/* A switch to set the exposuretime fix to the value given in the config file */
 	int			dFixTime;
 	/* File identifier for current images */
