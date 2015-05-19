@@ -47,7 +47,13 @@ project( so2-camera )
 #~ add_definitions ("-std=c99")
 
 
-add_definitions(-DPOSIX)
+
+if( ${UNIX} )
+	add_definitions(-DPOSIX)
+else( ${UNIX} )
+	add_definitions(-DWIN32)
+	add_definitions(-DWIN)
+endif( ${UNIX} )	
 
 include_directories(
 	./src
@@ -93,14 +99,25 @@ if(${mock} STREQUAL "camera")
 
 else(${mock} STREQUAL "camera")
 
-	add_definitions(-D_PHX_LINUX)
-	add_definitions(-D_PHX_POSIX)
+	if( ${UNIX} )
+		add_definitions(-D_PHX_LINUX)
+		add_definitions(-D_PHX_POSIX)
+
+		include_directories(
+			/usr/local/active_silicon/phx_sdk-6.23/include
+		)
+		link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
+	else( ${UNIX} )
+		add_definitions(-D_PHX_WIN32)
+
+		include_directories(
+			"C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Include"
+		)	
+		link_directories("C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Lib\\win32")
+	endif( ${UNIX} )	
+	
 	add_definitions(-DPHX)
-
-	include_directories(
-		/usr/local/active_silicon/phx_sdk-6.23/include
-	)
-
+		
 	include_directories(
 		./src/camera/phx
 	)
@@ -111,9 +128,6 @@ else(${mock} STREQUAL "camera")
 		./src/camera/phx/configurations.c
 	)
 
-	# set the path to the library folder
-	link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
-
 endif(${mock} STREQUAL "camera")
 
 
@@ -123,11 +137,13 @@ add_executable( so2-camera ${CAMERASRC} ${SRCFILES} )
 
 if(NOT ${mock} STREQUAL "camera")
 	# link the libraries to the executable
-	target_link_libraries (so2-camera pfw phx)
-endif(${mock} STREQUAL "camera")
+	#target_link_libraries (so2-camera phx)
+	target_link_libraries (so2-camera phxlw32)
+	
+endif(NOT ${mock} STREQUAL "camera")
 
-find_library(M_LIB m)
-target_link_libraries(so2-camera ${M_LIB})
+# find_library(M_LIB m)
+# target_link_libraries(so2-camera ${M_LIB})
 
 
 #~ # add opencv
