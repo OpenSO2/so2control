@@ -73,13 +73,13 @@ int camera_init(sParameterStruct *sSO2Parameters){
 }
 
 int camera_abort(sParameterStruct *sSO2Parameters){
-	tHandle handle = sSO2Parameters->hCamera;
-	return PHX_Acquire( handle, PHX_ABORT, NULL );
+	tHandle hCamera = sSO2Parameters->hCamera;
+	return PHX_Acquire( hCamera, PHX_ABORT, NULL );
 }
 
 int camera_stop(sParameterStruct *sSO2Parameters){
-	tHandle handle = sSO2Parameters->hCamera;
-	return PHX_CameraRelease( &handle );
+	tHandle hCamera = sSO2Parameters->hCamera;
+	return PHX_CameraRelease( &hCamera );
 }
 
 int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer ){
@@ -93,8 +93,8 @@ int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer ){
 }
 
 int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(sParameterStruct *sSO2Parameters) ){
-	tHandle handle = sSO2Parameters->hCamera;
-	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );
+	tHandle hCamera = sSO2Parameters->hCamera;
+	return PHX_Acquire( hCamera, PHX_START, (void*) PHXcallbackFunction );
 }
 
 int camera_config(sParameterStruct *sSO2Parameters){

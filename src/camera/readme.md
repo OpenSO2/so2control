@@ -10,6 +10,7 @@ The following functions are provided by this file:
 
 - `camera_init` - inits the camera/framegrabber
 - `camera_get` - aquires one image/frame from the camera/framegrabber
+- `camera_config` - configures the cameras
 - `camera_stop` - stops (uninits) the camera/framegrabber and does neccesarry clean up
 - `camera_trigger` - triggeres a capture, eg. start a measurement
 - `camera_abort` - aborts a triggered capture
