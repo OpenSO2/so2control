@@ -25,7 +25,27 @@ int structInit(sParameterStruct * sSO2Parameters, char identifier)
 	return 0;
 }
 
-int readConfig(char *filename, sParameterStruct * sSO2Parameters)
+int process_cli_arguments(int argc, char* argv[], sConfigStruct *config){
+		int i;
+	char errstr[512];
+
+	for (i = 1; i < argc; i++){
+		if(strcmp(argv[i], "--speedy-gonzales") == 0 || strcmp(argv[i], "--noprocessing") == 0){
+			config->processing = 0;
+		} else if(strcmp(argv[i], "--noofimages") == 0 && argv[i+1]){
+			config->noofimages = strtol(argv[i+1], NULL, 10);
+			i++;
+		} else {
+			sprintf(errstr, "unknown command line option \"%s\"", argv[i]);
+			log_error(errstr);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+int readConfig(char *filename, sParameterStruct *sSO2Parameters)
 {
 	FILE *pFILE;		/* filehandle for config file */
 	char *lineBuf;		/* buffer that holds the current line of the config file */
@@ -122,8 +142,7 @@ int readConfig(char *filename, sParameterStruct * sSO2Parameters)
 			"Reading config file was successfull %d lines were read",
 			linenumber);
 		log_message(errbuff);
-	} /* end if(pFILE!=NULL) */
-	else {
+	} else {
 		sprintf(errbuff, "opening Configfile: %s failed!", filename);
 		log_error(errbuff);
 		return 1;

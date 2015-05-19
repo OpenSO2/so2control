@@ -80,6 +80,12 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
+	state = process_cli_arguments(argc, argv, &config);
+	if(state != 0){
+			log_error("Could not handle command line arguments");
+			return state;
+	}
+
 	/* Initialise parameter structures */
 	memset(&sParameters_A, 0, sizeof(sParameterStruct));
 	memset(&sParameters_B, 0, sizeof(sParameterStruct));

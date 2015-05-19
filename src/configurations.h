@@ -30,8 +30,15 @@
 /******************************
  *   Structures
  ******************************/
-typedef struct {
+typedef struct
+{
+	int processing;
+	int noofimages;
+}sConfigStruct;
+
 /* Camera parameters */
+typedef struct
+{
 	/* Number of pixels in 1 Image */
 	int dBufferlength;
 	/* when controling the exposure time a histogram is made
@@ -56,7 +63,7 @@ typedef struct {
 	double dExposureTime;
 	/* contains the name of a Config-file */
 	char cConfigFileName[MAX_STRING_LENGTH];
-	/* not used right now, should contains a prefix for all images */
+	/* contains a prefix for all images */
 	char cFileNamePrefix[MAX_STRING_LENGTH];
 	/* path to image diretory */
 	char cImagePath[MAX_STRING_LENGTH];
@@ -87,7 +94,7 @@ typedef struct {
  /******************************
  *   FUNCTIONS
  ******************************/
-int readConfig(char *filename, sParameterStruct * sSO2Parameters);
-int configurations(sParameterStruct * sSO2Parameters);
-int structInit(sParameterStruct * sSO2Parameters, char identifier);
+int configurations			(sParameterStruct *sSO2Parameters);
+int structInit				(sParameterStruct *sSO2Parameters, char identifier);
+int process_cli_arguments   (int argc, char* argv[], sConfigStruct *config);
 #endif
