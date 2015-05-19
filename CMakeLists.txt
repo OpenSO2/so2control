@@ -142,9 +142,11 @@ if(NOT ${mock} STREQUAL "camera")
 	
 endif(NOT ${mock} STREQUAL "camera")
 
-# find_library(M_LIB m)
-# target_link_libraries(so2-camera ${M_LIB})
 
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(so2-camera ${M_LIB})
+endif( ${UNIX} )
 
 #~ # add opencv
 #~ find_package( OpenCV REQUIRED )

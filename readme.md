@@ -28,7 +28,7 @@ From a terminal, run:
 
 ````
 $ # install dependencies
-$ sudo yum/apt-get install cmake zlib-devel opencv-devel gcc
+$ sudo yum/apt-get install cmake zlib-devel opencv-devel gcc gcc-c++
 $
 $ # prepare
 $ cmake .
