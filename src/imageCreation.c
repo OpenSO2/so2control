@@ -54,8 +54,8 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 	memset(&timeNow, 0, sizeof(timeNow));
 
 	/* Now start our capture, return control immediately back to program */
-	status = camera_trigger( sParameters_A, (void*) &callbackFunction );
-	status = camera_trigger( sParameters_B, (void*) &callbackFunction );
+	status = camera_trigger( &sParameters_A, (void*) &callbackFunction );
+	status = camera_trigger( &sParameters_B, (void*) &callbackFunction );
 
 	if ( !status )
 	{

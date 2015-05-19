@@ -15,7 +15,8 @@
 #include<stdio.h>
 #include <math.h>
 #include"common.h"
-
+#include<phx_api.h>
+#include<phx_os.h>
 
 
 /******************************

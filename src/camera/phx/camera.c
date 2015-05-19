@@ -18,9 +18,8 @@
 void PHXcallbackFunction(
 	tHandle     hCamera,           /* Camera handle. */
 	int        dwInterruptMask,   /* Interrupt mask. */
-	void        *sSO2Parameters          /* Pointer to user supplied context */
+	sParameterStruct        *sSO2Parameters          /* Pointer to user supplied context */
 ){
-	(void) hCamera;
 
 	/* Fifo Overflow */
 	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
@@ -78,7 +77,7 @@ int camera_abort(sParameterStruct *sSO2Parameters){
 	return PHX_Acquire( handle, PHX_ABORT, NULL );
 }
 
-int camera_stop( tHandle handle ){
+int camera_stop(sParameterStruct *sSO2Parameters){
 	tHandle handle = sSO2Parameters->hCamera;
 	return PHX_CameraRelease( &handle );
 }
@@ -99,6 +98,7 @@ int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(s
 }
 
 int camera_config(sParameterStruct *sSO2Parameters){
+	int status;
 	/* load the default configurations for the framegrabber */
 	status = defaultConfig(sSO2Parameters);
 	if(status != 0)

@@ -90,42 +90,30 @@ option(mock "mock" none)
 
 if(${mock} STREQUAL "camera")
 	MESSAGE( "mock " ${mock} )
-	include_directories(
-		./src/camera/mock
-	)
+	include_directories(./src/camera/mock)
 
-	set(CAMERASRC
-		./src/camera/mock/camera.c
-	)
+	set(CAMERASRC ./src/camera/mock/camera.c)
 
 else(${mock} STREQUAL "camera")
 
 	if( ${UNIX} )
 		add_definitions(-D_PHX_LINUX)
 		add_definitions(-D_PHX_POSIX)
-
-		include_directories(
-			/usr/local/active_silicon/phx_sdk-6.23/include
-		)
+MESSAGE(including...)
+		include_directories(/usr/local/active_silicon/phx_sdk-6.23/include)
 		link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
 	else( ${UNIX} )
 		add_definitions(-D_PHX_WIN32)
 
-		include_directories(
-			"C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Include"
-		)
+		include_directories("C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Include")
 		link_directories("C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Lib\\win32")
 	endif( ${UNIX} )
 
 	add_definitions(-DPHX)
 
-	include_directories(
-		./src/camera/phx
-	)
+	include_directories(./src/camera/phx)
 
-	set(CAMERASRC
-		./src/camera/phx/camera.c
-	)
+	set(CAMERASRC ./src/camera/phx/camera.c)
 
 endif(${mock} STREQUAL "camera")
 
@@ -137,7 +125,7 @@ add_executable( so2-camera ${CAMERASRC} ${SRCFILES} )
 if(NOT ${mock} STREQUAL "camera")
 	# link the libraries to the executable
 	if( ${UNIX} )
-		target_link_libraries (so2-camera phx)
+		target_link_libraries (so2-camera phx pfw)
 	else()
 		target_link_libraries (so2-camera phxlw32)
 	endif()
