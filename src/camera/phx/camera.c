@@ -15,31 +15,31 @@
 #include"configurations.h"
 
 
+// FIXME: merge with callbackFunction2
 void PHXcallbackFunction(
 	tHandle     hCamera,           /* Camera handle. */
 	int        dwInterruptMask,   /* Interrupt mask. */
-	void        *pvParams          /* Pointer to user supplied context */
+	void        *sSO2Parameters          /* Pointer to user supplied context */
 ){
-	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
 	(void) hCamera;
 
 	/* Fifo Overflow */
 	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-		psControlFlags->fFifoOverFlow = TRUE;
+		sSO2Parameters->fFifoOverFlow = TRUE;
 	}
 
 	/* Handle the Buffer Ready event */
 	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
-		callbackFunction(psControlFlags);
+		callbackFunction(sSO2Parameters);
 	}
 }
 
 
-int camera_init(sParameterStruct *pvParams){
+int camera_init(sParameterStruct *sSO2Parameters){
 	int status = 0;
-	int channel = pvParams->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
+	int channel = sSO2Parameters->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
 	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
-	status = PHX_CameraConfigLoad( &pvParams->hCamera, "src/camera/phx/c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | channel | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
+	status = PHX_CameraConfigLoad( &sSO2Parameters->hCamera, "src/camera/phx/c8484.pcf", (etCamConfigLoad)PHX_BOARD_AUTO | PHX_DIGITAL | channel | PHX_NO_RECONFIGURE | 1, &PHX_ErrHandlerDefault);
 
 	if (0 != status )
 	{
@@ -92,7 +92,7 @@ int camera_get( sParameterStruct *sSO2Parameters, short **stBuffer ){
 	return status;
 }
 
-int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(sParameterStruct *psControlFlags) ){
+int camera_trigger( tHandle handle, sParameterStruct *sSO2Parameters, void (*callbackFunction)(sParameterStruct *sSO2Parameters) ){
 	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );
 }
 
@@ -306,21 +306,20 @@ int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
 void callbackFunction2(
 	tHandle     hCamera,           /* Camera handle. */
 	int        dwInterruptMask,   /* Interrupt mask. */
-	void        *pvParams          /* Pointer to user supplied context */
+	void        *sSO2Parameters          /* Pointer to user supplied context */
 	)
 {
-	sParameterStruct *psControlFlags = (sParameterStruct*) pvParams;
 	(void) hCamera;
 
 	/* Handle the Buffer Ready event */
 	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
 		/* Increment the Display Buffer Ready Count */
-		psControlFlags->fBufferReady = TRUE;
-		psControlFlags->dBufferReadyCount++;
+		sSO2Parameters->fBufferReady = TRUE;
+		sSO2Parameters->dBufferReadyCount++;
 	}
 	/* Fifo Overflow */
 	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-		psControlFlags->fFifoOverFlow = TRUE;
+		sSO2Parameters->fFifoOverFlow = TRUE;
 	}
 
 	/* Note:
@@ -403,6 +402,9 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 	return eStat;
 }
 
+/*
+ * FIXME: merge setFrameBlanking with setElektronicShutter and document
+ */
 
 int setFrameBlanking(sParameterStruct *sSO2Parameters)
 {

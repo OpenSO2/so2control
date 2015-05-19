@@ -21,7 +21,7 @@ typedef struct
 /******************************
  *   FUNCTIONS
  ******************************/
-void callbackFunction( sParameterStruct *psControlFlags );
+void callbackFunction( sParameterStruct *sSO2Parameters );
 int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B);
 int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct timeThisImage, char cameraIdentifier);
 int createFilename(sParameterStruct *sSO2Parameters, char * filename, timeStruct time, char cameraIdentifier);

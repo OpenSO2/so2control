@@ -22,7 +22,7 @@
 /**
  *
  */
-int camera_init(sParameterStruct *pvParams);
+int camera_init(sParameterStruct *sSO2Parameters);
 
 /**
  *

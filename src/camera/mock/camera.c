@@ -7,7 +7,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include "configurations.h"
-int camera_init(sParameterStruct *pvParams){
+int camera_init(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 
@@ -19,9 +19,9 @@ int camera_stop( tHandle handle ){
 	return 0;
 }
 
-int camera_trigger( tHandle handle, sParameterStruct *pvParams, void (*callbackFunction)(void *pvParams) ){
+int camera_trigger( tHandle handle, sParameterStruct *sSO2Parameters, void (*callbackFunction)(void *sSO2Parameters) ){
 	sleepMs(100);
-	callbackFunction(pvParams);
+	callbackFunction(sSO2Parameters);
 
 	return 0;
 }

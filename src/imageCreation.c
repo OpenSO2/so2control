@@ -17,10 +17,10 @@
 
 #define HEADER_SIZE 64
 
-void callbackFunction( sParameterStruct *psControlFlags )
+void callbackFunction( sParameterStruct *sSO2Parameters )
 {
-	psControlFlags->fBufferReady = TRUE;
-	psControlFlags->dBufferReadyCount++; /* Increment the Display Buffer Ready Count */
+	sSO2Parameters->fBufferReady = TRUE;
+	sSO2Parameters->dBufferReadyCount++; /* Increment the Display Buffer Ready Count */
 }
 
 int startAquisition(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B)
