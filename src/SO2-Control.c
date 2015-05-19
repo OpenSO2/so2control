@@ -55,8 +55,8 @@ int main( int argc, char* argv[] )
 	}
 
 	/* function for initialising basic values for sParameterStruct */
-	state = configurations(&sParameters_A, 'a');
-	state = configurations(&sParameters_B, 'b');
+	state = configurations(&sParameters_A);
+	state = configurations(&sParameters_B);
 	if (state != 0)
 	{
 		logError("configuration failed");

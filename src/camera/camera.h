@@ -43,5 +43,10 @@ int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch);
 
 
 
+int triggerConfig			(sParameterStruct *sSO2Parameters);
+int defaultConfig			(sParameterStruct *sSO2Parameters);
+int defaultCameraConfig		(sParameterStruct *sSO2Parameters);
+
+
 
 #endif

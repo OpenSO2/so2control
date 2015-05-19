@@ -68,6 +68,8 @@ set(SRCFILES
 	./src/common.h
 	./src/common.c
 	./src/camera/camera.h
+	./src/configurations.h
+	./src/configurations.c
 	./src/filterwheel/custom/darkCurrent.h
 	./src/filterwheel/custom/darkCurrent.c
 	./src/exposureTimeControl.h
@@ -93,8 +95,6 @@ if(${mock} STREQUAL "camera")
 
 	set(CAMERASRC
 		./src/camera/mock/camera.c
-		./src/camera/mock/configurations.h
-		./src/camera/mock/configurations.c
 	)
 
 else(${mock} STREQUAL "camera")
@@ -124,8 +124,6 @@ else(${mock} STREQUAL "camera")
 
 	set(CAMERASRC
 		./src/camera/phx/camera.c
-		./src/camera/phx/configurations.h
-		./src/camera/phx/configurations.c
 	)
 
 endif(${mock} STREQUAL "camera")

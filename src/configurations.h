@@ -12,8 +12,6 @@
  *   HEADER INCLUDES
  ******************************/
 
-#include<phx_api.h>
-#include<phx_os.h>
 #include<stdio.h>
 #include <math.h>
 #include"common.h"
@@ -92,10 +90,6 @@ typedef struct
  *   FUNCTIONS
  ******************************/
 int readConfig				(char *filename, sParameterStruct *sSO2Parameters);
-int configurations			(sParameterStruct *sSO2Parameters, char identifier);
+int configurations			(sParameterStruct *sSO2Parameters);
 int structInit				(sParameterStruct *sSO2Parameters, char identifier);
-int triggerConfig			(sParameterStruct *sSO2Parameters);
-int defaultConfig			(sParameterStruct *sSO2Parameters);
-int defaultCameraConfig		(sParameterStruct *sSO2Parameters);
-int sendMessage				(tHandle hCamera, char * inputBuffer);
 #endif
