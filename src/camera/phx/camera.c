@@ -15,7 +15,6 @@
 #include"configurations.h"
 
 
-// FIXME: merge with callbackFunction2
 void PHXcallbackFunction(
 	tHandle     hCamera,           /* Camera handle. */
 	int        dwInterruptMask,   /* Interrupt mask. */
@@ -302,37 +301,6 @@ int camera_setExposureSwitch(sParameterStruct *sSO2Parameters, int timeSwitch){
  */
 
 
-// FIXME: clean up callback...
-void callbackFunction2(
-	tHandle     hCamera,           /* Camera handle. */
-	int        dwInterruptMask,   /* Interrupt mask. */
-	void        *sSO2Parameters          /* Pointer to user supplied context */
-	)
-{
-	(void) hCamera;
-
-	/* Handle the Buffer Ready event */
-	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
-		/* Increment the Display Buffer Ready Count */
-		sSO2Parameters->fBufferReady = TRUE;
-		sSO2Parameters->dBufferReadyCount++;
-	}
-	/* Fifo Overflow */
-	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
-		sSO2Parameters->fFifoOverFlow = TRUE;
-	}
-
-	/* Note:
-	 * The callback routine may be called with more than 1 event flag set.
-	 * Therefore all possible events must be handled here.
-	 */
-	if ( PHX_INTRPT_FRAME_END & dwInterruptMask )
-	{
-	}
-}
-
-
-
 int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
@@ -348,7 +316,7 @@ int getOneBuffer(sParameterStruct *sSO2Parameters, stImageBuff *stBuffer)
 	do
 	{
 		/* start capture, hand over callback function*/
-		eStat = PHX_Acquire( hCamera, PHX_START, (void*) callbackFunction2 );
+		eStat = PHX_Acquire( hCamera, PHX_START, (void*) PHXcallbackFunction );
 		if ( PHX_OK == eStat )
 		{
 			/* if starting the capture was successful reset error counter to zero */
