@@ -98,6 +98,32 @@ int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(s
 	return PHX_Acquire( handle, PHX_START, (void*) PHXcallbackFunction );
 }
 
+int camera_config(sParameterStruct *sSO2Parameters){
+	/* load the default configurations for the framegrabber */
+	status = defaultConfig(sSO2Parameters);
+	if(status != 0)
+	{
+		logError("configuring camera failed");
+		return status;
+	}
+
+	/* load the configurations for the exposure trigger */
+	status = triggerConfig(sSO2Parameters);
+	if(status != 0)
+	{
+		logError("function triggerConfig(...) for camera 1 failed");
+		return status;
+	}
+
+	/* set the camera with the right options */
+	status = defaultCameraConfig(sSO2Parameters);
+	if(status != 0)
+	{
+		logError("function defaultCameraConfig(...) for camera 1 failed");
+		return status;
+	}
+}
+
 int fixExposureTime(sParameterStruct *sSO2Parameters)
 {
 	int			exposureTime	= (int)sSO2Parameters->dExposureTime; /* exposure time in parameter structure */
@@ -839,4 +865,4 @@ int sendMessage(tHandle hCamera, char * inputBuffer)
 	logError("sending message failed 3 times");
 	return eStat; /* here return if something FAILED */
 }
- 
+

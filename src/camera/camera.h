@@ -13,14 +13,14 @@
  * camera_get - aquires one image/frame from the camera/framegrabber
  * camera_stop - stops (uninits) the camera/framegrabber and does neccesarry clean up
  *
- * 
- * 
- * 
+ *
+ *
+ *
  * camera_init
  * camera_config
  * camera_setExposure
  * camera_trigger
- * camera_get 
+ * camera_get
  * camera_abort
  * camera_stop
  */
@@ -28,6 +28,7 @@
 #define _CAMERA_
 
 #include<common.h>
+#include<configurations.h>
 
 /**
  *

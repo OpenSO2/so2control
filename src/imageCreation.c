@@ -54,8 +54,8 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 	memset(&timeNow, 0, sizeof(timeNow));
 
 	/* Now start our capture, return control immediately back to program */
-	status = camera_trigger( hCamera_A, sParameters_A, (void*) &callbackFunction );
-	status = camera_trigger( hCamera_B, sParameters_B, (void*) &callbackFunction );
+	status = camera_trigger( sParameters_A, (void*) &callbackFunction );
+	status = camera_trigger( sParameters_B, (void*) &callbackFunction );
 
 	if ( !status )
 	{
@@ -91,8 +91,8 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 			if(saveErrCount >= 3)
 			{
 				logError("Saving 3 images in a row failed. This is fatal");
-				camera_abort(hCamera_A);
-				camera_abort(hCamera_B);
+				camera_abort(&sParameters_A);
+				camera_abort(&sParameters_B);
 				return 1;
 			}
 		}
@@ -105,8 +105,8 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 
 			saveErrCount = 0;
 		}
-		camera_abort(hCamera_A);
-		camera_abort(hCamera_B);
+		camera_abort(&sParameters_A);
+		camera_abort(&sParameters_B);
 	}
 	else
 	{
@@ -116,8 +116,8 @@ int aquire(sParameterStruct *sParameters_A, sParameterStruct *sParameters_B, cha
 		if(startErrCount >= 3)
 		{
 			logError("starting the acquisition failed 3 times in a row. this is fatal");
-			camera_abort(hCamera_A);
-			camera_abort(hCamera_B);
+			camera_abort(&sParameters_A);
+			camera_abort(&sParameters_B);
 			return 2;
 		}
 	} // else

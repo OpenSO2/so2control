@@ -23,33 +23,17 @@ int configurations(sParameterStruct *sSO2Parameters)
 {
 	int		status = 0; /* status variable for return values */
 
-	/* load the default configurations for the framegrabber */
-	status = defaultConfig(sSO2Parameters);
-	if(status != 0)
-	{
-		logError("function defaultConfig(...) for camera 1 failed");
-		return status;
-	}
-
-	/* load the configurations for the exposure trigger */
-	status = triggerConfig(sSO2Parameters);
-	if(status != 0)
-	{
-		logError("function triggerConfig(...) for camera 1 failed");
-		return status;
-	}
-
-	/* set the camera with the right options */
-	status = defaultCameraConfig(sSO2Parameters);
-	if(status != 0)
-	{
-		logError("function defaultCameraConfig(...) for camera 1 failed");
-		return status;
-	}
-
 	/* name of Configfile is hard coded maybe change this sometime */
 	status = readConfig("configurations//SO2Config.conf", sSO2Parameters);
 	if(status != 0) logError("readConfig(...) failed");
+
+	/* load the default configurations for the framegrabber */
+	status = camera_config(&sSO2Parameters);
+	if(status != 0)
+	{
+		logError( "configuring camera failed" );
+		return status;
+	}
 	return status;
 }
 
