@@ -3,8 +3,10 @@
 #include"configurations.h"
 #include"log.h"
 
+#if defined(PHX)
 #include<phx_api.h>
 #include<phx_os.h>
+#endif
 
 #define MAXBUF 1024
 

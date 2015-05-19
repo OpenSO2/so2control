@@ -15,9 +15,11 @@
 #include<stdio.h>
 #include <math.h>
 #include"common.h"
+
+#if defined(PHX)
 #include<phx_api.h>
 #include<phx_os.h>
-
+#endif
 
 /******************************
  *   MACROS
