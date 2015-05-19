@@ -99,7 +99,7 @@ else(${mock} STREQUAL "camera")
 	if( ${UNIX} )
 		add_definitions(-D_PHX_LINUX)
 		add_definitions(-D_PHX_POSIX)
-MESSAGE(including...)
+
 		include_directories(/usr/local/active_silicon/phx_sdk-6.23/include)
 		link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
 	else( ${UNIX} )

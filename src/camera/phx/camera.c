@@ -99,11 +99,12 @@ int camera_trigger( sParameterStruct *sSO2Parameters, void (*callbackFunction)(s
 
 int camera_config(sParameterStruct *sSO2Parameters){
 	int status;
+
 	/* load the default configurations for the framegrabber */
 	status = defaultConfig(sSO2Parameters);
 	if(status != 0)
 	{
-		logError("configuring camera failed");
+		logError("configuring camera %c failed");
 		return status;
 	}
 
@@ -660,15 +661,35 @@ int defaultConfig(sParameterStruct *sSO2Parameters)
 
 	eParamValue = PHX_COMMS_DATA_8;
 	eStat = PHX_ParameterSet( hCamera, PHX_COMMS_DATA, &eParamValue );
+        if ( OK != eStat )
+        {
+                logError("setting of PHX_COMMS_DATA to camera failed");
+                return eStat;
+        }
 
 	eParamValue = PHX_COMMS_STOP_1;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_STOP, &eParamValue );
+        if ( OK != eStat )
+        {
+                logError("setting of PHX_COMMS_STOP to camera failed");
+		return eStat;
+        }
 
 	eParamValue = PHX_COMMS_PARITY_NONE;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_PARITY, &eParamValue );
+        if ( OK != eStat )
+        {
+		logError("setting of PHX_COMMS_PARITY to camera failed");
+		return eStat;
+        }
 
 	eParamValue = (etParamValue)9600;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_SPEED, &eParamValue );
+        if ( OK != eStat )
+        {
+                logError("setting of PHX_COMMS_SPEED to camera failed");
+                return eStat;
+        }
 
 	eParamValue = PHX_COMMS_FLOW_NONE;
 	eStat = PHX_ParameterSet(hCamera, (etParam)(PHX_COMMS_FLOW|PHX_CACHE_FLUSH), &eParamValue );

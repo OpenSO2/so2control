@@ -31,7 +31,7 @@ int configurations(sParameterStruct *sSO2Parameters)
 	if(status != 0) logError("readConfig(...) failed");
 
 	/* load the default configurations for the framegrabber */
-	status = camera_config(&sSO2Parameters);
+	status = camera_config(sSO2Parameters);
 	if(status != 0)
 	{
 		logError( "configuring camera failed" );
