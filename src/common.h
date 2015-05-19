@@ -24,13 +24,6 @@ typedef struct {
 } stImageBuff;
 #endif
 
-#if defined(PHX_OK)
-	#define OK PHX_OK
-#else
-	#define OK 0
-#endif
-
-
 #if defined(WIN32)
 	#define sleepMs(x) Sleep(x);
 #else

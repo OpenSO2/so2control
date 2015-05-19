@@ -187,7 +187,7 @@ int writeImage(sParameterStruct *sSO2Parameters, char *filename, timeStruct time
 	/* download the image from the framegrabber */
 	status = camera_get(sSO2Parameters, &stBuffer);
 
-	if ( OK == status )
+	if ( 0 == status )
 	{
 		/* save the whole header byte per byte to file */
 		fwriteReturn = fwrite(headerString, 1, HEADER_SIZE, imageFile);
