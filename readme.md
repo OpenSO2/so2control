@@ -1,146 +1,81 @@
 SO2-Control Software
 ====================
 
-SO2 Camera control software written in C, based on the Hamammatsu CCD Camera
-C8484-16. Licenced under MIT.
+SO2 Camera control software written in C, licenced under MIT.
 
-Contributors:
+** Collaborators: **
+
+- [Johann Jacobsohn][jj] (Universität Hamburg)
 - Morten Harms (Universität Hamburg)
-- Johann Jacobsohn (Universität Hamburg)
 
-Status:
-[![Build Status](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/status.png)](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/latest)
+** Dependencies: **
 
-Files
-------
-- **SO2-Control.c** - main program
-- **configurations.c|h** - set up structs, configure camera and frame grabber
-- **exposureTimeControl.c|h** - sets and monitors exposure time
-- **imageCreation.c|h** - aquires and saves images
-- **darkCurrent.c|h** - to be implemented
-- **log.c|h** - log messages to file
-- **messages.c|h** - static messages
+- [OpenCV][opencv]
+- [zLib][zlib]
+- [Active Silicon SDK](phx)
 
-Interface:
-----------
-### configurations.c|h
+All Dependencies are optional.
 
-- **struct sParameterStruct** -
-- **struct flagStruct** -
-- **readConfig()** -
-- **configurationFunktion()** -
-- **structInit()** -
-- **triggerConfig()** -
-- **defaultConfig()** -
-- **defaultCameraConfig()** -
-- **sendMessage()** -
-
-### exposureTimeControl.c|h
-
-- **setExposureTime()** -
-- **fixEposureTime()** -
-- **setElektronicShutter()** -
-- **setFrameBlanking()** -
-- **getOneBuffer()** -
-- **evalHist()** -
-- **rountToInt()** -
-
-### imageCreation.c|h
-
-- **callbackFunction()** -
-- **writeImage()** -
-- **startAquisition()** -
-
-### imageFunctions.c|h
-
-- **rotateImage()** -
-- **findDisplacement()** -
-- **displaceImage()** -
-- **calcCorrelation()** -
-
-### darkCurrent.c|h
-
-- **dunkelstromMessung** - To be implemented
-
-### log.c|h
-
-- **initLog()** -
-- **logMessage(char *message)** -
-- **logError(char *message)** -
-- **logExit()** -
-
-### messages.c|h
-
-- **printOpening()** - prints a friendly startup statement to stdout
-
-TODO
-====
-
-- image flipped
-- distance correction
-- vignette correction
-- Zeitstempel direkt nach aufnahme setzen
-- Belichtungszeit? -> Matthias
-- improve time management to millisecond accuracy
-- measure frame rate -> Interframedelay etc.
-- implement automated filter wheel control
-- implement dark-frame subtraction
-- improve error management
-- ExposureTimeControl: improve loop detection
-- online evaluation
-- cleanup make target
-- "--start-new-measurement" - neuen Ordner anlegen, neues Logfile
-- Parameter wie "FixTime" lieber als Konstanten?
-- don't just twiddle your thumb while waiting for acquisition callback, put that hardware to work!
-- wir brauchen einen Camera Identifier in der config-Struktur.
-- document linux & windows configuration (Puppet? Chef?)
-- document hardware
-- Tests
-- Linting über splint
+For a technical documentation see [the `readme.md` in `src`](src/readme.md).
 
 
-Approximate program flow:
--------------------------
+Support for Framegrabbers/Cameras:
+----------------------------------
+
+Currently, only Phonix Framegrabbers are supported using the Active
+Silicon SDK. This Dependency however is isolated to
+`src/camera/phx/camera.c`. Using another Framegrabber/Camera/SDK
+thus entails rewriting that file (e.g. `src/camera/mock/camera.c`).
+
+
+Building:
+---------
+
+### On Linux:
+
+From a terminal, run:
+
+````
+$ # install dependencies
+$ sudo yum/apt-get install cmake zlib-devel opencv-devel gcc
+$
+$ # prepare
+$ cmake .
+$
+$ # compile
+$ make
+````
+
+### On Windows:
+
+Download and install [CMake][cmake], [zLib][zlib] and [OpenCV][opencv]. Then run
 
 ```
----------------------------------------------------------------------------
-|                         PHX_CameraConfigLoad                            |
----------------------------------------------------------------------------
-                                    ↧
----------------------------------------------------------------------------
-|                             configurations                              |
----------------------------------------------------------------------------
-                                    ↧
----------------------------------------------------------------------------
-|                            setExposureTime                              |
----------------------------------------------------------------------------
-                                    ↧
----------------------------------------------------------------------------
-|                            startAquisition                              |
-|                                                                         |
-| main loop until keypress                                           <-.  |
-|    . reset exposure time every exposureTimeCheckIntervall * seconds   \ |
-|    . aquire both image                                                | |
-|        . start two captures, set callback functions                   | |
-|        . wait in 10ms increments until callback is received           | |
-|        . writeImage                                                   | |
-|    . process data                                                     | |
-|           \                                                           / |
-|            ----------------------------------------------------------`  |
-|                                                                         |
----------------------------------------------------------------------------
-                                   ↧
----------------------------------------------------------------------------
-|                          Cease all captures                             |
----------------------------------------------------------------------------
-                                   ↧
----------------------------------------------------------------------------
-|                       Release the Phoenix board                         |
----------------------------------------------------------------------------
+$ cmake .
 ```
 
+from the command prompt in the project folder. This generates a Visual Studio Workspace,
+which can be opened in Visual Studio. Compile and run from there.
+
+
+Usage:
+----
+
+This is a purely command line software. After compilation, it can be run with
+
+`$ ./so2-camera` (linux)
+
+or
+
+`$ ./so-camera.exe` (Windows).
+
+There are some (run time) configuration options in
+configurations/SO2Config.conf.
 
 
 
-
-Korrekturfaktur = Strahlungsfluss durch Filter x empfindlichkeit bei Filterwellenlänge * Belichtungszeitdifferenz
+[jj]: johann.jacobsohn@uni-hamburg.de
+[opencv]: http://opencv.org/
+[zlib]: http://www.zlib.net/
+[phx]: http://www.activesilicon.com/products_sw.htm#phxsdk
+[cmake]: http://www.cmake.org/
