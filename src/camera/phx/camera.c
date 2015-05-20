@@ -592,8 +592,6 @@ int setElektronicShutter(sParameterStruct *sSO2Parameters)
 }
 
 
-
-
 int triggerConfig(sParameterStruct *sSO2Parameters)
 {
 	/* in my opinion this function is the most complicated shit in the whole programm ;) */

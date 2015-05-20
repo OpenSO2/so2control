@@ -1,6 +1,5 @@
-/* Function for the automatic control of the exposure time
- * of the Hamamatsu CCD-Camera C8484-16.
- * This code is based on the Active Silicon Framegrabber SDK.
+/*
+ * Function for the automatic control of the exposure time.
  */
 #include<stdio.h>
 #include<string.h>
@@ -31,7 +30,6 @@ int setExposureTime(sParameterStruct *sSO2Parameters)
 	else
 	{
 		/* Acquire first buffer to decide between FBL or SHT */
-		//~ FIXME:
 		status = camera_get(&sSO2Parameters, &stBuffer);
 		if (status != 0)
 		{
