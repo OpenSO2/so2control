@@ -62,16 +62,14 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	 *
 
 	 status = sendMessage(hCamera, "NMD S");
-	 if (0 != status )
-	 {
-	 log_error("setting camera to electronic shutter mode failed");
-	 return status;
+	 if (0 != status ) {
+		 log_error("setting camera to electronic shutter mode failed");
+		 return status;
 	 }
 
 	 status = sendMessage(hCamera, "SHT 1055");
-	 if (0 != status )
-	 {
-	 log_error("setting SHT value 1055 failed");
+	 if (0 != status ) {
+		 log_error("setting SHT value 1055 failed");
 	 return status;
 	 }
 	 /**/
@@ -90,7 +88,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 	return PHX_CameraRelease(&hCamera);
 }
 
-int camera_get(sParameterStruct * sSO2Parameters, short **stBuffer)
+int camera_get(sParameterStruct * sSO2Parameters)
 {
 	int status;
 	stImageBuff buffythevampireslayer;
@@ -98,7 +96,7 @@ int camera_get(sParameterStruct * sSO2Parameters, short **stBuffer)
 	status =
 	    PHX_Acquire(sSO2Parameters->hCamera, PHX_BUFFER_GET,
 			&buffythevampireslayer);
-	*stBuffer = buffythevampireslayer.pvAddress;
+	sSO2Parameters->stBuffer = buffythevampireslayer.pvAddress;
 
 	return status;
 }
@@ -301,7 +299,8 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch)
 
 	switch (timeSwitch) {
 	case 0:
-		printf("starting electronic shutter mode\nExposuretime is set\n");
+		printf
+		    ("starting electronic shutter mode\nExposuretime is set\n");
 		sSO2Parameters->dExposureTime =
 		    0.0000124 + (1055 - 1) * 0.000079275;
 		log_message("Camera is set to electronic shutter mode.");
@@ -393,8 +392,7 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 
 			/* stopping the acquisition */
 			PHX_Acquire(hCamera, PHX_ABORT, NULL);
-		}
-		else {
+		} else {
 			log_error
 			    ("starting acquisition for calculating the exposuretime failed (not fatal)");
 			/* if starting the capture failed more than 3 times program stops */
@@ -879,29 +877,29 @@ int sendMessage(tHandle hCamera, char *inputBuffer)
 						     (ui8 *) outputLineBuffer,
 						     (ui32 *) & eParamValue,
 						     timeout);
-				sprintf(outputLineBuffer, "%s\r", outputLineBuffer);
+				sprintf(outputLineBuffer, "%s\r",
+					outputLineBuffer);
 				if (PHX_OK == eStat) {
 					if (strcmp
 					    (inputLineBuffer,
 					     outputLineBuffer) != 0) {
 						/* if cameras answer equals input string, exit successfull */
-						printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
-						return 0; /* here return of SUCCESS */
+						printf
+						    ("DEBUG: send message: %s was successful\n",
+						     inputLineBuffer);
+						return 0;	/* here return of SUCCESS */
 					} else {
-						log_error
-						    ("String send and string receive were not equal.");
+						log_error("String send and string receive were not equal.");
 					}
+				} else {
+					log_error("nothing was received from camera");
 				}
-				else
-					log_error
-					    ("nothing was received from camera");
-			}
-			else
+			} else {
 				log_error("nothing was received from camera");
-		}
-		else
+			}
+		} else {
 			log_error("PHX_CommsTransmit(...) failed");
-
+		}
 	}
 	log_error("sending message failed 3 times");
 	return eStat;

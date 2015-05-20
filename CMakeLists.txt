@@ -133,7 +133,6 @@ if( ${UNIX} )
 	target_link_libraries(so2-camera ${M_LIB})
 endif( ${UNIX} )
 
-
 # add opencv
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )

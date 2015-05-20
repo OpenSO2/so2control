@@ -26,7 +26,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 }
 
 int camera_trigger(sParameterStruct * sSO2Parameters,
-	void (*callbackFunction) (void *sSO2Parameters))
+		   void (*callbackFunction) (void *sSO2Parameters))
 {
 	sleepMs(100);
 	callbackFunction(sSO2Parameters);
@@ -36,9 +36,9 @@ int camera_trigger(sParameterStruct * sSO2Parameters,
 
 /* HEADER is 64 bytes */
 /* image size is  1344 * 1024 * 16/8 */
-void *getBufferFromFile(char *filename)
+short *getBufferFromFile(char *filename)
 {
-	void *buffer;
+	short *buffer;
 	size_t length;
 	FILE *f = fopen(filename, "rb");
 	if (f) {
@@ -59,15 +59,19 @@ void *getBufferFromFile(char *filename)
 	return buffer;
 }
 
-int camera_get(sParameterStruct * sSO2Parameters, short **stBuffer)
+int camera_get(sParameterStruct * sSO2Parameters)
 {
 	char *filename;
+	short *stBuffer;
+
 	if (sSO2Parameters->identifier == 'a')
 		filename = "src/camera/mock/fixtures/top.raw";
 	else
 		filename = "src/camera/mock/fixtures/bot.raw";
 
-	*stBuffer = getBufferFromFile(filename);
+	stBuffer = getBufferFromFile(filename);
+
+	sSO2Parameters->stBuffer = stBuffer;
 	return 0;
 }
 

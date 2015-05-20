@@ -78,8 +78,7 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		while (!
 		       (sParameters_A->fBufferReady
 			&& sParameters_B->fBufferReady)
-		       && !(sParameters_A->fFifoOverFlow
-			    && sParameters_B->fFifoOverFlow) && !kbhit()) {
+&& !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow) && !kbhit()) {
 			sleepMs(10);
 		}
 
@@ -88,8 +87,12 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		sParameters_B->fBufferReady = FALSE;
 
 		/* save the captured image */
-		status = writeImage(sParameters_A, filename_A, timeNow, 'A');
-		status = writeImage(sParameters_B, filename_B, timeNow, 'B');
+		status = camera_get(sParameters_A);
+		status = camera_get(sParameters_B);
+
+		io_writeImage(sParameters_A);
+		io_writeImage(sParameters_B);
+
 		if (0 != status) {
 			log_error("Saving an image failed. This is not fatal");
 			/* if saving failed somehow more than 3 times program stops */
@@ -123,170 +126,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 			return 2;
 		}
 	}
-
-	return 0;
-}
-
-int writeImage(sParameterStruct * sSO2Parameters, char *filename,
-	timeStruct timeThisImage, char cameraIdentifier)
-{
-	short * stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
-	int status;		/* Status variable for several return values */
-	int imageByteCount = 1344 * 1024 * 16 / 8;	/* number of pixels times 16 Bit depth in Byte */
-	int fwriteReturn;	/* Return value for the write functions */
-	FILE *imageFile;	/* File handle for current image */
-	char headerString[HEADER_SIZE];
-	char errbuff[512];
-	char messBuff[512];
-
-	if (sSO2Parameters->dImagesFile == 0 && strlen(filename)) {
-		log_error("dImagesFile cannot be 0. This is fatal.");
-		return 1;
-	}
-
-	if (strlen(filename) == 0
-	    || sSO2Parameters->dImageCounter % sSO2Parameters->dImagesFile == 0
-	    || sSO2Parameters->dImageCounter == 0) {
-		/* @FIXME filename should have a camera parameter (e.g. _camera1.rbf) */
-		status = createFilename(sSO2Parameters, filename, timeThisImage, cameraIdentifier);
-		if (status != 0) {
-			/*creating filename failed or filename has length 0 */
-			log_error("creating filename failed.");
-			return 1;
-		} else {
-			/* reset status if creating a filename was successful */
-			status = 0;
-			sprintf(messBuff,
-				"%09d Image pairs are saved starting a new File",
-				sSO2Parameters->dImageCounter);
-			log_message(messBuff);
-
-			printf("%09d Images are saved. Press a key to exit.\n",
-			       sSO2Parameters->dImageCounter);
-		}
-	}
-
-	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
-	if (status != 0) {
-		log_error("creating fileheader failed");
-		return 2;
-	}
-
-	/*Open a new file for the image (writeable, binary) */
-	imageFile = fopen(filename, "wb");
-
-	/* fseek(imageFile, 0,SEEK_END); */
-
-	if (imageFile == NULL) {
-		sprintf(errbuff, "create %s on harddrive failed", filename);
-		log_error(errbuff);
-		return 3;
-	}
-
-	/* download the image from the framegrabber */
-	status = camera_get(sSO2Parameters, &stBuffer);
-
-	if (0 == status) {
-		/* save the whole header byte per byte to file */
-		fwriteReturn = fwrite(headerString, 1, HEADER_SIZE, imageFile);
-		if ((fwriteReturn - HEADER_SIZE) != 0) {
-			log_error("Writing image header failed");
-			fclose(imageFile);
-			return 4;
-		}
-
-		/* rotate one of the images */
-		/* imageByteCount/2 = number of pixels */
-		if (cameraIdentifier == 'A') {
-			rotateImage(stBuffer, imageByteCount / 2);
-		}
-
-		/* save image data byte per byte to file 12-bit information in 2 bytes */
-		/* pvAddress => Virtual address of the image buffer */
-		fwriteReturn = fwrite(stBuffer, 1, imageByteCount, imageFile);
-
-		/* fflush(imageFile); */
-		fclose(imageFile);
-		if (imageByteCount != fwriteReturn) {
-			sprintf(errbuff, "Saving Image %s failed\n", filename);
-			log_error(errbuff);
-			return 5;
-		}
-	} else {
-		sprintf(errbuff,
-			"downloading Image %s from framegrabber failed",
-			filename);
-		log_error(errbuff);
-		return 6;
-	}
-	return 0;
-}
-
-int createFilename(sParameterStruct * sSO2Parameters, char *filename,
-		   timeStruct time, char cameraIdentifier)
-{
-	int status;
-	char *camname = (cameraIdentifier == 'A') ? "top" : "bot";	/* identify Camera for filename Prefix */
-
-	/* write header string with information from system time for camera B. */
-	status =
-		sprintf(filename,
-			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw",
-			sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
-			time.year, time.mon, time.day, time.hour, time.min,
-			time.sec, time.milli, camname);
-	return status > 0 ? 0 : 1;
-}
-
-int createFileheader(sParameterStruct * sSO2Parameters, char *header,
-	timeStruct * time)
-{
-	/* create a hokawo compatible header */
-	short wID = 23130; /* Hex 5A5A */
-	short wByteOrder = 18761; /* ASCII 'II' */
-	short wVersion = 12597; /* Version des RAW-Formats */
-	short wWidth = 1344; /* Bildbreite in Pixel */
-	short wHeight = 1024; /* Bildhoehe in Pixel */
-	short wBPP = 16; /* Bits pro Pixel */
-	short wColorType = 1; /* Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software */
-	short wPalEntryNo = 0; /* Anzahl von Paletteneintraegen (immer 0 ) */
-	time_t tDateTime = TimeFromTimeStruct(time); /* Datum und Uhrzeit */
-	int dwTimestamp = time->milli; /* Zeitstempel in ms */
-	/*double dExposureTime = sSO2Parameters->dExposureTime;*/
-	/* Preset the whole string with zeros */
-	memset(header, '\0', HEADER_SIZE);
-
-	/* setting the header parameters */
-	header[0] = (char)wID;
-	header[1] = (char)(wID >> 8);
-	header[2] = (char)wByteOrder;
-	header[3] = (char)(wByteOrder >> 8);
-	header[4] = (char)wVersion;
-	header[5] = (char)(wVersion >> 8);
-	header[6] = (char)wWidth;
-	header[7] = (char)(wWidth >> 8);
-	header[8] = (char)wHeight;
-	header[9] = (char)(wHeight >> 8);
-	header[10] = (char)wBPP;
-	header[11] = (char)(wBPP >> 8);
-	header[12] = (char)wColorType;
-	header[13] = (char)(wColorType >> 8);
-	header[14] = (char)wPalEntryNo;
-	header[15] = (char)(wPalEntryNo >> 8);
-	header[16] = (char)tDateTime;
-	header[17] = (char)(tDateTime >> 8);
-	header[18] = (char)(tDateTime >> 16);
-	header[19] = (char)(tDateTime >> 24);
-	header[20] = (char)dwTimestamp;
-	header[21] = (char)(dwTimestamp >> 8);
-	header[22] = (char)(dwTimestamp >> 16);
-	header[23] = (char)(dwTimestamp >> 24);
-
-	/* @FIXME: wie macht man das mit floats??? */
-/*      header[24] = (char)dExposureTime; */
-/*      header[25] = (char)(dExposureTime >> 8); */
-/*      header[26] = (char)(dExposureTime >> 16); */
-/*      header[27] = (char)(dExposureTime >> 24); */
 
 	return 0;
 }

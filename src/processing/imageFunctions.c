@@ -63,7 +63,7 @@ float calcCorrelation(short *img1, short *img2, int length)
 	if (length - skipped < 1)
 		return 0.0;
 
-	correlation = 1 / correlation; /* invert so that higher values correspond to a better correlation */
+	correlation = 1 / correlation;	/* invert so that higher values correspond to a better correlation */
 	return correlation;
 }
 
@@ -80,12 +80,9 @@ int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width,
 		row = i / width;
 
 		if (col - x > width
-		    || col - y < 0
-		    || row - x < 0
-		    || row - y > height
+		    || col - y < 0 || row - x < 0 || row - y > height
 		    /* || i - x - y*width > 35 // FIXME */
-		    || i - x - y * width < 0
-		    ) {
+		    || i - x - y * width < 0) {
 
 			displacedimageBuffer[i] = 5000;
 		} else {
@@ -117,7 +114,8 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width,
 	for (x = -max_distance + 1; x < max_distance; x++) {
 		for (y = -max_distance + 1; y < max_distance; y++) {
 
-			displaceImage(img2, displacementBuffer, width, height, x, y);
+			displaceImage(img2, displacementBuffer, width, height,
+				      x, y);
 
 			corr = calcCorrelation(img1, displacementBuffer, l);
 
