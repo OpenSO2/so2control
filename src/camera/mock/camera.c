@@ -14,7 +14,7 @@ int camera_abort(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 
-int camera_stop(sParameterStruct *sSO2Parameters){
+int camera_uninit(sParameterStruct *sSO2Parameters){
 	return 0;
 }
 

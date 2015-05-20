@@ -16,7 +16,7 @@
  * camera_get
  *
  * camera_abort
- * camera_stop
+ * camera_uninit
  */
 #ifndef _CAMERA_
 #define _CAMERA_
@@ -32,7 +32,7 @@ int camera_init(sParameterStruct *sSO2Parameters);
 /**
  * stops (uninits) the camera/framegrabber and does neccesarry clean up
  */
-int camera_stop(sParameterStruct *sSO2Parameters);
+int camera_uninit(sParameterStruct *sSO2Parameters);
 
 /**
  *

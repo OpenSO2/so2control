@@ -17,8 +17,8 @@
 #include"common.h"
 
 #if defined(PHX)
-#include<phx_api.h>
-#include<phx_os.h>
+	#include<phx_api.h>
+	#include<phx_os.h>
 #endif
 
 /******************************
@@ -26,8 +26,7 @@
  ******************************/
 
 #define MAX_STRING_LENGTH	256
-#define _PHX_LINE_SIZE		256
-#define szDefaultCmdAppend	"\r"
+
 /******************************
  *   Structures
  ******************************/

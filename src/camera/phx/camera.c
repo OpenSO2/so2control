@@ -14,6 +14,7 @@
 #include<stdlib.h>
 #include"configurations.h"
 
+#define _PHX_LINE_SIZE		256
 
 void PHXcallbackFunction(
 	tHandle     hCamera,           /* Camera handle. */
@@ -77,7 +78,7 @@ int camera_abort(sParameterStruct *sSO2Parameters){
 	return PHX_Acquire( hCamera, PHX_ABORT, NULL );
 }
 
-int camera_stop(sParameterStruct *sSO2Parameters){
+int camera_uninit(sParameterStruct *sSO2Parameters){
 	tHandle hCamera = sSO2Parameters->hCamera;
 	return PHX_CameraRelease( &hCamera );
 }

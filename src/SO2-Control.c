@@ -77,8 +77,8 @@ int main( int argc, char* argv[] )
 	}
 
 	/* Now cease all captures */
-	if ( sParameters_A.hCamera ) camera_stop( &sParameters_B );
-	if ( sParameters_A.hCamera ) camera_stop( &sParameters_B );
+	if ( sParameters_A.hCamera ) camera_uninit( &sParameters_B );
+	if ( sParameters_A.hCamera ) camera_uninit( &sParameters_B );
 
 	logExit();
 
