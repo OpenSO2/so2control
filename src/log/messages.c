@@ -20,4 +20,4 @@ void printOpening()
 	printf("*                                         *\n");
 	printf("*******************************************\n");
 	return;
-};
+}

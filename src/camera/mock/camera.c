@@ -2,6 +2,10 @@
  * mock for camera
  *
  */
+
+/* ignore unused parameters in this file */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>

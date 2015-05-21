@@ -24,7 +24,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 	if (sSO2Parameters->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file if so set it. */
 		logMessage("Set program to use a fix exposure time.");
-		return camera_setExposure(&sSO2Parameters);
+		return camera_setExposure(sSO2Parameters);
 	} else {
 		/* Acquire first buffer to decide between FBL or SHT */
 		status = camera_get(&sSO2Parameters, &stBuffer);
@@ -35,8 +35,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 
 		evalHist(stBuffer, sSO2Parameters, &timeSwitch);
 
-		camera_setExposureSwitch(&sSO2Parameters, timeSwitch);
-
+		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
 	}
 	return 0;
 }

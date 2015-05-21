@@ -61,7 +61,7 @@ or
 `$ ./so-camera.exe` (Windows).
 
 There are some (run time) configuration options in
-configurations/SO2Config.conf.
+`configurations/SO2Config.conf`.
 
 
 
@@ -84,8 +84,8 @@ which circumvents this dependency.
 Coding style
 ------------
 
-This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle).
-This is enforced using [indent](http://www.gnu.org/software/indent/).
+This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle)
+which is enforced using [indent](http://www.gnu.org/software/indent/).
 
 
 

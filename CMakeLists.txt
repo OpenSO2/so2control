@@ -1,17 +1,19 @@
 #
 # run with cmake . -Dmock=camera
 #
-#
+# make clean; make 2> wc; wc wc; head -n 30 wc
 
 # settings
 cmake_minimum_required(VERSION 2.8)
 project( so2-camera )
 
-#~ export OpenCV_DIR=/opt/local/lib/cmake/
 
 #~ add_definitions ("-Werror") # tread every warning as an error
-#~ add_definitions ("-pedantic")
-#~ add_definitions ("-Wall")
+add_definitions ("-pedantic")
+add_definitions ("-Wall")
+add_definitions ("-Wundef")
+add_definitions ("-Wextra")
+add_definitions ("-Wunused-parameter")
 #~ add_definitions ("-Wshadow")
 #~ add_definitions ("-Wpointer-arith")
 #~ add_definitions ("-Wcast-qual")
@@ -21,12 +23,8 @@ project( so2-camera )
 #~ add_definitions ("-Wswitch-default")
 #~ add_definitions ("-Wswitch-enum")
 #~ add_definitions ("-Wcast-align")
-#~ add_definitions ("-Wpointer-arith")
 #~ add_definitions ("-Wstrict-overflow=5")
 #~ add_definitions ("-Winline")
-#~ add_definitions ("-Wundef")
-#~ add_definitions ("-Wcast-qual")
-#~ add_definitions ("-Wshadow")
 #~ add_definitions ("-Wunreachable-code")
 #~ add_definitions ("-Wlogical-op")
 #~ add_definitions ("-Wfloat-equal")
@@ -38,7 +36,6 @@ project( so2-camera )
 #~ add_definitions ("-ffloat-store")
 #~ add_definitions ("-fno-common")
 #~ add_definitions ("-fstrict-aliasing")
-#~ add_definitions ("-Wextra")
 #~ add_definitions ("-Wmissing-prototypes")
 #~ add_definitions ("-Wstrict-prototypes")
 #~ add_definitions ("-Wbad-function-cast")

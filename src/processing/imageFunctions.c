@@ -3,16 +3,17 @@
 #include <string.h>
 #include "imageFunctions.h"
 
-//~
-//~ Image manipulation functions
-//~
+/*
+/ Image manipulation functions
+*/
 
-// rotates an image by 180 degrees, e.g. turn it upside-down
-//  1 2
-//  3 4     => 1 2 3 4
-//
-//  4 3
-//  2 1     => 4 3 2 1
+/* rotates an image by 180 degrees, e.g. turn it upside-down
+ *  1 2
+ *  3 4     => 1 2 3 4
+ *
+ *  4 3
+ * 2 1     => 4 3 2 1
+ */
 int rotateImage(short *Buffer, int length)
 {
 	short *tempBuffer;
@@ -40,8 +41,9 @@ int rotateImage(short *Buffer, int length)
 	return 0;
 }
 
-// calculates the correlation for a set of two images by averaging the squared brightness difference.
+/* calculates the correlation for a set of two images by averaging the squared brightness difference.
 // @TODO: check for better algorithms
+*/
 float calcCorrelation(short *img1, short *img2, int length)
 {
 	int i, skipped = 0;
@@ -53,8 +55,6 @@ float calcCorrelation(short *img1, short *img2, int length)
 		} else {
 			diff = (float)img1[i] - (float)img2[i];
 			correlation += diff * diff / 100000;
-			//~ printf(" [%i/%i] %f", i, length, img1[i]);
-			//~ printf(" diff: %f (%i, %i), diffsq %f => corr %f, ", diff, img1[i], img2[i], diff*diff, correlation);
 		}
 	}
 
@@ -63,14 +63,13 @@ float calcCorrelation(short *img1, short *img2, int length)
 	if (length - skipped < 1)
 		return 0.0;
 
-	//~ printf("\ncorrelation %f (%f) for %i values", correlation, 1./correlation, length - skipped);
-
-	correlation = 1 / correlation;	// invert so that higher values correspond to a better correlation
+	correlation = 1 / correlation; /* invert so that higher values correspond to a better correlation */
 	return correlation;
 }
 
-// displace an image by a fixed displacement vector
+/* displace an image by a fixed displacement vector
 // FIXME: height/width
+*/
 int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width,
 		  int height, int x, int y)
 {
@@ -80,17 +79,17 @@ int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width,
 		col = i % width;
 		row = i / width;
 
-		if (col - x > width	//
-		    || col - y < 0	//
-		    || row - x < 0	//
-		    || row - y > height	//
-		    //~ || i - x - y*width > 35 // FIXME
-		    || i - x - y * width < 0	// FIXME
+		if (col - x > width
+		    || col - y < 0
+		    || row - x < 0
+		    || row - y > height
+		    /* || i - x - y*width > 35 // FIXME */
+		    || i - x - y * width < 0
 		    ) {
-			//~ printf(" (skipped) ");
+
 			displacedimageBuffer[i] = 5000;
 		} else {
-			// calc displaced pixel
+			/* calc displaced pixel */
 			displacedimageBuffer[i] =
 			    imageBuffer[i - x - y * width];
 		}
@@ -98,7 +97,7 @@ int displaceImage(short *imageBuffer, short *displacedimageBuffer, int width,
 	return 1;
 }
 
-// returns the displacement vector between two images
+/* returns the displacement vector between two images */
 struct disp *findDisplacement(short *img1, short *img2, int height, int width,
 			      int max_distance)
 {
@@ -114,17 +113,14 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width,
 
 	displacement = malloc(sizeof(struct disp));
 
-	//~ calculate the correlation for every displacement in n pixel distance
+	/* calculate the correlation for every displacement in n pixel distance */
 	for (x = -max_distance + 1; x < max_distance; x++) {
 		for (y = -max_distance + 1; y < max_distance; y++) {
-			//~ printf("length displacementBuffer %i\n", strlen(displacementBuffer));
 
-			displaceImage(img2, displacementBuffer, width, height, x, y);	//~ printf("displacementBuffer was returned with %i", strlen(displacementBuffer) );
+			displaceImage(img2, displacementBuffer, width, height, x, y);
 
 			corr = calcCorrelation(img1, displacementBuffer, l);
 
-			//~ printf("\n# calculated correlation for [%i, %i] : %f\n", x, y, corr );
-			//~ printf("\n# calculated correlation for [%i, %i] : %f (img1: %s, img2: %s, displ: %s)\n\n", x, y, corr, img1, img2, displacementBuffer );
 			if (corr > correlation) {
 				displacement_x = x;
 				displacement_y = y;
@@ -141,7 +137,6 @@ struct disp *findDisplacement(short *img1, short *img2, int height, int width,
 	return displacement;
 }
 
-//
 int getBufferCenter(short *buffer, short *smallBuffer, int height, int width,
 		    int smallHeight, int smallWidth)
 {
@@ -152,11 +147,11 @@ int getBufferCenter(short *buffer, short *smallBuffer, int height, int width,
 	int j = 0;
 	int col;
 
-	for (i = start; i < end; i++) {	// this cuts off top and bottom
+	for (i = start; i < end; i++) {	/* this cuts off top and bottom */
 		col = i % width;
-		if (		// this cuts off left and right
-			   col > (width - smallWidth) / 2 - 1	// left
-			   && col < (width + smallWidth) / 2	// right
+		if (		/* this cuts off left and right */
+			   col > (width - smallWidth) / 2 - 1	/* left */
+			   && col < (width + smallWidth) / 2	/* right */
 		    ) {
 			smallBuffer[j] = buffer[i];
 			j++;
@@ -175,10 +170,11 @@ int cmp(const void *ptr1, const void *ptr2)
 		return 0;
 }
 
-// calculates the median
+/* calculates the median
 // @FIXME: document
 // @FIXME: write unit test
 // @TODO: rename to something sensible
+*/
 int findMedian(short *buffer, int length)
 {
 	int i;
@@ -188,16 +184,16 @@ int findMedian(short *buffer, int length)
 	int edge = 0;
 	int leap = 10000;
 
-	// copy buffer
+	/* copy buffer */
 	copy = (short *)malloc(length * sizeof(short));
 	for (i = 0; i < length; i++) {
 		copy[i] = buffer[i];
 	}
 
-	// sort copied buffer
+	/* sort copied buffer */
 	qsort(copy, length, sizeof(short), cmp);
 
-	// find brightness edge
+	/* find brightness edge */
 	for (i = leap; i < length; i = i + 10) {
 		if (copy[i] - copy[i - leap] > edgeDiff) {
 			edge = i;
@@ -209,7 +205,7 @@ int findMedian(short *buffer, int length)
 
 	printf("no edge detected, switching to secondary algorithm!\n");
 
-	//find mean value
+	/* find mean value */
 	for (i = 0; i < length; i++) {
 		if (copy[i] != 0) {
 			firstNonBlack = i;
@@ -219,8 +215,10 @@ int findMedian(short *buffer, int length)
 	return 0;
 }
 
-// @FIXME: document
-// @FIXME: write unit test
+/*
+ * @FIXME: document
+ * @FIXME: write unit test
+*/
 int posterize(short *buffer, int length)
 {
 	int i;
