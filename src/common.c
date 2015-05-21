@@ -1,5 +1,6 @@
-#include <math.h>
-#include <string.h>		/* memset */
+#include<math.h>
+#include<string.h> /* memset */
+#include<unistd.h> /* usleep */
 
 int roundToInt(double value)
 {
@@ -16,4 +17,15 @@ int roundToInt(double value)
 		result = (int)(floor(value));
 
 	return result;
+}
+
+
+int sleepMs(int x)
+{
+#if defined(WIN32)
+	Sleep(x);
+#else
+	usleep(x*1000);
+#endif
+	return 0;
 }

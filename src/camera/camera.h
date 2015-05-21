@@ -21,8 +21,8 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
-#include<common.h>
-#include<configurations.h>
+#include "common.h"
+#include "configurations.h"
 
 /**
  * inits the camera/framegrabber
@@ -38,7 +38,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters);
  *
  */
 int camera_trigger(sParameterStruct * sSO2Parameters,
-		   void (*callbackFunction) (void *sSO2Parameters));
+	void (*callbackFunction) (void *sSO2Parameters));
 
 /**
  * aquires one image/frame from the camera/framegrabber
@@ -49,6 +49,11 @@ int camera_get(sParameterStruct * sSO2Parameters, short **stBuffer);
  * abort the current aquisition
  */
 int camera_abort(sParameterStruct * sSO2Parameters);
+
+/**
+ *
+ */
+int camera_setExposure(sParameterStruct * sSO2Parameters);
 
 /**
  *

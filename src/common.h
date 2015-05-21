@@ -24,10 +24,6 @@ typedef struct {
 } stImageBuff;
 #endif
 
-#if defined(WIN32)
-#define sleepMs(x) Sleep(x);
-#else
-#define sleepMs(x) usleep(x*1000);
-#endif
+int sleepMs(int x);
 
 #endif

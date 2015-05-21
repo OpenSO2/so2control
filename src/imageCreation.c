@@ -4,21 +4,26 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
-#include<string.h>		/* memset */
+#include<string.h> /* memset */
 #include<stdlib.h>
 
 #include<time.h>
-#include"configurations.h"
-#include"imageCreation.h"
-#include"log.h"
-#include"imageFunctions.h"
+#include "common.h"
+#include "configurations.h"
+#include "imageCreation.h"
+#include "log.h"
+#include "imageFunctions.h"
+#include "camera.h"
+#include "kbhit.h"
 
 #define HEADER_SIZE 64
 
 void callbackFunction(sParameterStruct * sSO2Parameters)
 {
 	sSO2Parameters->fBufferReady = TRUE;
-	sSO2Parameters->dBufferReadyCount++;	/* Increment the Display Buffer Ready Count */
+
+	/* Increment the Display Buffer Ready Count */
+	sSO2Parameters->dBufferReadyCount++;
 }
 
 int startAquisition(sParameterStruct * sParameters_A,
@@ -42,12 +47,9 @@ int startAquisition(sParameterStruct * sParameters_A,
 int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 	   char *filename_A, char *filename_B)
 {
-	FILE *fid = NULL;
 	int saveErrCount = 0;	/* counting how often saving an image failed */
 	int startErrCount = 0;	/* counting how often the start of capture process failed */
 	int status = 0;		/* status variable */
-	tHandle hCamera_A = sParameters_A->hCamera;	/* hardware handle of first camera */
-	tHandle hCamera_B = sParameters_B->hCamera;	/* hardware handle of second camera */
 	timeStruct timeNow;
 
 	/* @FIXME: bin mir nicht sicher ob das notwendig ist... C... */
@@ -117,13 +119,13 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 			camera_abort(sParameters_B);
 			return 2;
 		}
-	}			// else
+	}
 
 	return 0;
 }
 
 int writeImage(sParameterStruct * sSO2Parameters, char *filename,
-	       timeStruct timeThisImage, char cameraIdentifier)
+	timeStruct timeThisImage, char cameraIdentifier)
 {
 	stImageBuff stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
 	int status;		/* Status variable for several return values */
@@ -133,7 +135,6 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 	char headerString[HEADER_SIZE];
 	char errbuff[512];
 	char messBuff[512];
-	tHandle hCamera = sSO2Parameters->hCamera;
 
 	if (sSO2Parameters->dImagesFile == 0 && strlen(filename)) {
 		logError("dImagesFile cannot be 0. This is fatal.");
@@ -143,10 +144,8 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 	if (strlen(filename) == 0
 	    || sSO2Parameters->dImageCounter % sSO2Parameters->dImagesFile == 0
 	    || sSO2Parameters->dImageCounter == 0) {
-		// @FIXME filename should have a camera parameter (e.g. _camera1.rbf)
-		status =
-		    createFilename(sSO2Parameters, filename, timeThisImage,
-				   cameraIdentifier);
+		/* @FIXME filename should have a camera parameter (e.g. _camera1.rbf) */
+		status = createFilename(sSO2Parameters, filename, timeThisImage, cameraIdentifier);
 		if (status != 0) {
 			/*creating filename failed or filename has length 0 */
 			logError("creating filename failed.");
@@ -173,7 +172,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 	/*Open a new file for the image (writeable, binary) */
 	imageFile = fopen(filename, "wb");
 
-	//fseek(imageFile, 0,SEEK_END);
+	/* fseek(imageFile, 0,SEEK_END); */
 
 	if (imageFile == NULL) {
 		sprintf(errbuff, "create %s on harddrive failed", filename);
@@ -200,11 +199,10 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
-		// pvAddress => Virtual address of the image buffer
-		fwriteReturn =
-		    fwrite(stBuffer.pvAddress, 1, imageByteCount, imageFile);
+		/* pvAddress => Virtual address of the image buffer */
+		fwriteReturn = fwrite(stBuffer.pvAddress, 1, imageByteCount, imageFile);
 
-		//fflush(imageFile);
+		/* fflush(imageFile); */
 		fclose(imageFile);
 		if (imageByteCount != fwriteReturn) {
 			sprintf(errbuff, "Saving Image %s failed\n", filename);
@@ -229,30 +227,29 @@ int createFilename(sParameterStruct * sSO2Parameters, char *filename,
 
 	/* write header string with information from system time for camera B. */
 	status =
-	    sprintf(filename,
-		    "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw",
-		    sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
-		    time.year, time.mon, time.day, time.hour, time.min,
-		    time.sec, time.milli, camname);
+		sprintf(filename,
+			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.raw",
+			sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
+			time.year, time.mon, time.day, time.hour, time.min,
+			time.sec, time.milli, camname);
 	return status > 0 ? 0 : 1;
 }
 
 int createFileheader(sParameterStruct * sSO2Parameters, char *header,
-		     timeStruct * time)
+	timeStruct * time)
 {
 	/* create a hokawo compatible header */
-
-	short wID = 23130;	// Hex 5A5A
-	short wByteOrder = 18761;	// ASCII 'II'
-	short wVersion = 12597;	// Version des RAW-Formats
-	short wWidth = 1344;	// Bildbreite in Pixel
-	short wHeight = 1024;	// Bildhoehe in Pixel
-	short wBPP = 16;	// Bits pro Pixel
-	short wColorType = 1;	// Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software
-	short wPalEntryNo = 0;	// Anzahl von Paletteneintraegen (immer 0 )
-	time_t tDateTime = TimeFromTimeStruct(time);	// Datum und Uhrzeit
-	int dwTimestamp = time->milli;	// Zeitstempel in ms
-	double dExposureTime = sSO2Parameters->dExposureTime;
+	short wID = 23130; /* Hex 5A5A */
+	short wByteOrder = 18761; /* ASCII 'II' */
+	short wVersion = 12597; /* Version des RAW-Formats */
+	short wWidth = 1344; /* Bildbreite in Pixel */
+	short wHeight = 1024; /* Bildhoehe in Pixel */
+	short wBPP = 16; /* Bits pro Pixel */
+	short wColorType = 1; /* Farbtyp: 2 = Graustufen, 4 = RGB Farbe... ist leider = 1 in beispiel datei aus hokawo software */
+	short wPalEntryNo = 0; /* Anzahl von Paletteneintraegen (immer 0 ) */
+	time_t tDateTime = TimeFromTimeStruct(time); /* Datum und Uhrzeit */
+	int dwTimestamp = time->milli; /* Zeitstempel in ms */
+	/*double dExposureTime = sSO2Parameters->dExposureTime;*/
 	/* Preset the whole string with zeros */
 	memset(header, '\0', HEADER_SIZE);
 
@@ -283,10 +280,10 @@ int createFileheader(sParameterStruct * sSO2Parameters, char *header,
 	header[23] = (char)(dwTimestamp >> 24);
 
 	/* @FIXME: wie macht man das mit floats??? */
-//      header[24] = (char)dExposureTime;
-//      header[25] = (char)(dExposureTime >> 8);
-//      header[26] = (char)(dExposureTime >> 16);
-//      header[27] = (char)(dExposureTime >> 24);
+/*      header[24] = (char)dExposureTime; */
+/*      header[25] = (char)(dExposureTime >> 8); */
+/*      header[26] = (char)(dExposureTime >> 16); */
+/*      header[27] = (char)(dExposureTime >> 24); */
 
 	return 0;
 }

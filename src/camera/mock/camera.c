@@ -26,7 +26,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 }
 
 int camera_trigger(sParameterStruct * sSO2Parameters,
-		   void (*callbackFunction) (void *sSO2Parameters))
+	void (*callbackFunction) (void *sSO2Parameters))
 {
 	sleepMs(100);
 	callbackFunction(sSO2Parameters);
@@ -39,7 +39,6 @@ int camera_trigger(sParameterStruct * sSO2Parameters,
 void *getBufferFromFile(char *filename)
 {
 	void *buffer;
-	int readCount;
 	size_t length;
 	FILE *f = fopen(filename, "rb");
 	if (f) {
@@ -48,7 +47,7 @@ void *getBufferFromFile(char *filename)
 		(void)fseek(f, 0, SEEK_SET);
 		buffer = malloc(length);
 		if (buffer) {
-			readCount = fread(buffer, length, length, f);
+			fread(buffer, length, length, f);
 		} else {
 			printf("failed to read into buffer\n");
 		}
@@ -72,7 +71,7 @@ int camera_get(sParameterStruct * sSO2Parameters, short **stBuffer)
 	return 0;
 }
 
-int camera_setExposure(sParameterStruct * sSO2Parameters, stImageBuff stBuffer)
+int camera_setExposure(sParameterStruct * sSO2Parameters)
 {
 	return 0;
 }

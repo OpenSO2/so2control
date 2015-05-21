@@ -3,13 +3,13 @@
  */
 
 #if WIN32
-#include <conio.h>
+#include<conio.h>
 #else
-#include <termios.h>
-#include <stdio.h>
-#include <string.h>
+#include<termios.h>
+#include<stdio.h>
+#include<string.h>
+#include "kbhit.h"
 
-int kbhit(void);
 int kbhit(void)
 {
 	struct termios term, oterm;
