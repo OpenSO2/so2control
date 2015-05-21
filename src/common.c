@@ -1,5 +1,5 @@
 #include <math.h>
-#include <string.h> /* memset */
+#include <string.h>		/* memset */
 
 int roundToInt(double value)
 {
@@ -11,10 +11,9 @@ int roundToInt(double value)
 
 	temp = value - floor(value);
 	if (temp >= 0.5)
-		result = (int)(floor(value)+1);
+		result = (int)(floor(value) + 1);
 	else
 		result = (int)(floor(value));
 
 	return result;
 }
-

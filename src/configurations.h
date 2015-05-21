@@ -17,8 +17,8 @@
 #include"common.h"
 
 #if defined(PHX)
-	#include<phx_api.h>
-	#include<phx_os.h>
+#include<phx_api.h>
+#include<phx_os.h>
 #endif
 
 /******************************
@@ -30,66 +30,64 @@
 /******************************
  *   Structures
  ******************************/
-typedef struct
-{
+typedef struct {
 /* Camera parameters */
 	/* Number of pixels in 1 Image */
-	int			dBufferlength;
+	int dBufferlength;
 	/* when controling the exposure time a histogram is made
 	 * from 1 image. the lower part is evaluated for underexposure
 	 * this give the evaluated invervall.
 	 */
-	int			dHistMinInterval;
+	int dHistMinInterval;
 	/* when controling the exposure time a histogram is made
 	 * from 1 image. This value gibs the percentage of pixels
 	 * that are aloud to be under or overexposed.
 	 */
-	int			dHistPercentage;
+	int dHistPercentage;
 	/* not used right now. should contain a value for image noise */
-	ui32		dDarkCurrent;
+	ui32 dDarkCurrent;
 	/* number of images take */
-	int			dImageCounter;
+	int dImageCounter;
 	/* delay between two frames in [ms] */
-	ui32		dInterFrameDelay;
+	ui32 dInterFrameDelay;
 	/* length of the triggerpulse in [ms] */
-	ui32		dTriggerPulseWidth;
+	ui32 dTriggerPulseWidth;
 	/* contains the Exposuretime in [ms] */
-	double		dExposureTime;
+	double dExposureTime;
 	/* contains the name of a Config-file */
-	char		cConfigFileName[MAX_STRING_LENGTH];
+	char cConfigFileName[MAX_STRING_LENGTH];
 	/* not used right now, should contains a prefix for all images */
-	char		cFileNamePrefix[MAX_STRING_LENGTH];
+	char cFileNamePrefix[MAX_STRING_LENGTH];
 	/* path to image diretory */
-	char		cImagePath[MAX_STRING_LENGTH];
+	char cImagePath[MAX_STRING_LENGTH];
 	/* A handle to identify the camera */
-	tHandle		hCamera;
+	tHandle hCamera;
 	/* A switch to set the exposuretime fix to the value given in the config file */
-	int			dFixTime;
+	int dFixTime;
 	/* File identifier for current images */
-	FILE*		fid;
+	FILE *fid;
 	/* Size of each file */
-	int			dfilesize;
-	/* Images per file. Calculated from size of file*/
-	int			dImagesFile;
+	int dfilesize;
+	/* Images per file. Calculated from size of file */
+	int dImagesFile;
 
 	/* ~Callback stuff~ */
 
 	/* Event Flags */
-	volatile tFlag	fBufferReady;
-	volatile int	dBufferReadyCount;
+	volatile tFlag fBufferReady;
+	volatile int dBufferReadyCount;
 
 	/* Control Flags */
 	volatile tFlag fFifoOverFlow;
 
 	/* Camera identifier */
 	char identifier;
-}sParameterStruct;
-
+} sParameterStruct;
 
  /******************************
  *   FUNCTIONS
  ******************************/
-int readConfig				(char *filename, sParameterStruct *sSO2Parameters);
-int configurations			(sParameterStruct *sSO2Parameters);
-int structInit				(sParameterStruct *sSO2Parameters, char identifier);
+int readConfig(char *filename, sParameterStruct * sSO2Parameters);
+int configurations(sParameterStruct * sSO2Parameters);
+int structInit(sParameterStruct * sSO2Parameters, char identifier);
 #endif

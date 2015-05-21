@@ -13,21 +13,21 @@
 #endif
 
 #ifndef PHX
-typedef unsigned long  ui32;
-typedef unsigned long  mu32;
-typedef mu32           tHandle;
-typedef ui32           tFlag;
+typedef unsigned long ui32;
+typedef unsigned long mu32;
+typedef mu32 tHandle;
+typedef ui32 tFlag;
 
 typedef struct {
-   void *pvAddress;
-   void *pvContext;
+	void *pvAddress;
+	void *pvContext;
 } stImageBuff;
 #endif
 
 #if defined(WIN32)
-	#define sleepMs(x) Sleep(x);
+#define sleepMs(x) Sleep(x);
 #else
-	#define sleepMs(x) usleep(x*1000);
+#define sleepMs(x) usleep(x*1000);
 #endif
 
 #endif

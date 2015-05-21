@@ -80,6 +80,15 @@ $ cmake . -Dmock=camera
 
 which circumvents this dependency.
 
+
+Coding style
+------------
+
+This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle).
+This is enforced using [indent](http://www.gnu.org/software/indent/).
+
+
+
 [jj]: johann.jacobsohn@uni-hamburg.de
 [opencv]: http://opencv.org/
 [zlib]: http://www.zlib.net/
