@@ -127,7 +127,7 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 	timeStruct timeThisImage, char cameraIdentifier)
 {
-	stImageBuff stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
+	short * stBuffer;	/* Buffer in which the image data is stored by the framegrabber */
 	int status;		/* Status variable for several return values */
 	int imageByteCount = 1344 * 1024 * 16 / 8;	/* number of pixels times 16 Bit depth in Byte */
 	int fwriteReturn;	/* Return value for the write functions */
@@ -195,12 +195,12 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 		/* rotate one of the images */
 		/* imageByteCount/2 = number of pixels */
 		if (cameraIdentifier == 'A') {
-			rotateImage(stBuffer.pvAddress, imageByteCount / 2);
+			rotateImage(stBuffer, imageByteCount / 2);
 		}
 
 		/* save image data byte per byte to file 12-bit information in 2 bytes */
 		/* pvAddress => Virtual address of the image buffer */
-		fwriteReturn = fwrite(stBuffer.pvAddress, 1, imageByteCount, imageFile);
+		fwriteReturn = fwrite(stBuffer, 1, imageByteCount, imageFile);
 
 		/* fflush(imageFile); */
 		fclose(imageFile);

@@ -11,13 +11,9 @@
 
 int setExposureTime(sParameterStruct * sSO2Parameters)
 {
-	int status = 0;		/* status variable */
-	int timeSwitch = 0;	/* Integer switch to switch between exposure modi */
-	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
-	short *stBuffer;	/* Buffer where the Framegrabber stores the image */
-
-	/* pre-set the buffer with zeros */
-	memset(&stBuffer, 0, sizeof(stImageBuff));
+	int status = 0;     /* status variable */
+	int timeSwitch = 0; /* Integer switch to switch between exposure modi */
+	short *stBuffer;    /* Buffer where the Framegrabber stores the image */
 
 	if (sSO2Parameters->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file if so set it. */
@@ -25,7 +21,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 		return camera_setExposure(sSO2Parameters);
 	} else {
 		/* Acquire first buffer to decide between FBL or SHT */
-		status = camera_get(&sSO2Parameters, &stBuffer);
+		status = camera_get(sSO2Parameters, &stBuffer);
 		if (status != 0) {
 			return status;
 		}
@@ -35,6 +31,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 
 		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
 	}
+
 	return 0;
 }
 
