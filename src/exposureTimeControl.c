@@ -3,11 +3,11 @@
  */
 #include<stdio.h>
 #include<string.h>
-#include"camera.h"
-#include"exposureTimeControl.h"
-#include"configurations.h"
-#include"imageCreation.h"
-#include"log.h"
+#include "camera.h"
+#include "exposureTimeControl.h"
+#include "configurations.h"
+#include "imageCreation.h"
+#include "log.h"
 
 int setExposureTime(sParameterStruct * sSO2Parameters)
 {
@@ -15,8 +15,6 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 	int timeSwitch = 0;	/* Integer switch to switch between exposure modi */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
 	short *stBuffer;	/* Buffer where the Framegrabber stores the image */
-	char messbuff[512];
-	char errbuff[512];
 
 	/* pre-set the buffer with zeros */
 	memset(&stBuffer, 0, sizeof(stImageBuff));
@@ -31,8 +29,8 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 		if (status != 0) {
 			return status;
 		}
-		/* calculate histogram to test for over or under exposition */
 
+		/* calculate histogram to test for over or under exposition */
 		evalHist(stBuffer, sSO2Parameters, &timeSwitch);
 
 		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
@@ -56,7 +54,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
  * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
  */
 int evalHist(short *stBuffer, sParameterStruct * sSO2Parameters,
-	     int *timeSwitch)
+	int *timeSwitch)
 {
 	int bufferlength = sSO2Parameters->dBufferlength;
 	int percentage = sSO2Parameters->dHistPercentage;
