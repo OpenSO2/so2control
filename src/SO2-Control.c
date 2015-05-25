@@ -1,7 +1,6 @@
 #include<string.h>
 #include<camera.h>
 #include"configurations.h"
-#include"messages.h"
 #include"imageCreation.h"
 #include"exposureTimeControl.h"
 #include"log.h"
@@ -18,15 +17,11 @@ int main(int argc, char *argv[])
 	sParameterStruct sParameters_A;
 	sParameterStruct sParameters_B;
 	int state;
-
-	/* print welcome message in terminal */
-	printOpening();
-
 	/*starting the logfile */
-	state = initLog();
+	state = log_init();
 	if (state != 0) {
 		/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
-		logError("creating a logfile failed. Program is aborting...\n");
+		log_error("creating a logfile failed. Program is aborting...\n");
 		return state;
 	}
 
@@ -40,14 +35,14 @@ int main(int argc, char *argv[])
 	state = camera_init(&sParameters_A);
 	if (state != 0) {
 		/* this is critical if this function fails no camera handle is returned */
-		logError("camera_init for Camera A failed");
+		log_error("camera_init for Camera A failed");
 		return state;
 	}
 
 	state = camera_init(&sParameters_B);
 	if (state != 0) {
 		/* this is critical if this function fails no camera handle is returned */
-		logError("camera_init for Camera B failed");
+		log_error("camera_init for Camera B failed");
 		return state;
 	}
 
@@ -55,7 +50,7 @@ int main(int argc, char *argv[])
 	state = configurations(&sParameters_A);
 	state = configurations(&sParameters_B);
 	if (state != 0) {
-		logError("configuration failed");
+		log_error("configuration failed");
 		return 1;
 	}
 
@@ -65,9 +60,9 @@ int main(int argc, char *argv[])
 
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
 	state = startAquisition(&sParameters_A, &sParameters_B);
-	logMessage("Aquisition stopped");
+	log_message("Aquisition stopped");
 	if (state != 0) {
-		logError("Aquisition failed");
+		log_error("Aquisition failed");
 		return 1;
 	}
 
@@ -77,7 +72,7 @@ int main(int argc, char *argv[])
 	if (sParameters_A.hCamera)
 		camera_uninit(&sParameters_B);
 
-	logExit();
+	log_uninit();
 
 	return 0;
 }

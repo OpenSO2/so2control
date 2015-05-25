@@ -32,8 +32,8 @@ int startAquisition(sParameterStruct * sParameters_A,
 	char filename_A[128] = "";
 	char filename_B[128] = "";
 
-	logMessage("Starting acquisition...\n");
-	logMessage("Press a key to exit\n");
+	log_message("Starting acquisition...\n");
+	log_message("Press a key to exit\n");
 
 	while (!kbhit()
 	       && !(sParameters_A->fFifoOverFlow
@@ -88,11 +88,11 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		status = writeImage(sParameters_A, filename_A, timeNow, 'A');
 		status = writeImage(sParameters_B, filename_B, timeNow, 'B');
 		if (0 != status) {
-			logError("Saving an image failed. This is not fatal");
+			log_error("Saving an image failed. This is not fatal");
 			/* if saving failed somehow more than 3 times program stops */
 			saveErrCount++;
 			if (saveErrCount >= 3) {
-				logError
+				log_error
 				    ("Saving 3 images in a row failed. This is fatal");
 				camera_abort(sParameters_A);
 				camera_abort(sParameters_B);
@@ -109,11 +109,11 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		camera_abort(sParameters_A);
 		camera_abort(sParameters_B);
 	} else {
-		logError("Starting the acquisition failed. This is not fatal");
+		log_error("Starting the acquisition failed. This is not fatal");
 		/* if starting the capture failed more than 3 times program stops */
 		startErrCount++;
 		if (startErrCount >= 3) {
-			logError
+			log_error
 			    ("starting the acquisition failed 3 times in a row. this is fatal");
 			camera_abort(sParameters_A);
 			camera_abort(sParameters_B);
@@ -137,7 +137,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 	char messBuff[512];
 
 	if (sSO2Parameters->dImagesFile == 0 && strlen(filename)) {
-		logError("dImagesFile cannot be 0. This is fatal.");
+		log_error("dImagesFile cannot be 0. This is fatal.");
 		return 1;
 	}
 
@@ -148,7 +148,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 		status = createFilename(sSO2Parameters, filename, timeThisImage, cameraIdentifier);
 		if (status != 0) {
 			/*creating filename failed or filename has length 0 */
-			logError("creating filename failed.");
+			log_error("creating filename failed.");
 			return 1;
 		} else {
 			/* reset status if creating a filename was successful */
@@ -156,7 +156,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 			sprintf(messBuff,
 				"%09d Image pairs are saved starting a new File",
 				sSO2Parameters->dImageCounter);
-			logMessage(messBuff);
+			log_message(messBuff);
 
 			printf("%09d Images are saved. Press a key to exit.\n",
 			       sSO2Parameters->dImageCounter);
@@ -165,7 +165,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 
 	status = createFileheader(sSO2Parameters, headerString, &timeThisImage);
 	if (status != 0) {
-		logError("creating fileheader failed");
+		log_error("creating fileheader failed");
 		return 2;
 	}
 
@@ -176,7 +176,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 
 	if (imageFile == NULL) {
 		sprintf(errbuff, "create %s on harddrive failed", filename);
-		logError(errbuff);
+		log_error(errbuff);
 		return 3;
 	}
 
@@ -187,7 +187,7 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 		/* save the whole header byte per byte to file */
 		fwriteReturn = fwrite(headerString, 1, HEADER_SIZE, imageFile);
 		if ((fwriteReturn - HEADER_SIZE) != 0) {
-			logError("Writing image header failed");
+			log_error("Writing image header failed");
 			fclose(imageFile);
 			return 4;
 		}
@@ -206,14 +206,14 @@ int writeImage(sParameterStruct * sSO2Parameters, char *filename,
 		fclose(imageFile);
 		if (imageByteCount != fwriteReturn) {
 			sprintf(errbuff, "Saving Image %s failed\n", filename);
-			logError(errbuff);
+			log_error(errbuff);
 			return 5;
 		}
 	} else {
 		sprintf(errbuff,
 			"downloading Image %s from framegrabber failed",
 			filename);
-		logError(errbuff);
+		log_error(errbuff);
 		return 6;
 	}
 	return 0;
@@ -333,7 +333,7 @@ int getTime(timeStruct * pTS)
 
 	stat = clock_gettime(CLOCK_REALTIME, &spec);
 	if (stat != 0) {
-		logError("clock_gettime failed. (posix) \n");
+		log_error("clock_gettime failed. (posix) \n");
 		return 1;
 	}
 

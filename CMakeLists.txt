@@ -57,7 +57,6 @@ include_directories(
 	./src/camera
 	./src/filterwheel/custom
 	./src/processing
-	./src/log/custom
 	./src/log
 )
 
@@ -75,10 +74,8 @@ set(SRCFILES
 	./src/processing/imageFunctions.c
 	./src/imageCreation.h
 	./src/imageCreation.c
-	./src/log/custom/log.h
+	./src/log/log.h
 	./src/log/custom/log.c
-	./src/log/messages.h
-	./src/log/messages.c
 	./src/kbhit.c
 	./src/SO2-Control.c
 )

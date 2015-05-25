@@ -121,11 +121,11 @@ int readConfig(char *filename, sParameterStruct * sSO2Parameters)
 		sprintf(errbuff,
 			"Reading config file was successfull %d lines were read",
 			linenumber);
-		logMessage(errbuff);
+		log_message(errbuff);
 	} /* end if(pFILE!=NULL) */
 	else {
 		sprintf(errbuff, "opening Configfile: %s failed!", filename);
-		logError(errbuff);
+		log_error(errbuff);
 		return 1;
 	}
 
@@ -140,12 +140,12 @@ int configurations(sParameterStruct * sSO2Parameters)
 	/* name of Configfile is hard coded maybe change this sometime */
 	status = readConfig("configurations//SO2Config.conf", sSO2Parameters);
 	if (status != 0)
-		logError("readConfig(...) failed");
+		log_error("readConfig(...) failed");
 
 	/* load the default configurations for the framegrabber */
 	status = camera_config(sSO2Parameters);
 	if (status != 0) {
-		logError("configuring camera failed");
+		log_error("configuring camera failed");
 		return status;
 	}
 	return status;

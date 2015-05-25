@@ -47,7 +47,7 @@ int camera_init(sParameterStruct * sSO2Parameters)
 				 &PHX_ErrHandlerDefault);
 
 	if (0 != status) {
-		logError("loading camera config failed");
+		log_error("loading camera config failed");
 		return status;
 	}
 
@@ -64,14 +64,14 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	 status = sendMessage(hCamera, "NMD S");
 	 if (0 != status )
 	 {
-	 logError("setting camera to electronic shutter mode failed");
+	 log_error("setting camera to electronic shutter mode failed");
 	 return status;
 	 }
 
 	 status = sendMessage(hCamera, "SHT 1055");
 	 if (0 != status )
 	 {
-	 logError("setting SHT value 1055 failed");
+	 log_error("setting SHT value 1055 failed");
 	 return status;
 	 }
 	 /**/
@@ -117,21 +117,21 @@ int camera_config(sParameterStruct * sSO2Parameters)
 	/* load the default configurations for the framegrabber */
 	status = defaultConfig(sSO2Parameters);
 	if (status != 0) {
-		logError("configuring camera %c failed");
+		log_error("configuring camera %c failed");
 		return status;
 	}
 
 	/* load the configurations for the exposure trigger */
 	status = triggerConfig(sSO2Parameters);
 	if (status != 0) {
-		logError("function triggerConfig(...) for camera 1 failed");
+		log_error("function triggerConfig(...) for camera 1 failed");
 		return status;
 	}
 
 	/* set the camera with the right options */
 	status = defaultCameraConfig(sSO2Parameters);
 	if (status != 0) {
-		logError
+		log_error
 		    ("function defaultCameraConfig(...) for camera 1 failed");
 		return status;
 	}
@@ -150,7 +150,7 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 
 	/* before doing anything check if exposure time is within the limits */
 	if (exposureTime < 2.4 || exposureTime > 1004400) {
-		logError
+		log_error
 		    ("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
 		status = 1;
 		return status;
@@ -165,7 +165,7 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD S");
 		if (PHX_OK != eStat) {
-			logError
+			log_error
 			    ("setting camera to electronic shutter mode failed");
 			return eStat;
 		}
@@ -175,14 +175,14 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"setting SHT value to %d failed (exposuretime %d ms)",
 				shutterSpeed, exposureTime);
-			logError(errbuff);
+			log_error(errbuff);
 			return eStat;
 		} else {
 			exposureTime = (int)(2.4 + (shutterSpeed - 1) * 79.275);
 			sprintf(messbuff,
 				"Camera uses electronic shutter mode. exposure time is: %d ms",
 				exposureTime);
-			logMessage(messbuff);
+			log_message(messbuff);
 		}
 	} else {
 		/* ===========FRAME=BLANKING========== */
@@ -193,7 +193,7 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD F");
 		if (PHX_OK != eStat) {
-			logError("Setting camera to frameblanking mode failed");
+			log_error("Setting camera to frameblanking mode failed");
 			return eStat;
 		}
 		/* Shutter speed, 1 - 12 */
@@ -202,14 +202,14 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"setting FBL value to %d failed (exposuretime %d ms)",
 				shutterSpeed, exposureTime);
-			logError(errbuff);
+			log_error(errbuff);
 			return eStat;
 		} else {
 			exposureTime = shutterSpeed * 83700;
 			sprintf(messbuff,
 				"Camera uses Frameblanking mode. exposure time is: %d ms",
 				exposureTime);
-			logMessage(messbuff);
+			log_message(messbuff);
 		}
 	}
 	return eStat;
@@ -227,7 +227,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 
 	/* before doing anything check if exposure time is within the limits */
 	if (exposureTime < 2.4 || exposureTime > 1004400) {
-		logError
+		log_error
 		    ("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
 		eStat = PHX_ERROR_OUT_OF_RANGE;
 		return eStat;
@@ -241,7 +241,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD S");
 		if (PHX_OK != eStat) {
-			logError
+			log_error
 			    ("setting camera to electronic shutter mode failed");
 			return eStat;
 		}
@@ -251,14 +251,14 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"setting SHT value to %d failed (exposuretime %d ms)",
 				shutterSpeed, exposureTime);
-			logError(errbuff);
+			log_error(errbuff);
 			return eStat;
 		} else {
 			exposureTime = (int)(2.4 + (shutterSpeed - 1) * 79.275);
 			sprintf(messbuff,
 				"Camera uses electronic shutter mode. exposure time is: %d ms",
 				exposureTime);
-			logMessage(messbuff);
+			log_message(messbuff);
 		}
 	} else {
 		/*===========FRAME=BLANKING==========*/
@@ -269,7 +269,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD F");
 		if (PHX_OK != eStat) {
-			logError("Setting camera to frameblanking mode failed");
+			log_error("Setting camera to frameblanking mode failed");
 			return eStat;
 		}
 		/* Shutter speed, 1 - 12 */
@@ -278,14 +278,14 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"setting FBL value to %d failed (exposuretime %d ms)",
 				shutterSpeed, exposureTime);
-			logError(errbuff);
+			log_error(errbuff);
 			return eStat;
 		} else {
 			exposureTime = shutterSpeed * 83700;
 			sprintf(messbuff,
 				"Camera uses Frameblanking mode. exposure time is: %d ms",
 				exposureTime);
-			logMessage(messbuff);
+			log_message(messbuff);
 		}
 	}
 	return eStat;
@@ -304,36 +304,36 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch)
 		printf("starting electronic shutter mode\nExposuretime is set\n");
 		sSO2Parameters->dExposureTime =
 		    0.0000124 + (1055 - 1) * 0.000079275;
-		logMessage("Camera is set to electronic shutter mode.");
+		log_message("Camera is set to electronic shutter mode.");
 		sprintf(messbuff, "Exposure time = %f ms",
 			sSO2Parameters->dExposureTime);
-		logMessage(messbuff);
+		log_message(messbuff);
 		break;
 
 	case 1:
-		logMessage("Camera is set to frameblanking mode.");
+		log_message("Camera is set to frameblanking mode.");
 		setFrameBlanking(sSO2Parameters);
 		break;
 
 	case 2:
-		logMessage("Camera is set to electronic shutter mode.");
+		log_message("Camera is set to electronic shutter mode.");
 		setElektronicShutter(sSO2Parameters);
 		break;
 
 	case 3:
-		logError
+		log_error
 		    ("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
-		logMessage("Camera is set to electronic shutter mode.");
+		log_message("Camera is set to electronic shutter mode.");
 		sprintf(messbuff, "Exposure time = %f ms",
 			sSO2Parameters->dExposureTime);
-		logMessage(messbuff);
+		log_message(messbuff);
 		break;
 
 	default:
 		sprintf(errbuff,
 			"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",
 			timeSwitch);
-		logError(errbuff);
+		log_error(errbuff);
 		return 1;
 	}
 
@@ -384,7 +384,7 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 			/* download the buffer and place it in 'stBuffer' */
 			eStat = PHX_Acquire(hCamera, PHX_BUFFER_GET, stBuffer);
 			if (PHX_OK != eStat) {
-				logError
+				log_error
 				    ("acquisition of one buffer for calculating the exposuretime failed (not fatal)");
 				/* stopping the acquisition */
 				PHX_Acquire(hCamera, PHX_ABORT, NULL);
@@ -395,12 +395,12 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 			PHX_Acquire(hCamera, PHX_ABORT, NULL);
 		}
 		else {
-			logError
+			log_error
 			    ("starting acquisition for calculating the exposuretime failed (not fatal)");
 			/* if starting the capture failed more than 3 times program stops */
 			startErrCount++;
 			if (startErrCount >= 3) {
-				logError
+				log_error
 				    ("Acquiring one buffer for calculating the exposuretime failed 3 times in a row. (fatal)");
 				PHX_Acquire(hCamera, PHX_ABORT, NULL);
 				return eStat;
@@ -433,14 +433,14 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 	/* Switching to Frameblanking mode */
 	eStat = sendMessage(hCamera, "NMD F");
 	if (PHX_OK != eStat) {
-		logError("setting camera to frameblanking mode failed");
+		log_error("setting camera to frameblanking mode failed");
 		return eStat;
 	}
 
-	logMessage("Starting to find right FB value");
+	log_message("Starting to find right FB value");
 	while (timeSwitch != 0 && timeSwitch != 3) {
 		if (FBvalue > 12 || FBvalue < 1) {
-			logError("FB value is out of range");
+			log_error("FB value is out of range");
 			break;
 		}
 		divisor = divisor / 2;
@@ -450,14 +450,14 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 		sprintf(message, "FBL %d", roundToInt(FBvalue));
 		eStat = sendMessage(hCamera, message);
 		if (PHX_OK != eStat) {
-			logError("setting FBL value failed failed");
+			log_error("setting FBL value failed failed");
 			return eStat;
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
 		eStat = getOneBuffer(sSO2Parameters, &stBuffer);
 		if (PHX_OK != eStat) {
-			logError("failed to obtain one image buffer");
+			log_error("failed to obtain one image buffer");
 			return eStat;
 		}
 
@@ -471,7 +471,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 				roundToInt(switchMemory1),
 				roundToInt(switchMemory2),
 				roundToInt(switchMemory2));
-			logMessage(messbuff);
+			log_message(messbuff);
 			timeSwitch = 0;
 		}
 
@@ -480,19 +480,19 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 			break;
 
 		case 1:
-			logMessage("Image is underexposed, FB-value is set up");
+			log_message("Image is underexposed, FB-value is set up");
 			FBvalue = FBvalue + divisor;
 
 			break;
 
 		case 2:
-			logMessage
+			log_message
 			    ("Image is overexposed, FB-value is set down");
 			FBvalue = FBvalue - divisor;
 			break;
 
 		case 3:
-			logError
+			log_error
 			    ("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 			break;
 
@@ -500,7 +500,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",
 				timeSwitch);
-			logError(errbuff);
+			log_error(errbuff);
 			return 1;
 		}
 		switchMemory2 = switchMemory1;
@@ -510,7 +510,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 	/* save the exposure time in [ms] to control Struct */
 	sSO2Parameters->dExposureTime = FBvalue * 0.0837;
 	sprintf(messbuff, "Exposure time is set to %f", FBvalue * 0.0837);
-	logMessage(messbuff);
+	log_message(messbuff);
 	return eStat;
 }
 
@@ -531,14 +531,14 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 	/* Switching to Electronic Shutter mode */
 	eStat = sendMessage(hCamera, "NMD S");
 	if (PHX_OK != eStat) {
-		logError("setting camera to electronic shutter mode failed");
+		log_error("setting camera to electronic shutter mode failed");
 		return eStat;
 	}
 
-	logMessage("Starting to find right SHT value");
+	log_message("Starting to find right SHT value");
 	while (timeSwitch != 0 && timeSwitch != 3) {
 		if (SHTvalue > 1055 || SHTvalue < 1) {
-			logError("SHT value is out of range");
+			log_error("SHT value is out of range");
 			break;
 		}
 
@@ -547,14 +547,14 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 		sprintf(message, "SHT %d", roundToInt(SHTvalue));
 		eStat = sendMessage(hCamera, message);
 		if (PHX_OK != eStat) {
-			logError("setting SHT value failed failed");
+			log_error("setting SHT value failed failed");
 			return eStat;
 		}
 
 		/* Acquire first buffer to decide between FBL or SHT */
 		eStat = getOneBuffer(sSO2Parameters, &stBuffer);
 		if (PHX_OK != eStat) {
-			logError("failed to obtain one image buffer");
+			log_error("failed to obtain one image buffer");
 			return eStat;
 		}
 
@@ -568,7 +568,7 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 				roundToInt(switchMemory1),
 				roundToInt(switchMemory2),
 				roundToInt(switchMemory2));
-			logError(errbuff);
+			log_error(errbuff);
 			timeSwitch = 0;
 		}
 
@@ -577,19 +577,19 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 			break;
 
 		case 1:
-			logMessage
+			log_message
 			    ("Image is underexposed, SHT-value is set up");
 			SHTvalue = SHTvalue + divisor;
 			break;
 
 		case 2:
-			logMessage
+			log_message
 			    ("Image is overexposed, SHT-value is set down");
 			SHTvalue = SHTvalue - divisor;
 			break;
 
 		case 3:
-			logError
+			log_error
 			    ("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 			break;
 
@@ -597,7 +597,7 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 			sprintf(errbuff,
 				"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",
 				timeSwitch);
-			logError(errbuff);
+			log_error(errbuff);
 			return 1;
 		}
 		switchMemory2 = switchMemory1;
@@ -612,7 +612,7 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 	    0.0000124 + (SHTvalue - 1) * 0.000079275;
 	sprintf(messbuff, "Exposure time is set to %f",
 		0.0000124 + (SHTvalue - 1) * 0.000079275);
-	logMessage(messbuff);
+	log_message(messbuff);
 	return eStat;
 }
 
@@ -633,7 +633,7 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 	eStat =
 	    PHX_ParameterSet(hCamera, PHX_IO_CCIO_OUT, (void *)&eParamValue);
 	if (PHX_OK != eStat) {
-		logError("opening the CCIO port failed");
+		log_error("opening the CCIO port failed");
 		return eStat;
 	}
 
@@ -643,7 +643,7 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 	eParamValue = (etParamValue) (PHX_IO_METHOD_BIT_TIMER_NEG | 1);
 	eStat = PHX_ParameterSet(hCamera, PHX_IO_CCIO, (void *)&eParamValue);
 	if (PHX_OK != eStat) {
-		logError
+		log_error
 		    ("Initialsing the CCIO bit 1 pin as a negative output for exposure timing failed");
 		return eStat;
 	}
@@ -654,7 +654,7 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 	    PHX_ParameterSet(hCamera, PHX_IO_TIMER_1_PERIOD,
 			     (void *)&eParamValue);
 	if (PHX_OK != eStat) {
-		logError("setting the trigger pulse width failed");
+		log_error("setting the trigger pulse width failed");
 		return eStat;
 	}
 
@@ -663,12 +663,12 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 	eStat =
 	    PHX_ParameterSet(hCamera, PHX_EXPTRIG_SRC, (void *)&eParamValue);
 	if (PHX_OK != eStat) {
-		logError
+		log_error
 		    ("setting the exposure start to software trigger failed");
 		return eStat;
 	}
 
-	logMessage("trigger configuration was successfull");
+	log_message("trigger configuration was successfull");
 	return eStat;
 }
 
@@ -685,28 +685,28 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 	eParamValue = PHX_COMMS_DATA_8;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_DATA, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("setting of PHX_COMMS_DATA to camera failed");
+		log_error("setting of PHX_COMMS_DATA to camera failed");
 		return eStat;
 	}
 
 	eParamValue = PHX_COMMS_STOP_1;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_STOP, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("setting of PHX_COMMS_STOP to camera failed");
+		log_error("setting of PHX_COMMS_STOP to camera failed");
 		return eStat;
 	}
 
 	eParamValue = PHX_COMMS_PARITY_NONE;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_PARITY, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("setting of PHX_COMMS_PARITY to camera failed");
+		log_error("setting of PHX_COMMS_PARITY to camera failed");
 		return eStat;
 	}
 
 	eParamValue = (etParamValue) 9600;
 	eStat = PHX_ParameterSet(hCamera, PHX_COMMS_SPEED, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("setting of PHX_COMMS_SPEED to camera failed");
+		log_error("setting of PHX_COMMS_SPEED to camera failed");
 		return eStat;
 	}
 
@@ -717,7 +717,7 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 			     &eParamValue);
 
 	if (PHX_OK != eStat) {
-		logError("configuration of serial connection to camera failed");
+		log_error("configuration of serial connection to camera failed");
 		return eStat;
 	}
 
@@ -731,7 +731,7 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 	eParamValue = PHX_ENABLE;
 	eStat = PHX_ParameterSet(hCamera, PHX_CAM_DATA_VALID, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError
+		log_error
 		    ("make the framegrabber use the -data valid- signal failed");
 		return eStat;
 	}
@@ -739,11 +739,11 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 	eParamValue = (etParamValue) 12;
 	eStat = PHX_ParameterSet(hCamera, PHX_CAM_SRC_DEPTH, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError
+		log_error
 		    ("Setting the image depth recieved from camera to 12-bit failed");
 		return eStat;
 	} else
-		logMessage("Image depth recieved from camera is set to 12-bit");
+		log_message("Image depth recieved from camera is set to 12-bit");
 
 	/* these two options are commented out because they are set in the PHX config file. Somehow the right resolution only
 	 * works if these options are set in the PHX config file. A goal would be to completly remove this config file but
@@ -760,30 +760,30 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 	eParamValue = PHX_DST_FORMAT_Y12;
 	eStat = PHX_ParameterSet(hCamera, PHX_DST_FORMAT, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("Setting the image file depth to 12-bit failed");
+		log_error("Setting the image file depth to 12-bit failed");
 		return eStat;
 	} else
-		logMessage("Image file depth is set to 12-bit");
+		log_message("Image file depth is set to 12-bit");
 
 	/* Enable FIFO Overflow events */
 	eParamValue = PHX_INTRPT_FIFO_OVERFLOW;
 	eStat = PHX_ParameterSet(hCamera, PHX_INTRPT_SET, &eParamValue);
 	if (PHX_OK != eStat) {
-		logError("Set interpretation of FIFO overflows failed");
+		log_error("Set interpretation of FIFO overflows failed");
 		return eStat;
 	} else
-		logMessage("Right interpretation of FIFO overflows is set");
+		log_message("Right interpretation of FIFO overflows is set");
 
 	/* Setup our own event context */
 	eStat =
 	    PHX_ParameterSet(hCamera, PHX_EVENT_CONTEXT,
 			     (void *)sSO2Parameters);
 	if (PHX_OK != eStat) {
-		logError("Setup the control flags structure failed");
+		log_error("Setup the control flags structure failed");
 		return eStat;
 	}
 
-	logMessage("configuration of the Framegrabber was successfull");
+	log_message("configuration of the Framegrabber was successfull");
 	return 0;
 }
 
@@ -795,36 +795,36 @@ int defaultCameraConfig(sParameterStruct * sSO2Parameters)
 	/* initialise default vaulues */
 	eStat = sendMessage(hCamera, "INI");
 	if (PHX_OK != eStat) {
-		logError("sending INI to camera was unsuccessfull");
+		log_error("sending INI to camera was unsuccessfull");
 		return eStat;
 	}
 	/* freerunning or external control mode: */
 	/* N freerun mode, E external */
 	eStat = sendMessage(hCamera, "AMD N");
 	if (PHX_OK != eStat) {
-		logError("sending AMD N to camera was unsuccessfull");
+		log_error("sending AMD N to camera was unsuccessfull");
 		return eStat;
 	}
 	/* scanning mode: N Normal, S superpixel */
 	eStat = sendMessage(hCamera, "SMD N");
 	if (PHX_OK != eStat) {
-		logError("sending SMD N to camera was unsuccessfull");
+		log_error("sending SMD N to camera was unsuccessfull");
 		return eStat;
 	}
 	/* horizontal pixel output: M = 1344 */
 	eStat = sendMessage(hCamera, "SHA M");
 	if (PHX_OK != eStat) {
-		logError("sending SHA M to camera was unsuccessfull");
+		log_error("sending SHA M to camera was unsuccessfull");
 		return eStat;
 	}
 	/* contrast gain: high */
 	eStat = sendMessage(hCamera, "CEG H");
 	if (PHX_OK != eStat) {
-		logError("sending CEG H to camera was unsuccessfull");
+		log_error("sending CEG H to camera was unsuccessfull");
 		return eStat;
 	}
 
-	logMessage("configuration of camera was successfull");
+	log_message("configuration of camera was successfull");
 	return eStat;
 }
 
@@ -888,21 +888,21 @@ int sendMessage(tHandle hCamera, char *inputBuffer)
 						printf("DEBUG: send message: %s was successful\n",inputLineBuffer);
 						return 0; /* here return of SUCCESS */
 					} else {
-						logError
+						log_error
 						    ("String send and string receive were not equal.");
 					}
 				}
 				else
-					logError
+					log_error
 					    ("nothing was received from camera");
 			}
 			else
-				logError("nothing was received from camera");
+				log_error("nothing was received from camera");
 		}
 		else
-			logError("PHX_CommsTransmit(...) failed");
+			log_error("PHX_CommsTransmit(...) failed");
 
 	}
-	logError("sending message failed 3 times");
+	log_error("sending message failed 3 times");
 	return eStat;
 }
