@@ -2,11 +2,11 @@
 #include<time.h>
 #include "log.h"
 
-FILE * logfile;
-char   nameLogFile[256];
-char   buffer[512];
-time_t time_ptr;
-struct tm logTime;
+static FILE * logfile;
+static char   nameLogFile[256];
+static char   buffer[512];
+static time_t time_ptr;
+static struct tm logTime;
 
 int log_init()
 {
