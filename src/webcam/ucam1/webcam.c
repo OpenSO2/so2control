@@ -159,27 +159,31 @@ int webcam_init()
 		send(ack, 6);
 	}
 
-	// setup    AA    05    01    00    00    00
+	// setup             AA    05    01    00    00    00
 	//~ char ini[6] = {0xAA, 0x05, 0x01, 0x00, 0x00, 0x00};
 
-	//~              AA    01    00    07    07    07 //JPEG Snapshot Picture (640 x 480 resolution)
-	char ini[6] = {0xAA, 0x01, 0x00, 0x07, 0x07, 0x07};
+	                 //~ AA    01    00    07    07    07 //JPEG Snapshot Picture (640 x 480 resolution)
+	//~ char ini[6] = {0xAA, 0x01, 0x00, 0x07, 0x07, 0x07};
 
-	//~              AA    05    01    00    00    00  // Snapshot Picture (160 x 120 resolution, 16bit colour, uncompressed/RAW picture)
+	                 //~ AA    05    01    00    00    00  // Snapshot Picture (160 x 120 resolution, 16bit colour, uncompressed/RAW picture)
 	//~ char ini[6] = {0xAA, 0x05, 0x01, 0x00, 0x00, 0x00};
+//~ AA 01 00 06 03 zz
+//~ AA 01 00 06 07 zz
+	//~              AA    01    00    06    03    zz (01, 03, 05, 07)
+	char ini[6] = {0xAA, 0x01, 0x00, 0x06, 0x07, 0x07};
 	if( send(ini, 6) == 0 ){
 		printf("successfully send init\n");
 
-		usleep(1000*15);
+		usleep(1000*1500);
 
 		if( receive(msg, MSG_LENGTH) == 0 ){
 			if(isACK(msg) == 0){
-				printf("communication established!\n");
+				printf("initialized!\n");
 			} else {
-				printf("no ack received!\n");
+				printf("no ack for init received!\n");
 			}
 		} else {
-			printf("nothing received\n");
+			printf("no ack for init received\n");
 		}
 
 	} else {
@@ -250,26 +254,29 @@ int request(){
 	} else {
 		printf("GET PICTURE not send\n");
 	}
-
 }
 
 /**
  *
  */
 int waitForData(){
-	char msg[6];
+	#define PACKAGE_SIZE 512
+	char data[PACKAGE_SIZE];
 
 	printf("waitForData\n");
 
-	if( receive(msg, MSG_LENGTH) == 0 ){
-		if(isACK(msg) == 0){
-			printf("communication established!\n");
-		} else {
-			printf("no ack received!\n");
-		}
-	} else {
-		printf("nothing received\n");
-	}
+	receive(data, PACKAGE_SIZE);
+
+
+	//~ if( receive(msg, MSG_LENGTH) == 0 ){
+		//~ if(isACK(msg) == 0){
+			//~ printf("communication established!\n");
+		//~ } else {
+			//~ printf("no ack received!\n");
+		//~ }
+	//~ } else {
+		//~ printf("nothing received\n");
+	//~ }
 
 }
 
@@ -279,7 +286,7 @@ int webcam_get(){
 
 	request();
 
-	usleep(1000*1500);
+	usleep(1000*3000);
 
 	waitForData();
 
