@@ -62,8 +62,10 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 	if (!status) {
 		/* get current time with milliseconds precision */
 		getTime(&timeNow);
+
 		/* if starting the capture was successful reset error counter to zero */
 		startErrCount = 0;
+
 		/* Wait for a user defined period between each camera trigger call */
 		/* should be identical in both parameter structures */
 		sleepMs(sParameters_A->dInterFrameDelay);
@@ -80,6 +82,7 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 			    && sParameters_B->fFifoOverFlow) && !kbhit()) {
 			sleepMs(10);
 		}
+
 		/* Reset the buffer ready flags to false for next cycle */
 		sParameters_A->fBufferReady = FALSE;
 		sParameters_B->fBufferReady = FALSE;
