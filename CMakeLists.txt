@@ -62,7 +62,7 @@ endif( ${DEBUG} )
 include_directories(
 	./src
 	./src/camera
-	./src/filterwheel/custom
+	./src/filterwheel
 	./src/processing
 	./src/log
 	./src/io
@@ -75,8 +75,8 @@ set(SRCFILES
 	./src/io/io.h
 	./src/configurations.h
 	./src/configurations.c
-	./src/filterwheel/custom/darkCurrent.h
-	./src/filterwheel/custom/darkCurrent.c
+	./src/darkFrame/custom/darkCurrent.h
+	./src/darkFrame/custom/darkCurrent.c
 	./src/exposureTimeControl.h
 	./src/exposureTimeControl.c
 	./src/imageCreation.h
@@ -147,6 +147,10 @@ target_link_libraries( so2-camera log )
 # io subsystem
 add_subdirectory( src/io )
 target_link_libraries( so2-camera io )
+
+# filterwheel subsystem
+add_subdirectory( src/filterwheel )
+target_link_libraries( so2-camera filterwheel )
 
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)

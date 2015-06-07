@@ -75,6 +75,7 @@ typedef struct {
 	 */
 	int dFixTime;
 
+	char filterwheel_device[MAX_STRING_LENGTH];
 } sConfigStruct;
 
 /* Camera parameters */
@@ -108,6 +109,9 @@ typedef struct {
 
 	/* Camera identifier */
 	char identifier;
+
+	/*  */
+	int dark;
 } sParameterStruct;
 
  /******************************

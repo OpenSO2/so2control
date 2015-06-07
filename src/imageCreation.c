@@ -11,6 +11,7 @@
 #include "common.h"
 #include "configurations.h"
 #include "imageCreation.h"
+#include "filterwheel.h"
 #include "log.h"
 #include "camera.h"
 #include "kbhit.h"
@@ -29,16 +30,32 @@ static void callback(sParameterStruct * sSO2Parameters)
 	sSO2Parameters->dBufferReadyCount++;
 }
 
+static int aquire_darkframe(sParameterStruct * sParameters_A,
+	sParameterStruct * sParameters_B, sConfigStruct * config)
+{
+	filterwheel_send(FILTERWHEEL_CLOSED_A);
+	sParameters_A->dark = 1;
+	sParameters_B->dark = 1;
+	aquire(sParameters_A, sParameters_B, config);
+	sParameters_A->dark = 0;
+	sParameters_B->dark = 0;
+	filterwheel_send(FILTERWHEEL_OPENED_A);
+	return 0;
+}
+
 int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-
+	int i = 0;
+	int darkframeinterval = 10;
 	log_message("Starting acquisition...\n");
 	log_message("Press a key to exit\n");
 
-	while (!kbhit()
-	       && !(sParameters_A->fFifoOverFlow
-		    || sParameters_B->fFifoOverFlow)) {
+	for (i=0; !kbhit(); i++) {
+		if (i%darkframeinterval == 0){
+			log_message("---- --- ---");
+			aquire_darkframe(sParameters_A, sParameters_B, config);
+		}
 		aquire(sParameters_A, sParameters_B, config);
 	}
 

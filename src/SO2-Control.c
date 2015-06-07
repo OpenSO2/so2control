@@ -8,6 +8,7 @@
 #include "configurations.h"
 #include "imageCreation.h"
 #include "exposureTimeControl.h"
+#include "filterwheel.h"
 #include "log.h"
 #include "io.h"
 
@@ -46,6 +47,9 @@ static void stop_program(int reason)
 
 	/* uninitialize io */
 	io_uninit(&config);
+
+	/* uninitialize filterwheel */
+	filterwheel_uninit(&config);
 
 	/* stop logging and return file handle */
 	log_uninit();
@@ -143,6 +147,15 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
+	/* init filterwheel */
+	state = filterwheel_init(&config);
+	if (state != 0) {
+		log_error("failed to initialize filterwheel");
+		stop_program(1);
+		return state;
+	}
+	log_message("filterwheel initialized");
+
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
 	if (state != 0) {
@@ -180,21 +193,21 @@ int main(int argc, char *argv[])
 	log_debug("camera B configured");
 
 	/* set exposure */
-	state = setExposureTime(&sParameters_A, &config);
-	if (state != 0) {
-		log_error("setExposureTime for cam B failed");
-		stop_program(1);
-		return 1;
-	}
-	log_debug("exposure time for cam A set");
+	//~ state = setExposureTime(&sParameters_A, &config);
+	//~ if (state != 0) {
+		//~ log_error("setExposureTime for cam B failed");
+		//~ stop_program(1);
+		//~ return 1;
+	//~ }
+	//~ log_debug("exposure time for cam A set");
 
-	state = setExposureTime(&sParameters_B, &config);
-	if (state != 0) {
-		log_error("setExposureTime for cam B failed");
-		stop_program(1);
-		return 1;
-	}
-	log_debug("exposure time for cam B set");
+	//~ state = setExposureTime(&sParameters_B, &config);
+	//~ if (state != 0) {
+		//~ log_error("setExposureTime for cam B failed");
+		//~ stop_program(1);
+		//~ return 1;
+	//~ }
+	//~ log_debug("exposure time for cam B set");
 
 	/*
 	 * Starting the acquisition with the exposure parameter set in

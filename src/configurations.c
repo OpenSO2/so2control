@@ -15,6 +15,7 @@ int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char ide
 	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
+sSO2Parameters->dark = 0;
 
 	return 0;
 }
@@ -97,6 +98,15 @@ int readConfig(char *filename, sConfigStruct * config)
 
 			/* remove LF */
 			sprintf(config->cImagePath, "%s", strtok(cTmp, "\n"));
+		} else if (strstr(lineBuf, "filterwheel_device")) {
+			if (delimeterBuf[1] == ' ')
+				sprintf(cTmp, "%s", delimeterBuf + 2);
+			else
+				sprintf(cTmp, "%s", delimeterBuf + 1);
+
+			/* remove LF */
+			sprintf(config->filterwheel_device, "%s", strtok(cTmp, "\n"));
+			printf("read filterwheel device %s\n", config->filterwheel_device);
 		} else if (strstr(lineBuf, "processing")) {
 			config->processing = atoi(delimeterBuf + 1);
 		}
