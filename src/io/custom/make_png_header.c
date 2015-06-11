@@ -24,15 +24,10 @@
 /* we need zlib for crc calculation*/
 #include <zlib.h>
 
-void make_png_header(char *content, int length, int *header);
 void make_png_header(char *content, int length, int *header)
 {
 	int header_length = 60;
 	int i;
-
-	int crc;
-	unsigned char *crcbytes;
-	Bytef text[header_length - 8];
 
 	/* Length of data: ONLY data, not type code, length itself or crc
 	 * header_length - 4(type code) - 4(crc) - 4(type code) = header_length-12
@@ -58,11 +53,12 @@ void make_png_header(char *content, int length, int *header)
 	}
 
 	/* CRC-32 of chunk type code and chunk data fields, but not crc itself or length (77-8) */
+	Bytef text[header_length - 8];
 	for (i = 0; i < header_length - 8; i++)
 		text[i] = (int)header[i + 4];
-	crc = crc32(0L, Z_NULL, 0);
+	int crc = crc32(0L, Z_NULL, 0);
 	crc = crc32(crc, text, header_length - 8);
-	crcbytes = (unsigned char *)&crc;
+	unsigned char *crcbytes = (unsigned char *)&crc;
 
 	header[header_length - 4] = (int)crcbytes[3];
 	header[header_length - 3] = (int)crcbytes[2];

@@ -10,6 +10,10 @@
 #include <time.h>
 #endif
 
+
+/* prototypes */
+void parse_filename_to_date(char *infile, char *date);
+
 void parse_filename_to_date(char *infile, char *date)
 {
 	char *inf = basename(infile);
@@ -44,15 +48,30 @@ void parse_filename_to_date(char *infile, char *date)
 	date[24] = '\0';
 }
 
+
+#define HEADERLENGTH 60
+
 int main(int argc, char *argv[])
 {
 	char *buffer = 0;
 	char *infile = argv[1];
 	char *outfile = argv[2];
+#ifdef BENCHMARK
 	float startTime;
+#endif
+	IplImage *img;
+	FILE *fp;
+	CvMat *png;
+	int l, l_pad, i;
+	unsigned char *padded_png;
+	char date[25];
+	char text[39];
+	int head[HEADERLENGTH];
+	char *name;
+
 
 	if (argc != 3) {
-		puts("Usage: imageviewer in.raw out.png\n");
+		printf("Usage: %s in.raw out.png\n", argv[0]);
 		return 1;
 	}
 #ifdef BENCHMARK
@@ -67,7 +86,7 @@ int main(int argc, char *argv[])
 #ifdef BENCHMARK
 	startTime = (float)clock() / CLOCKS_PER_SEC;
 #endif
-	IplImage *img = bufferToImage(buffer);
+	img = bufferToImage(buffer);
 #ifdef BENCHMARK
 	printf("bufferToImage took %fms \n",
 	       ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
@@ -78,18 +97,16 @@ int main(int argc, char *argv[])
 #ifdef BENCHMARK
 	startTime = (float)clock() / CLOCKS_PER_SEC;
 #endif
-	CvMat *png = cvEncodeImage(".png", img, 0);
+	png = cvEncodeImage(".png", img, 0);
 #ifdef BENCHMARK
 	printf("encoding took %fms \n",
 	       ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
 #endif
 
-	int header_length = 60;
-	int l = png->rows * png->cols;
-	int l_pad = l + header_length;
-	int i;
+	l = png->rows * png->cols;
+	l_pad = l + HEADERLENGTH;
 
-	char *padded_png = malloc(l_pad * 2);
+	padded_png = (unsigned char *)malloc(l_pad * 2);
 	memcpy(padded_png, png->data.ptr, l);
 	png->data.ptr = padded_png;
 
@@ -101,18 +118,15 @@ int main(int argc, char *argv[])
 #ifdef BENCHMARK
 	startTime = (float)clock() / CLOCKS_PER_SEC;
 #endif
-	char date[25];
-	char text[39];
-	char name[14] = "Creation Time ";
+	name = "Creation Time ";
 	parse_filename_to_date(infile, date);
 	strcpy(text, name);
 	strcat(text, date);
 	text[13] = 0;
-	int head[header_length];
 	make_png_header(text, 38, head);
 
 	// fill in
-	for (i = 0; i < header_length; i++) {
+	for (i = 0; i < HEADERLENGTH; i++) {
 		png->data.ptr[l - 12 + i] = head[i];
 	}
 #ifdef BENCHMARK
@@ -121,7 +135,7 @@ int main(int argc, char *argv[])
 #endif
 
 	// save image to disk
-	FILE *fp = fopen(outfile, "wb");
+	fp = fopen(outfile, "wb");
 	if (fp) {
 #ifdef BENCHMARK
 		startTime = (float)clock() / CLOCKS_PER_SEC;

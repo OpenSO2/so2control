@@ -1,7 +1,4 @@
-#include "common.h"
-#include "configurations.h"
-#include "log.h"
-
+#include "../io.h"
 /* io_init
  *
  */

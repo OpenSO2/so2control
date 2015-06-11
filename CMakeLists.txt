@@ -65,7 +65,6 @@ set(SRCFILES
 	./src/common.c
 	./src/camera/camera.h
 	./src/io/io.h
-	./src/io/io.c
 	./src/configurations.h
 	./src/configurations.c
 	./src/filterwheel/custom/darkCurrent.h
@@ -133,15 +132,9 @@ if( ${UNIX} )
 	target_link_libraries(so2-camera ${M_LIB})
 endif( ${UNIX} )
 
-# add opencv
-find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-target_link_libraries( so2-camera ${OpenCV_LIBS} )
-
-# add zlib
-find_package( ZLIB REQUIRED )
-include_directories( ${ZLIB_INCLUDE_DIRS} )
-target_link_libraries( so2-camera ${ZLIB_LIBRARIES} )
+# io subsystem
+add_subdirectory( src/io )
+target_link_libraries( so2-camera io )
 
 ### custom commands
 add_custom_target(checkstyle

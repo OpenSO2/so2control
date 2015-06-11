@@ -1,3 +1,4 @@
+IplImage *bufferToImage(char *buffer);
 IplImage *bufferToImage(char *buffer)
 {
 	IplImage *img;
