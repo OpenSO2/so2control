@@ -90,8 +90,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		status = camera_get(sParameters_A);
 		status = camera_get(sParameters_B);
 
-		io_writeImage(sParameters_A);
-		io_writeImage(sParameters_B);
+		io_writeDump(sParameters_A);
+		io_writeDump(sParameters_B);
 
 		if (0 != status) {
 			log_error("Saving an image failed. This is not fatal");

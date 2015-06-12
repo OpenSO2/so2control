@@ -49,15 +49,18 @@ else( ${UNIX} )
 	add_definitions(-DWIN)
 endif( ${UNIX} )
 
-
+# include common and log
+include_directories(
+	..
+	../log
+)
 
 # create lib
 add_library( io io.h ./custom/io.c )
 
 # create executables
-add_executable(io-cli  io-cli.c)
+add_executable(io-cli io-cli.c)
 target_link_libraries( io-cli io )
-
 
 # dependencies
 find_package( OpenCV REQUIRED )

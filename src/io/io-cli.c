@@ -2,9 +2,9 @@
 #include <libgen.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "make_png_header.c"
+#include "custom/make_png_header.c"
 #include "bufferToImage.c"
-#include "getBufferFromFile.c"
+#include "converter/getBufferFromFile.c"
 
 #ifdef BENCHMARK
 #include <time.h>
