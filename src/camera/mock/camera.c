@@ -40,6 +40,7 @@ short *getBufferFromFile(char *filename)
 {
 	short *buffer;
 	size_t length;
+	int bytesReadFromFile;
 	FILE *f = fopen(filename, "rb");
 	if (f) {
 		(void)fseek(f, 0, SEEK_END);
@@ -47,13 +48,14 @@ short *getBufferFromFile(char *filename)
 		(void)fseek(f, 0, SEEK_SET);
 		buffer = malloc(length);
 		if (buffer) {
-			fread(buffer, length, length, f);
+			bytesReadFromFile = fread(buffer, 1, length, f);
+			/* printf("bytesReadFromFile %i of %i \n", bytesReadFromFile, length); */
 		} else {
 			printf("failed to read into buffer\n");
 		}
 		(void)fclose(f);
 	} else {
-		printf("failed to read file\n");
+		printf("failed to open file\n");
 	}
 
 	return buffer;
