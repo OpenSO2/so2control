@@ -37,12 +37,11 @@ int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filet
 	char * camname = id == 'a' ? "top" : "bot";
 
 	/* write header string with information from system time for camera B. */
-	status =
-	    sprintf(filename,
-		    "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
-		    sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
-		    time->year, time->mon, time->day, time->hour, time->min,
-		    time->sec, time->milli, camname, filetype);
+	status = sprintf(filename,
+		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
+		sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
+		time->year, time->mon, time->day, time->hour, time->min,
+		time->sec, time->milli, camname, filetype);
 
 	return status > 0 ? 0 : 1;
 }
@@ -154,30 +153,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	/* add headers */
 	l_pad = insertHeaders(png->data.ptr, sSO2Parameters, l);
 
-printf("done ");
-printf("%c", png->data.ptr[l - 9]);
-printf("%c", png->data.ptr[l - 8]);
-printf("%c", png->data.ptr[l - 7]);
-printf("%c", png->data.ptr[l - 6]);
-printf("%c", png->data.ptr[l - 5]);
-printf("%c", png->data.ptr[l - 4]);
-printf("%c", png->data.ptr[l - 3]);
-printf("%c", png->data.ptr[l - 2]);
-printf("%c", png->data.ptr[l - 1]);
-printf("\n");
-
-printf("done ");
-printf("%c", png->data.ptr[l_pad - 9]);
-printf("%c", png->data.ptr[l_pad - 8]);
-printf("%c", png->data.ptr[l_pad - 7]);
-printf("%c", png->data.ptr[l_pad - 6]);
-printf("%c", png->data.ptr[l_pad - 5]);
-printf("%c", png->data.ptr[l_pad - 4]);
-printf("%c", png->data.ptr[l_pad - 3]);
-printf("%c", png->data.ptr[l_pad - 2]);
-printf("%c", png->data.ptr[l_pad - 1]);
-printf("\n");
-
 	/* save image to disk*/
 	fp = fopen(filename, "wb");
 	if (fp) {
@@ -194,48 +169,45 @@ printf("\n");
 	return 0;
 }
 
-int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int l){
-	int l_pad = l;
+int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
+	int png_length_padded = png_length;
 
-	char name[14] =    "Creation Time ";
-	char content[15] = "hello my friend";
-	l_pad = insertHeader(png, name, content, l);
+	char name[14] = "Creation Time ";
+	char content[11] = "hello world";
+	int content_length = strlen(content);
+	int name_length = strlen(name);
+	png_length_padded = insertHeader(png, name, name_length, content, content_length,  png_length);
 
-	return l_pad;
+	return png_length_padded;
 }
 
-int insertHeader(char * png, char * name, char * content, int l){
+int insertHeader(char * png, char * name, int name_length, char * content, int content_length, int png_length){
 	int head[HEADERLENGTH];
 	char text[40]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
 	int l_pad, i;
-	l_pad = l + HEADERLENGTH;
+	int png_length_padded = png_length + HEADERLENGTH;
 
-	char * padded_png = (unsigned char *)malloc(l_pad * 2);
-	memcpy(padded_png, png, l_pad);
+	char * padded_png = (unsigned char *)malloc(png_length_padded * 2);
+	memcpy(padded_png, png, png_length_padded);
 	//~ png = padded_png;
 
-	// copy end of png
-	printf("l: %i; l_pad: %i\n", l, l_pad);
-	for (i = 8; i > 0; i--) {
-		png[l_pad - i] = png[l - i];
-
-		printf("nocpy char at %i: %c; %i: %c\n", l - i, png[l - i], l_pad - i, png[l_pad - i]);
+	// copy end of png %% FIXME: Explain better what is beeing done here
+	for (i = 12; i > 0; i--) { // 4 bytes content length (00 00 00 00), 4 bytes type (IEND), 4 bytes crc (ae 42 60 82)
+		png[png_length_padded - i] = png[png_length - i];
 	}
 
 	strcpy(text, name);
 	strcat(text, content);
-	text[13] = 0;
-int content_length = 15;
-printf("name=%s\ncontent=%s\ntext=%s\n", name, content, text);
+	text[name_length-1] = 0; // FIXME: explain
 
 	make_png_header(text, content_length, head, HEADERLENGTH);
 
 	// fill in
 	for (i = 0; i < HEADERLENGTH; i++) {
-		png[l - 12 + i] = head[i];
+		png[png_length - 12 + i] = head[i];
 	}
 
-	return l_pad;
+	return png_length_padded;
 }
 
 /*

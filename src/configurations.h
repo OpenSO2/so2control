@@ -25,7 +25,7 @@
  *   MACROS
  ******************************/
 
-#define MAX_STRING_LENGTH	256
+#define MAX_STRING_LENGTH 256
 
 /******************************
  *   Structures

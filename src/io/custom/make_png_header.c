@@ -55,7 +55,6 @@ void make_png_header(char *content, int content_length, int *header, int header_
 	}
 	for (i = 0; i < content_length + 14; i++) {
 		header[i + 8] = (int)content[i];
-		printf("content %c\n", content[i]);
 	}
 
 	/* CRC-32 of chunk type code and chunk data fields, but not crc itself or length (77-8) */
