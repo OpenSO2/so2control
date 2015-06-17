@@ -171,27 +171,50 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
 	int png_length_padded = png_length;
+	char * name;
+	char * content;
+	//~ fprintf(fp, "dBufferlength %i\n", sSO2Parameters->dBufferlength);
+	//~ fprintf(fp, "dHistMinInterval %i\n", sSO2Parameters->dHistMinInterval);
+	//~ fprintf(fp, "dHistPercentage %i\n", sSO2Parameters->dHistPercentage);
+	//~ fprintf(fp, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
+	//~ fprintf(fp, "dImageCounter %i\n", (int)sSO2Parameters->dImageCounter);
+	//~ fprintf(fp, "dInterFrameDelay %i\n", (int)sSO2Parameters->dInterFrameDelay);
+	//~ fprintf(fp, "dTriggerPulseWidth %i\n", (int)sSO2Parameters->dTriggerPulseWidth);
+	//~ fprintf(fp, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
+	//~ fprintf(fp, "cConfigFileName %s\n", sSO2Parameters->cConfigFileName);
+	//~ fprintf(fp, "cFileNamePrefix %s\n", sSO2Parameters->cFileNamePrefix);
+	//~ fprintf(fp, "cImagePath %s\n", sSO2Parameters->cImagePath);
+	//~ fprintf(fp, "dFixTime %i\n", sSO2Parameters->dFixTime);
+	//~ fprintf(fp, "dfilesize %i\n", sSO2Parameters->dfilesize);
+	//~ fprintf(fp, "dImagesFile %i\n", sSO2Parameters->dImagesFile);
+	// @TODO: add time
 
-	char name[14] = "Creation Time ";
-	char content[11] = "hello world";
-	int content_length = strlen(content);
-	int name_length = strlen(name);
-	png_length_padded = insertHeader(png, name, name_length, content, content_length,  png_length);
+	name = "Creation Time ";
+	content = "hello world";
+	png_length_padded = insertHeader(png, name, content,  png_length);
+
+
+	//~ name = "Comment ";
+	//~ content = sSO2Parameters->cImagePath;
+	//~ png_length_padded = insertHeader(png, name, content, png_length_padded);
+
 
 	return png_length_padded;
 }
 
-int insertHeader(char * png, char * name, int name_length, char * content, int content_length, int png_length){
+int insertHeader(char * png, char * name, char * content, int png_length){
 	int head[HEADERLENGTH];
 	char text[40]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
 	int l_pad, i;
+	int content_length = strlen(content);
+	int name_length = strlen(name);
 	int png_length_padded = png_length + HEADERLENGTH;
 
 	char * padded_png = (unsigned char *)malloc(png_length_padded * 2);
 	memcpy(padded_png, png, png_length_padded);
 	//~ png = padded_png;
 
-	// copy end of png %% FIXME: Explain better what is beeing done here
+	// copy end of png %% FIXME: Explain better what is being done here
 	for (i = 12; i > 0; i--) { // 4 bytes content length (00 00 00 00), 4 bytes type (IEND), 4 bytes crc (ae 42 60 82)
 		png[png_length_padded - i] = png[png_length - i];
 	}
