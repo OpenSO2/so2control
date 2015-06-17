@@ -1,5 +1,5 @@
-Image converter for raw dumps produced by so2-camera
-====================================================
+SO2 Camera: IO subsystem
+========================
 
 Converts and processes raw data from so2-camera to PNG images. Will
 likely be merged into so2 camera.
@@ -21,11 +21,13 @@ standardized and custom content We employ standard tEXt chunks with
 standard Keywords to ensure compatability (see make_png_header.c).
 
 Dependencies
-============
-Depends on zLib and openCV.
+------------
+
+Depends on zLib and openCV (the zLib dependency could likely be
+dropped, we only use the crc32 functionality).
 
 Compilation
-===========
+-----------
 
 From Linux run
 
