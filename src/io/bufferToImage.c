@@ -1,7 +1,8 @@
-IplImage *bufferToImage(char *buffer);
-IplImage *bufferToImage(char *buffer)
+#include <opencv/cv.h>
+
+IplImage * bufferToImage(short *buffer)
 {
-	IplImage *img;
+	IplImage * img;
 	int BUFFERSIZE = 1344 * 1024 * 16 / 8;
 
 	// create new image to hold the loaded data

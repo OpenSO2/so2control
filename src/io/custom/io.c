@@ -1,12 +1,16 @@
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
+#include<opencv/cv.h>
 #include "common.h"
 #include "configurations.h"
 #include "../io.h"
 
+#define HEADERLENGTH 60
+
 /*prototypes*/
 static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
+IplImage *bufferToImage(short *buffer);
 
 /* io_init
  *
@@ -18,15 +22,6 @@ int io_init(sParameterStruct * sSO2Parameters){
 }
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-/*
- *
- */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-int io_writeImage(sParameterStruct * sSO2Parameters){
-	log_message("io_writeImage");
-	return 0;
-}
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 //~
 //~ sSO2Parameters->cFileNamePrefix in config
@@ -38,7 +33,7 @@ int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filet
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify Camera for filename Prefix */
-	char * camname = id == 'A' ? "top" : "bot";
+	char * camname = id == 'a' ? "top" : "bot";
 
 	/* write header string with information from system time for camera B. */
 	status =
@@ -106,10 +101,67 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 		log_error("not opened text file");
 	}
 
-
-
 	log_message("dumb image written");
 
+	return 0;
+}
+
+/*
+ *
+ */
+int io_writeImage(sParameterStruct * sSO2Parameters){
+	FILE * fp;
+	short * stBuffer;
+	IplImage *img;
+	CvMat *png;
+	int l_pad = 100;
+	int l;
+int ii;
+	char filename[100];
+	int status;
+	/* int head[HEADERLENGTH];
+	 * int l, l_pad, i;
+	 * char *name;
+	 *
+	unsigned char *padded_png;
+	char date[25];
+	char text[39];
+	 * */
+
+	stBuffer = sSO2Parameters->stBuffer;
+
+	/* generate filenames */
+	status = createFilename(sSO2Parameters, filename, "png");
+	if(status){
+		log_error("could not create txt filename");
+	}
+
+	/* convert the image buffer to an openCV image */
+	// TODO: check if this has already been done
+	img = bufferToImage(stBuffer);
+
+	/*
+	 * encode image as png to buffer
+	 * playing with the compression is a huge waste of time with no benefit
+	 */
+	png = cvEncodeImage(".png", img, 0);
+	l = png->rows * png->cols;
+	l_pad = l;
+
+	//FIXME: add headers
+
+	/* save image to disk*/
+	fp = fopen(filename, "wb");
+	if (fp) {
+		ii = fwrite(png->data.ptr, 1, l_pad, fp);
+//		log_debug("write image l_pad %i, return %i\n", l_pad, ii);
+		log_debug("write image l_pad %i, return %i\n");
+		// FIXME: check return value
+	} else {
+		log_error("Something wrong writing to File.");
+	}
+
+	log_message("png image written");
 
 	return 0;
 }

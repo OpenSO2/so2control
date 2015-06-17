@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
 
 	structInit(&sParameters_A, 'a');
 	structInit(&sParameters_B, 'b');
+
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
 	if (state != 0) {
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
 	setExposureTime(&sParameters_B);
 
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
-	state = startAquisition(&sParameters_A, &sParameters_B);
+	state = startAquisition(&sParameters_A, &sParameters_B, &config);
 	log_message("Aquisition stopped");
 	if (state != 0) {
 		log_error("Aquisition failed");

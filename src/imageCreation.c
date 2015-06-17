@@ -15,6 +15,7 @@
 #include "imageFunctions.h"
 #include "camera.h"
 #include "kbhit.h"
+#include "io/io.h"
 
 #define HEADER_SIZE 64
 
@@ -27,10 +28,8 @@ void callbackFunction(sParameterStruct * sSO2Parameters)
 }
 
 int startAquisition(sParameterStruct * sParameters_A,
-		    sParameterStruct * sParameters_B)
+	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	char filename_A[128] = "";
-	char filename_B[128] = "";
 
 	log_message("Starting acquisition...\n");
 	log_message("Press a key to exit\n");
@@ -38,29 +37,27 @@ int startAquisition(sParameterStruct * sParameters_A,
 	while (!kbhit()
 	       && !(sParameters_A->fFifoOverFlow
 		    || sParameters_B->fFifoOverFlow)) {
-		aquire(sParameters_A, sParameters_B, filename_A, filename_B);
+		aquire(sParameters_A, sParameters_B, config);
 	}
 
 	return 0;
 }
 
-int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
-	   char *filename_A, char *filename_B)
+int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	int saveErrCount = 0;	/* counting how often saving an image failed */
-	int startErrCount = 0;	/* counting how often the start of capture process failed */
-	int status = 0;		/* status variable */
+	int saveErrCount = 0;  /* counting how often saving an image failed */
+	int startErrCount = 0; /* counting how often the start of capture process failed */
+	int status = 0;        /* status variable */
 
-		/* get current time with milliseconds precision */
-		getTime(sParameters_A->timestampBefore);
-		getTime(sParameters_B->timestampBefore);
+	/* get current time with milliseconds precision */
+	getTime(sParameters_A->timestampBefore);
+	getTime(sParameters_B->timestampBefore);
 
 	/* Now start our capture, return control immediately back to program */
 	status = camera_trigger(sParameters_A, (void *)&callbackFunction);
 	status = camera_trigger(sParameters_B, (void *)&callbackFunction);
 
 	if (!status) {
-
 		/* if starting the capture was successful reset error counter to zero */
 		startErrCount = 0;
 
@@ -84,12 +81,18 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 		sParameters_A->fBufferReady = FALSE;
 		sParameters_B->fBufferReady = FALSE;
 
-		/* save the captured image */
+		/* download the captured image */
 		status = camera_get(sParameters_A);
 		status = camera_get(sParameters_B);
 
-		io_writeDump(sParameters_A);
-		io_writeDump(sParameters_B);
+		/* save the captured image */
+		if(config->processing){
+			io_writeImage(sParameters_A);
+			io_writeImage(sParameters_B);
+		} else {
+			io_writeDump(sParameters_A);
+			io_writeDump(sParameters_B);
+		}
 
 		if (0 != status) {
 			log_error("Saving an image failed. This is not fatal");

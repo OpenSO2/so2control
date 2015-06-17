@@ -138,6 +138,12 @@ endif( ${UNIX} )
 add_subdirectory( src/io )
 target_link_libraries( so2-camera io )
 
+# dependencies
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+target_link_libraries( so2-camera ${OpenCV_LIBS} )
+
+
 ### custom commands
 add_custom_target(checkstyle
     COMMAND indent -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs -nprs -npsl -sai -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1 src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h

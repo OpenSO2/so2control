@@ -56,7 +56,7 @@ include_directories(
 )
 
 # create lib
-add_library( io io.h ./custom/io.c )
+add_library( io io.h ./custom/io.c bufferToImage.c )
 
 # create executables
 add_executable(io-cli io-cli.c)
