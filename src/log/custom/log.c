@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdarg.h>
 #include<time.h>
 #include "log.h"
 
@@ -55,7 +56,7 @@ int log_init()
 }
 
 
-int log_message(char *message)
+int log_message(char * message)
 {
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
@@ -66,7 +67,7 @@ int log_message(char *message)
 	return 0;
 }
 
-int log_error(char *message)
+int log_error(char * message)
 {
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
@@ -77,12 +78,22 @@ int log_error(char *message)
 	return 0;
 }
 
-int log_debug(char *message)
+int log_debug(char * message, ... )
 {
-	sprintf(buffer, "%02d:%02d:%02d | DEBUG | %s \n", logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, message);
-	fprintf(stderr, "%s", buffer);
-	fputs(buffer, logfile);
+	va_list args;
+	char * format = "%02d:%02d:%02d | DEBUG | %s\n";
+	time(&time_ptr);
+	logTime = *gmtime(&time_ptr);
+
+	va_start( args, message );
+	vsprintf( buffer, message, args );
+	va_end( args );
+
+	printf(format, logTime.tm_hour,
+		logTime.tm_min, logTime.tm_sec, buffer);
+	fprintf(logfile, format, logTime.tm_hour,
+		logTime.tm_min, logTime.tm_sec, buffer);
+
 	return 0;
 }
 
