@@ -13,8 +13,8 @@
  ******************************/
 
 #include<stdio.h>
-#include <math.h>
-#include"common.h"
+#include<math.h>
+#include "common.h"
 
 #if defined(PHX)
 #include<phx_api.h>
@@ -75,6 +75,8 @@ typedef struct {
 	int dfilesize;
 	/* Images per file. Calculated from size of file */
 	int dImagesFile;
+	/* Timestamp taken *before* the image has been triggered */
+	timeStruct * timestampBefore;
 
 	short *stBuffer;
 

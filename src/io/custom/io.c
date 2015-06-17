@@ -1,34 +1,74 @@
-#include <stdio.h>
-	#include "../io.h"
+#include<stdio.h>
+#include<time.h>
+#include<string.h>
+#include "common.h"
+#include "configurations.h"
+#include "../io.h"
+
+/*prototypes*/
+static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
+
 /* io_init
  *
  */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_init(sParameterStruct * sSO2Parameters){
 	log_message("io_init");
 	return 0;
 }
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 /*
  *
  */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_writeImage(sParameterStruct * sSO2Parameters){
 	log_message("io_writeImage");
 	return 0;
+}
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+//~
+//~ sSO2Parameters->cFileNamePrefix in config
+//~ sSO2Parameters->cImagePath in config
+int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
+{
+	int status;
+	char id = sSO2Parameters->identifier;
+	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+
+	/* identify Camera for filename Prefix */
+	char * camname = id == 'A' ? "top" : "bot";
+
+	/* write header string with information from system time for camera B. */
+	status =
+	    sprintf(filename,
+		    "%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
+		    sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
+		    time->year, time->mon, time->day, time->hour, time->min,
+		    time->sec, time->milli, camname, filetype);
+
+	return status > 0 ? 0 : 1;
 }
 
 int io_writeDump(sParameterStruct * sSO2Parameters)
 {
 	FILE * imageFile;
 	FILE * fp;
-	char * headerfile;
-	char * rawfile;
+	char headerfile[100];
+	char rawfile[100];
 	int fwriteReturn;
+	int status = 0;
 
 	/* generate filenames */
-	headerfile = "out.txt";
-	rawfile = "out.raw";
-
-printf("\n stbuffer %i \n", sSO2Parameters->stBuffer[10]);
+	status = createFilename(sSO2Parameters, headerfile, "txt");
+	if(status){
+		log_error("could not create txt filename");
+	}
+	status = createFilename(sSO2Parameters, rawfile, "raw");
+	if(status){
+		log_error("could not create txt filename");
+	}
 
 	/* Open a new file for the image (writeable, binary) */
 	imageFile = fopen(rawfile, "wb");
@@ -59,6 +99,7 @@ printf("\n stbuffer %i \n", sSO2Parameters->stBuffer[10]);
 		fprintf(fp, "dFixTime %i\n", sSO2Parameters->dFixTime);
 		fprintf(fp, "dfilesize %i\n", sSO2Parameters->dfilesize);
 		fprintf(fp, "dImagesFile %i\n", sSO2Parameters->dImagesFile);
+		// @TODO: add time
 
 		fclose(fp);
 	} else {

@@ -21,6 +21,7 @@ int structInit(sParameterStruct * sSO2Parameters, char identifier)
 	sSO2Parameters->dInterFrameDelay = 10;
 	sSO2Parameters->fid = NULL;
 	sSO2Parameters->identifier = identifier;
+	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
 
 	return 0;
 }

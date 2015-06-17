@@ -50,18 +50,16 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B,
 	int saveErrCount = 0;	/* counting how often saving an image failed */
 	int startErrCount = 0;	/* counting how often the start of capture process failed */
 	int status = 0;		/* status variable */
-	timeStruct timeNow;
 
-	/* @FIXME: bin mir nicht sicher ob das notwendig ist... C... */
-	memset(&timeNow, 0, sizeof(timeNow));
+		/* get current time with milliseconds precision */
+		getTime(sParameters_A->timestampBefore);
+		getTime(sParameters_B->timestampBefore);
 
 	/* Now start our capture, return control immediately back to program */
 	status = camera_trigger(sParameters_A, (void *)&callbackFunction);
 	status = camera_trigger(sParameters_B, (void *)&callbackFunction);
 
 	if (!status) {
-		/* get current time with milliseconds precision */
-		getTime(&timeNow);
 
 		/* if starting the capture was successful reset error counter to zero */
 		startErrCount = 0;

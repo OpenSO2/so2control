@@ -4,19 +4,6 @@
 #include<time.h>
 
 /******************************
- *   Structures
- ******************************/
-typedef struct {
-	int milli;		/* milliseconds after second */
-	int sec;		/* seconds after the minute */
-	int min;		/* minutes after the hour */
-	int hour;		/* hours since midnight */
-	int day;		/* day of the month */
-	int mon;		/* month of the year */
-	int year;		/* years since year 0 */
-} timeStruct;
-
-/******************************
  *   FUNCTIONS
  ******************************/
 void callbackFunction(sParameterStruct * sSO2Parameters);

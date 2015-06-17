@@ -18,11 +18,24 @@ typedef unsigned long mu32;
 typedef mu32 tHandle;
 typedef ui32 tFlag;
 
+/******************************
+ *   Structures
+ ******************************/
 typedef struct {
 	void *pvAddress;
 	void *pvContext;
 } stImageBuff;
 #endif
+
+typedef struct {
+	int milli;		/* milliseconds after second */
+	int sec;		/* seconds after the minute */
+	int min;		/* minutes after the hour */
+	int hour;		/* hours since midnight */
+	int day;		/* day of the month */
+	int mon;		/* month of the year */
+	int year;		/* years since year 0 */
+} timeStruct;
 
 int sleepMs(int x);
 
