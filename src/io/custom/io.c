@@ -5,6 +5,7 @@
 #include "common.h"
 #include "configurations.h"
 #include "../io.h"
+#include "make_png_header.c"
 
 #define HEADERLENGTH 60
 
@@ -114,19 +115,21 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	short * stBuffer;
 	IplImage *img;
 	CvMat *png;
-	int l_pad = 100;
+	int l_pad;
 	int l;
-int ii;
+	int ii;
 	char filename[100];
 	int status;
-	/* int head[HEADERLENGTH];
+
+	/*
+	 * int head[HEADERLENGTH];
 	 * int l, l_pad, i;
 	 * char *name;
 	 *
-	unsigned char *padded_png;
-	char date[25];
-	char text[39];
-	 * */
+	 * unsigned char *padded_png;
+	 * char date[25];
+	 * char text[39];
+	 */
 
 	stBuffer = sSO2Parameters->stBuffer;
 
@@ -148,7 +151,32 @@ int ii;
 	l = png->rows * png->cols;
 	l_pad = l;
 
-	//FIXME: add headers
+	/* add headers */
+	l_pad = insertHeaders(png->data.ptr, sSO2Parameters, l);
+
+printf("done ");
+printf("%c", png->data.ptr[l - 9]);
+printf("%c", png->data.ptr[l - 8]);
+printf("%c", png->data.ptr[l - 7]);
+printf("%c", png->data.ptr[l - 6]);
+printf("%c", png->data.ptr[l - 5]);
+printf("%c", png->data.ptr[l - 4]);
+printf("%c", png->data.ptr[l - 3]);
+printf("%c", png->data.ptr[l - 2]);
+printf("%c", png->data.ptr[l - 1]);
+printf("\n");
+
+printf("done ");
+printf("%c", png->data.ptr[l_pad - 9]);
+printf("%c", png->data.ptr[l_pad - 8]);
+printf("%c", png->data.ptr[l_pad - 7]);
+printf("%c", png->data.ptr[l_pad - 6]);
+printf("%c", png->data.ptr[l_pad - 5]);
+printf("%c", png->data.ptr[l_pad - 4]);
+printf("%c", png->data.ptr[l_pad - 3]);
+printf("%c", png->data.ptr[l_pad - 2]);
+printf("%c", png->data.ptr[l_pad - 1]);
+printf("\n");
 
 	/* save image to disk*/
 	fp = fopen(filename, "wb");
@@ -164,6 +192,50 @@ int ii;
 	log_message("png image written");
 
 	return 0;
+}
+
+int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int l){
+	int l_pad = l;
+
+	char name[14] =    "Creation Time ";
+	char content[15] = "hello my friend";
+	l_pad = insertHeader(png, name, content, l);
+
+	return l_pad;
+}
+
+int insertHeader(char * png, char * name, char * content, int l){
+	int head[HEADERLENGTH];
+	char text[40]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
+	int l_pad, i;
+	l_pad = l + HEADERLENGTH;
+
+	char * padded_png = (unsigned char *)malloc(l_pad * 2);
+	memcpy(padded_png, png, l_pad);
+	//~ png = padded_png;
+
+	// copy end of png
+	printf("l: %i; l_pad: %i\n", l, l_pad);
+	for (i = 8; i > 0; i--) {
+		png[l_pad - i] = png[l - i];
+
+		printf("nocpy char at %i: %c; %i: %c\n", l - i, png[l - i], l_pad - i, png[l_pad - i]);
+	}
+
+	strcpy(text, name);
+	strcat(text, content);
+	text[13] = 0;
+int content_length = 15;
+printf("name=%s\ncontent=%s\ntext=%s\n", name, content, text);
+
+	make_png_header(text, content_length, head, HEADERLENGTH);
+
+	// fill in
+	for (i = 0; i < HEADERLENGTH; i++) {
+		png[l - 12 + i] = head[i];
+	}
+
+	return l_pad;
 }
 
 /*

@@ -143,6 +143,11 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 target_link_libraries( so2-camera ${OpenCV_LIBS} )
 
+find_package( ZLIB REQUIRED )
+if ( ZLIB_FOUND )
+    include_directories( ${ZLIB_INCLUDE_DIRS} )
+    target_link_libraries( so2-camera ${ZLIB_LIBRARIES} )
+endif( ZLIB_FOUND )
 
 ### custom commands
 add_custom_target(checkstyle

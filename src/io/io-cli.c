@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 	strcpy(text, name);
 	strcat(text, date);
 	text[13] = 0;
-	make_png_header(text, 38, head);
+	make_png_header(text, 38, head, HEADERLENGTH);
 
 	// fill in
 	for (i = 0; i < HEADERLENGTH; i++) {
