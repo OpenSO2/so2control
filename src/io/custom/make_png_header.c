@@ -50,11 +50,11 @@ void make_png_header(char *content, int content_length, int *header, int header_
 	header[7] = (int)'t';
 
 	/* content */
-	for (i = 8; i < header_length; i++) {
-		header[i] = (int)' '; /* write spaces into the rest */
-	}
 	for (i = 0; i < content_length + 14; i++) {
 		header[i + 8] = (int)content[i];
+	}
+	for (i = content_length + 8; i < header_length; i++) {
+		header[i] = (int)' '; /* write spaces into the rest */
 	}
 
 	/* CRC-32 of chunk type code and chunk data fields, but not crc itself or length (77-8) */
