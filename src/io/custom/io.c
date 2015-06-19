@@ -179,21 +179,16 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length)
 	png_length_padded = insertHeader(png, name, content, png_length);
 
 	png_length_padded = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength, png_length_padded);
-	printf("png_length_padded %i\n", png_length_padded-png_length);
 	png_length_padded = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval, png_length_padded);
-	//~ printf("png_length_padded %i\n", png_length_padded-png_length);
-	//~ png_length_padded = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage, png_length_padded);
-	printf("png_length_padded %i\n", png_length_padded-png_length);
+	png_length_padded = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage, png_length_padded);
 	png_length_padded = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent, png_length_padded);
-	//~ printf("png_length_padded %i\n", png_length_padded-png_length);
-	//~ png_length_padded = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter, png_length_padded);
-	//~ printf("png_length_padded %i\n", png_length_padded-png_length);
-	//~ png_length_padded = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay, png_length_padded);
-	//~ png_length_padded = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length_padded);
-	//~ png_length_padded = insertValue(png, "dExposureTime",           sSO2Parameters->dExposureTime, png_length_padded);
-	//~ png_length_padded = insertValue(png, "dFixTime",                sSO2Parameters->dFixTime, png_length_padded);
-	//~ png_length_padded = insertValue(png, "dfilesize",               sSO2Parameters->dfilesize, png_length_padded);
-	//~ png_length_padded = insertValue(png, "dImagesFile",             sSO2Parameters->dImagesFile, png_length_padded);
+	png_length_padded = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter, png_length_padded);
+	png_length_padded = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay, png_length_padded);
+	png_length_padded = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length_padded);
+	png_length_padded = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime, png_length_padded);
+	png_length_padded = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime, png_length_padded);
+	png_length_padded = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize, png_length_padded);
+	png_length_padded = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile, png_length_padded);
 	// @TODO: add time
 
 
@@ -203,11 +198,7 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length)
 int insertValue(char * png, char * name, int value, int png_length){
 	char text[200];
 	sprintf(text, "%s: %f", name, (float)value);
-	//~ char * text = "dBufferlength: 1376256.000000";
-	//~ char * text = "dBufferlength: 137....."; //20
-	printf("||%s||\n", text);
 	return insertHeader(png, "Comment ", text   , png_length);
-//		   insertHeader(png, name      , content, png_length);
 }
 
 int insertHeader(char * png, char * name, char * content, int png_length){
@@ -218,15 +209,15 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	int name_length = strlen(name);
 	int png_length_padded = png_length + HEADERLENGTH;
 
-if(content_length + name_length >=40){
-	printf("content to long\n");
-	return png_length;
-}
+	if(content_length + name_length >=40){
+		printf("content to long\n");
+		return png_length;
+	}
 
-	char * padded_png = (unsigned char *)malloc(png_length_padded * 2);
+	char * padded_png = (unsigned char *)malloc(png_length_padded);
 	memcpy(padded_png, png, png_length_padded);
-	//~ png = padded_png;
-//~ printf("insert -%s-%i\n", content, content_length);
+	png = padded_png;
+
 	// copy end of png %% FIXME: Explain better what is being done here
 	for (i = 12; i > 0; i--) { // 4 bytes content length (00 00 00 00), 4 bytes type (IEND), 4 bytes crc (ae 42 60 82)
 		png[png_length_padded - i] = png[png_length - i];
@@ -241,19 +232,14 @@ if(content_length + name_length >=40){
 	strcat(text, content);
 
 	int l = strlen(text);
-	//~ printf("l: %i; text: %s\n", l, text);
-	//~ text[l] = ' ';
 	text[name_length-1] = 0; // FIXME: explain
 
 	make_png_header(text, l, head, HEADERLENGTH);
 
 	// fill in
-	//~ printf("header is\n", text);
 	for (i = 0; i < HEADERLENGTH; i++) {
-	//~ printf("%c", (char)text[i]);
 		png[png_length - 12 + i] = head[i];
 	}
-	//~ printf("\n");
 
 	return png_length_padded;
 }
