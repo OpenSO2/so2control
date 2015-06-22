@@ -12,6 +12,7 @@
 /*prototypes*/
 static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
 IplImage *bufferToImage(short *buffer);
+char * dateStructToISO8601(timeStruct * time);
 
 /* io_init
  *
@@ -95,7 +96,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 		fprintf(fp, "dFixTime %i\n", sSO2Parameters->dFixTime);
 		fprintf(fp, "dfilesize %i\n", sSO2Parameters->dfilesize);
 		fprintf(fp, "dImagesFile %i\n", sSO2Parameters->dImagesFile);
-		// @TODO: add time
+		fprintf(fp, "timestampBefore %s\n", dateStructToISO8601(sSO2Parameters->timestampBefore));
 
 		fclose(fp);
 	} else {
@@ -179,29 +180,20 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 }
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
-	int png_length_padded = png_length;
-	char * name;
-	char * content;
+	png_length = insertHeader(png, "Creation Time ", dateStructToISO8601(sSO2Parameters->timestampBefore), png_length);
+	png_length = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength,      png_length);
+	png_length = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval,   png_length);
+	png_length = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage,    png_length);
+	png_length = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent,       png_length);
+	png_length = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter,      png_length);
+	png_length = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay,   png_length);
+	png_length = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length);
+	png_length = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime,      png_length);
+	png_length = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime,           png_length);
+	png_length = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize,          png_length);
+	png_length = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile,        png_length);
 
-	name = "Creation Time ";
-	content = "hello world";
-	png_length_padded = insertHeader(png, name, content, png_length);
-
-	png_length_padded = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength,      png_length_padded);
-	png_length_padded = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval,   png_length_padded);
-	png_length_padded = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage,    png_length_padded);
-	png_length_padded = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent,       png_length_padded);
-	png_length_padded = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter,      png_length_padded);
-	png_length_padded = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay,   png_length_padded);
-	png_length_padded = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length_padded);
-	png_length_padded = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime,      png_length_padded);
-	png_length_padded = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime,           png_length_padded);
-	png_length_padded = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize,          png_length_padded);
-	png_length_padded = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile,        png_length_padded);
-	// @TODO: add time
-
-
-	return png_length_padded;
+	return png_length;
 }
 
 int insertValue(char * png, char * name, int value, int png_length){
@@ -212,18 +204,17 @@ int insertValue(char * png, char * name, int value, int png_length){
 
 int insertHeader(char * png, char * name, char * content, int png_length){
 	int head[HEADERLENGTH];
-	char text[40]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
+	char text[80]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
 	int l_pad, i;
 	int content_length = strlen(content);
 	int name_length = strlen(name);
 	int png_length_padded = png_length + HEADERLENGTH;
 
 	if(content_length + name_length >=40){
-		printf("content to long\n");
+		log_error("content to long\n");
 		return png_length;
 	}
 
-	printf("png_length_padded: %i\n", png_length_padded);
 	char * padded_png = (unsigned char *)realloc(png, png_length_padded);
 	if(padded_png == NULL){
 		log_error("could not realloc!");
@@ -263,4 +254,33 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 int io_uninit(sParameterStruct * sSO2Parameters){
 	log_message("io_uninit");
 	return 0;
+}
+
+
+/*
+ * convert timeStruct to ISO 8601 as in http://www.w3.org/TR/NOTE-datetime
+ * which is the standard time format for PNG Creation Time text chunks
+ *
+ * Time is allways in UTC.
+ *
+ * This should conform to /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/
+ */
+char * dateStructToISO8601(timeStruct * time)
+{
+	// date is of the form YYYY-MM-DDThh:mm:ss.sssZ (ISO 8601)
+	char * format = "%04i-%02i-%02iT%02i:%02i:%02i.%03iZ";
+	char iso_date[25];
+	sprintf(iso_date, format,
+		time->year,
+		time->mon,
+		time->day,
+		time->hour,
+		time->min,
+		time->sec,
+		time->milli
+	);
+
+	log_debug("iso_date %s", iso_date);
+
+	return iso_date;
 }
