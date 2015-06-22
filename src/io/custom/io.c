@@ -199,23 +199,30 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length)
 int insertValue(char * png, char * name, int value, int png_length){
 	char text[200];
 	sprintf(text, "%s: %f", name, (float)value);
-	return insertHeader(png, "Comment ", text   , png_length);
+	return insertHeader(png, "Comment ", text , png_length);
 }
 
 int insertHeader(char * png, char * name, char * content, int png_length){
-	int head[HEADERLENGTH];
-	char text[80]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
-	int l_pad, i;
-	int content_length = strlen(content);
+	int head[200];
+	char text[180]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
+	int png_length_padded;
 	int name_length = strlen(name);
-	int png_length_padded = png_length + HEADERLENGTH;
+	int l, i;
+	int header_length;
+	char * padded_png;
 
-	if(content_length + name_length >=40){
-		log_error("content to long\n");
-		return png_length;
-	}
+	strcpy(text, name);
+	strcat(text, content);
 
-	char * padded_png = (unsigned char *)realloc(png, png_length_padded);
+	l = strlen(text);
+	header_length = l + 12;
+	text[name_length-1] = 0; // FIXME: explain
+
+	make_png_header(text, l, head, header_length);
+
+	png_length_padded = png_length + header_length;
+
+	padded_png = (unsigned char *)realloc(png, png_length_padded);
 	if(padded_png == NULL){
 		log_error("could not realloc!");
 		free(padded_png);
@@ -228,20 +235,8 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 		png[png_length_padded - i] = png[png_length - i];
 	}
 
-	for (i = 0; i < 40; i++) {
-		text[i] = (int)' ';
-	}
-
-	strcpy(text, name);
-	strcat(text, content);
-
-	int l = strlen(text);
-	text[name_length-1] = 0; // FIXME: explain
-
-	make_png_header(text, l, head, HEADERLENGTH);
-
 	// fill in
-	for (i = 0; i < HEADERLENGTH; i++) {
+	for (i = 0; i < l + 12; i++) {
 		png[png_length - 12 + i] = head[i];
 	}
 
