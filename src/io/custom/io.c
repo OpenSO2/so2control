@@ -76,6 +76,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	} else {
 		log_error("not opened raw file");
 	}
+
 	/* write a text file containing header information */
 	fp = fopen(headerfile, "ab");
 	if (fp != NULL)
@@ -149,20 +150,28 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	png = cvEncodeImage(".png", img, 0);
 	l = png->rows * png->cols;
 	l_pad = l;
+	cvReleaseImage(&img);
+
+	// pry the actual buffer pointer from png
+	char * buffer = (unsigned char *)malloc(l);
+	memcpy(buffer, png->data.s, l);
+	cvReleaseImage(&png);
 
 	/* add headers */
-	l_pad = insertHeaders(png->data.ptr, sSO2Parameters, l);
+	l_pad = insertHeaders(buffer, sSO2Parameters, l);
 
 	/* save image to disk*/
 	fp = fopen(filename, "wb");
 	if (fp) {
-		ii = fwrite(png->data.ptr, 1, l_pad, fp);
-//		log_debug("write image l_pad %i, return %i\n", l_pad, ii);
-		log_debug("write image l_pad %i, return %i\n");
+		ii = fwrite(buffer, 1, l_pad, fp);
+		log_debug("write image l_pad %i, return %i", l_pad, ii);
 		// FIXME: check return value
 	} else {
 		log_error("Something wrong writing to File.");
 	}
+
+	// cleanup
+	free(buffer);
 
 	log_message("png image written");
 
@@ -178,17 +187,17 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length)
 	content = "hello world";
 	png_length_padded = insertHeader(png, name, content, png_length);
 
-	png_length_padded = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength, png_length_padded);
-	png_length_padded = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval, png_length_padded);
-	png_length_padded = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage, png_length_padded);
-	png_length_padded = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent, png_length_padded);
-	png_length_padded = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter, png_length_padded);
-	png_length_padded = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay, png_length_padded);
+	png_length_padded = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength,      png_length_padded);
+	png_length_padded = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval,   png_length_padded);
+	png_length_padded = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage,    png_length_padded);
+	png_length_padded = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent,       png_length_padded);
+	png_length_padded = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter,      png_length_padded);
+	png_length_padded = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay,   png_length_padded);
 	png_length_padded = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length_padded);
-	png_length_padded = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime, png_length_padded);
-	png_length_padded = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime, png_length_padded);
-	png_length_padded = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize, png_length_padded);
-	png_length_padded = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile, png_length_padded);
+	png_length_padded = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime,      png_length_padded);
+	png_length_padded = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime,           png_length_padded);
+	png_length_padded = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize,          png_length_padded);
+	png_length_padded = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile,        png_length_padded);
 	// @TODO: add time
 
 
@@ -214,9 +223,14 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 		return png_length;
 	}
 
-	char * padded_png = (unsigned char *)malloc(png_length_padded);
-	memcpy(padded_png, png, png_length_padded);
-	png = padded_png;
+	printf("png_length_padded: %i\n", png_length_padded);
+	char * padded_png = (unsigned char *)realloc(png, png_length_padded);
+	if(padded_png == NULL){
+		log_error("could not realloc!");
+		free(padded_png);
+	} else {
+		png = padded_png;
+	}
 
 	// copy end of png %% FIXME: Explain better what is being done here
 	for (i = 12; i > 0; i--) { // 4 bytes content length (00 00 00 00), 4 bytes type (IEND), 4 bytes crc (ae 42 60 82)
@@ -224,9 +238,8 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	}
 
 	for (i = 0; i < 40; i++) {
-		text[i] = (int)'+';
+		text[i] = (int)' ';
 	}
-
 
 	strcpy(text, name);
 	strcat(text, content);
