@@ -13,6 +13,7 @@
 static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
 IplImage *bufferToImage(short *buffer);
 char * dateStructToISO8601(timeStruct * time);
+int insertValue(char * png, char * name, float value, int png_length);
 
 /* io_init
  *
@@ -180,25 +181,25 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 }
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
-	png_length = insertHeader(png, "Creation Time ", dateStructToISO8601(sSO2Parameters->timestampBefore), png_length);
-	png_length = insertValue(png, "dBufferlength",           sSO2Parameters->dBufferlength,      png_length);
-	png_length = insertValue(png, "dHistMinInterval",        sSO2Parameters->dHistMinInterval,   png_length);
-	png_length = insertValue(png, "dHistPercentage",         sSO2Parameters->dHistPercentage,    png_length);
-	png_length = insertValue(png, "dDarkCurrent",       (int)sSO2Parameters->dDarkCurrent,       png_length);
-	png_length = insertValue(png, "dImageCounter",      (int)sSO2Parameters->dImageCounter,      png_length);
-	png_length = insertValue(png, "dInterFrameDelay",   (int)sSO2Parameters->dInterFrameDelay,   png_length);
-	png_length = insertValue(png, "dTriggerPulseWidth", (int)sSO2Parameters->dTriggerPulseWidth, png_length);
-	png_length = insertValue(png, "dExposureTime",      (int)sSO2Parameters->dExposureTime,      png_length);
-	png_length = insertValue(png, "dFixTime",           (int)sSO2Parameters->dFixTime,           png_length);
-	png_length = insertValue(png, "dfilesize",          (int)sSO2Parameters->dfilesize,          png_length);
-	png_length = insertValue(png, "dImagesFile",        (int)sSO2Parameters->dImagesFile,        png_length);
+	png_length = insertHeader(png, "Creation Time ",    dateStructToISO8601(sSO2Parameters->timestampBefore), png_length);
+	png_length = insertValue(png, "dBufferlength",      (float)sSO2Parameters->dBufferlength,      png_length);
+	png_length = insertValue(png, "dHistMinInterval",   (float)sSO2Parameters->dHistMinInterval,   png_length);
+	png_length = insertValue(png, "dHistPercentage",    (float)sSO2Parameters->dHistPercentage,    png_length);
+	png_length = insertValue(png, "dDarkCurrent",       (float)sSO2Parameters->dDarkCurrent,       png_length);
+	png_length = insertValue(png, "dImageCounter",      (float)sSO2Parameters->dImageCounter,      png_length);
+	png_length = insertValue(png, "dInterFrameDelay",   (float)sSO2Parameters->dInterFrameDelay,   png_length);
+	png_length = insertValue(png, "dTriggerPulseWidth", (float)sSO2Parameters->dTriggerPulseWidth, png_length);
+	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
+	png_length = insertValue(png, "dFixTime",           (float)sSO2Parameters->dFixTime,           png_length);
+	png_length = insertValue(png, "dfilesize",          (float)sSO2Parameters->dfilesize,          png_length);
+	png_length = insertValue(png, "dImagesFile",        (float)sSO2Parameters->dImagesFile,        png_length);
 
 	return png_length;
 }
 
-int insertValue(char * png, char * name, int value, int png_length){
+int insertValue(char * png, char * name, float value, int png_length){
 	char text[200];
-	sprintf(text, "%s: %f", name, (float)value);
+	sprintf(text, "%s: %f", name, value);
 	return insertHeader(png, "Comment ", text , png_length);
 }
 
