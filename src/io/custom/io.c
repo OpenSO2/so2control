@@ -26,9 +26,6 @@ int io_init(sParameterStruct * sSO2Parameters){
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 
-//~
-//~ sSO2Parameters->cFileNamePrefix in config
-//~ sSO2Parameters->cImagePath in config
 int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
 {
 	int status;

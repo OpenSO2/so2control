@@ -1,3 +1,6 @@
 libio.a
 io-cli
 Makefile
+Testing
+CTestTestfile.cmake
+log

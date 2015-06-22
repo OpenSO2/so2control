@@ -7,6 +7,8 @@
 cmake_minimum_required(VERSION 2.8)
 project( so2-camera )
 
+enable_testing()
+
 if (CMAKE_COMPILER_IS_GNUCC)
 	#~ add_definitions ("-Werror") # tread every warning as an error
 	add_definitions ("-pedantic")
@@ -153,3 +155,4 @@ endif( ZLIB_FOUND )
 add_custom_target(checkstyle
     COMMAND indent -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs -nprs -npsl -sai -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1 src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h
 )
+

@@ -1,5 +1,6 @@
 #include <opencv/cv.h>
 
+IplImage * bufferToImage(short *buffer);
 IplImage * bufferToImage(short *buffer)
 {
 	IplImage * img;
