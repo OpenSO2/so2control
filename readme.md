@@ -3,6 +3,8 @@ SO2-Control Software
 
 SO2 Camera control software written in C, licenced under MIT.
 
+[![Build Status on Linux](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/status.png)](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/latest)
+
 ** Collaborators: **
 
 - [Johann Jacobsohn][jj] (Universität Hamburg)

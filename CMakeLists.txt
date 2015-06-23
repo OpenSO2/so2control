@@ -147,8 +147,13 @@ target_link_libraries( so2-camera io )
 
 # dependencies
 find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-target_link_libraries( so2-camera ${OpenCV_LIBS} )
+if ( OpenCV_FOUND )
+	message( "OpenCV_FOUND found" )
+	include_directories( ${OpenCV_INCLUDE_DIRS} )
+	target_link_libraries( so2-camera ${OpenCV_LIBS} )
+else ( OpenCV_FOUND )
+	message( "OpenCV_FOUND not found" )
+endif( OpenCV_FOUND )
 
 find_package( ZLIB REQUIRED )
 if ( ZLIB_FOUND )

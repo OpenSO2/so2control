@@ -64,8 +64,10 @@ target_link_libraries( io-cli io )
 
 # dependencies
 find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-target_link_libraries( io-cli ${OpenCV_LIBS} )
+if ( OpenCV_FOUND )
+	include_directories( ${OpenCV_INCLUDE_DIRS} )
+	target_link_libraries( io-cli ${OpenCV_LIBS} )
+endif( OpenCV_FOUND )
 
 find_package( ZLIB REQUIRED )
 if ( ZLIB_FOUND )
