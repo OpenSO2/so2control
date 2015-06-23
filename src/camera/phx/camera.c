@@ -61,18 +61,18 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	 * for conversion to milliseconds see camera manual
 	 *
 
-	 status = sendMessage(hCamera, "NMD S");
-	 if (0 != status ) {
-		 log_error("setting camera to electronic shutter mode failed");
-		 return status;
-	 }
+	status = sendMessage(hCamera, "NMD S");
+	if (0 != status ){
+		log_error("setting camera to electronic shutter mode failed");
+		return status;
+	}
 
-	 status = sendMessage(hCamera, "SHT 1055");
-	 if (0 != status ) {
-		 log_error("setting SHT value 1055 failed");
-	 return status;
-	 }
-	 /**/
+	status = sendMessage(hCamera, "SHT 1055");
+	if (0 != status ){
+		log_error("setting SHT value 1055 failed");
+		return status;
+	}
+	/**/
 	return status;
 }
 

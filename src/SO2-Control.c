@@ -36,6 +36,9 @@ int stop_program(int reason){
 		camera_uninit(&sParameters_B);
 	}
 
+	/* uninitialize io */
+	io_uninit();
+
 	/* stop logging and return file handle */
 	log_uninit();
 
@@ -92,6 +95,14 @@ int main(int argc, char *argv[])
 
 	structInit(&sParameters_A, 'a');
 	structInit(&sParameters_B, 'b');
+
+	/* initialize IO */
+	state = io_init(&config);
+	if (state != 0) {
+		log_error("io_init failed");
+		stop_program(1);
+		return state;
+	}
 
 	/* initiate camera */
 	state = camera_init(&sParameters_A);

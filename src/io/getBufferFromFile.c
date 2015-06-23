@@ -1,4 +1,3 @@
-
 // HEADER is 64 bytes
 // image size is  1344 * 1024 * 16/8
 short * getBufferFromFile(char *filename);

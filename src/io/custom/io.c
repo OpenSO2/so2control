@@ -1,3 +1,22 @@
+/*
+
+ * This implements the file output system, responsible for writing
+ * the gathered data to disk and to process the data into reasonable
+ * file formats. This could also do i.e. packaging files into a .tar
+ * file.
+ *
+ * Currently, there are two write modes:
+ * - dumb mode, the camera data and all relevent headers are dumped to
+ *   files
+ * - png mode, the camera data is converted to pngs, and relevant
+ *   headers are written to ancillary text chunks
+ *
+ * PNG mode is a lot slower, but produces smaller files which can be
+ * easily viewed and used for further processing.
+ * Dumb mode requires less processing and does not alter the original
+ * data, but requires additional work for viewing and evalution.
+ *
+ */
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
@@ -8,45 +27,83 @@
 #include "../io.h"
 #include "make_png_header.c"
 
-#define HEADERLENGTH 120
-
-/*prototypes*/
-static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
+/* local prototypes */
+int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char * iso_date);
 int insertValue(char * png, char * name, float value, int png_length);
 int insertHeader(char * png, char * name, char * content, int png_length);
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length);
+int io_writeImage(sParameterStruct * sSO2Parameters);
+int io_writeDump(sParameterStruct * sSO2Parameters);
+
+/* local variables */
+static int processing = 0;
 
 /*
- * io_init
+ * `io_init`
+ * Initialize the IO functionality. Currently, this does nothing, but this could be the place to
+ * set up folders and start tar files.
  */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-int io_init(sParameterStruct * sSO2Parameters){
+int io_init(sConfigStruct * config)
+{
+	if(config->processing){
+		processing = config->processing;
+	}
 	log_message("io_init");
 	return 0;
 }
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 
-
-int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
+/*
+ * `io_write`
+ * Writes a single images stream to disk. Delegates the real work to
+ * `io_writeImage` or `io_writeDump`, depending on the value of processing
+ * which was set in `io_init`.
+ */
+int io_write(sParameterStruct * sSO2Parameters)
 {
-	int status;
-	char id = sSO2Parameters->identifier;
-	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
-
-	/* identify Camera for filename Prefix */
-	char * camname = id == 'a' ? "top" : "bot";
-
-	/* write header string with information from system time for camera B. */
-	status = sprintf(filename,
-		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
-		sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
-		time->year, time->mon, time->day, time->hour, time->min,
-		time->sec, time->milli, camname, filetype);
-
-	return status > 0 ? 0 : 1;
+	/*
+	 * processing:
+	 *   1 = dumb
+	 *   2 = png
+	 *   3 = both
+	 * else = both
+	 *
+	 * e.g.
+	 *  !1 &&  2 = 2
+	 *  !2 &&  1 = 1
+	 *  !1 %% !2 = 3
+	 */
+	if(processing != 1){
+		io_writeImage(sSO2Parameters);
+	}
+	if(processing != 2){
+		io_writeDump(sSO2Parameters);
+	}
+	// FIXME: return correct status
+	return 0;
 }
+
+/*
+ * io_uninit
+ * uninitialize/stops the IO functionality. Currently, this does nothing,
+ * but could be the place to finish tar archives, calculate checksums,
+ * return file handlers and do general clean up.
+ */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+int io_uninit(sConfigStruct * config)
+{
+	log_message("io_uninit");
+	return 0;
+}
+#pragma GCC diagnostic warning "-Wunused-parameter"
+
+
+/*--------------------------------------------------------------------
+ * Additional, private functions that are used within this file
+ * (compilation unit) but are not available elsewhere.
+ */
+
 
 int io_writeDump(sParameterStruct * sSO2Parameters)
 {
@@ -126,16 +183,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	int status;
 	char * buffer;
 
-	/*
-	 * int head[HEADERLENGTH];
-	 * int l, l_pad, i;
-	 * char *name;
-	 *
-	 * unsigned char *padded_png;
-	 * char date[25];
-	 * char text[39];
-	 */
-
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
@@ -182,6 +229,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 
 	return 0;
 }
+
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
 	char iso_date[25];
@@ -249,13 +297,6 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	return png_length_padded;
 }
 
-/*
- *
- */
-int io_uninit(sParameterStruct * sSO2Parameters){
-	log_message("io_uninit");
-	return 0;
-}
 
 
 /*
@@ -283,4 +324,24 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	log_debug("iso_date %s", iso_date);
 
 	return strl > 0 ? 1 : 0;
+}
+
+
+int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
+{
+	int status;
+	char id = sSO2Parameters->identifier;
+	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+
+	/* identify Camera for filename Prefix */
+	char * camname = id == 'a' ? "top" : "bot";
+
+	/* write header string with information from system time for camera B. */
+	status = sprintf(filename,
+		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
+		sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
+		time->year, time->mon, time->day, time->hour, time->min,
+		time->sec, time->milli, camname, filetype);
+
+	return status > 0 ? 0 : 1;
 }

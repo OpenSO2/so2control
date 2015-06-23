@@ -70,10 +70,11 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		 * (b) The BufferReady event occurs indicating that the image is complete
 		 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
 		 * Keep calling the sleep function to avoid burning CPU cycles */
-		while (!
-		       (sParameters_A->fBufferReady
-			&& sParameters_B->fBufferReady)
-&& !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow) && !kbhit()) {
+		while (
+			   !(sParameters_A->fBufferReady && sParameters_B->fBufferReady)
+		    && !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow)
+			&& !kbhit()
+		){
 			sleepMs(10);
 		}
 
@@ -86,13 +87,9 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		status = camera_get(sParameters_B);
 
 		/* save the captured image */
-		if(config->processing){
-			io_writeImage(sParameters_A);
-			io_writeImage(sParameters_B);
-		} else {
-			io_writeDump(sParameters_A);
-			io_writeDump(sParameters_B);
-		}
+		/* FIXME: Check return values */
+		io_write(sParameters_A);
+		io_write(sParameters_B);
 
 		if (0 != status) {
 			log_error("Saving an image failed. This is not fatal");

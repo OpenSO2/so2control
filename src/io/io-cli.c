@@ -2,8 +2,7 @@
 #include <libgen.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "bufferToImage.c"
-#include "converter/getBufferFromFile.c"
+#include "getBufferFromFile.c"
 #include "io.h"
 #include "log.h"
 
@@ -36,11 +35,12 @@ int main(int argc, char *argv[])
 {
 	char * infile = argv[1];
 	char * outfolder = argv[2];
-	int rawdump = argv[3] || 0;
+	int rawdump = argv[3] ? 1 : 2;
 	short * buffer;
 	timeStruct time;
 	int status = 1;
 	sParameterStruct sSO2Parameters;
+	sConfigStruct config;
 
 	if(log_init()){
 		printf("could not start log file, stop.\n");
@@ -83,16 +83,18 @@ int main(int argc, char *argv[])
 	sprintf(sSO2Parameters.cFileNamePrefix, "%s", "image");
 	sprintf(sSO2Parameters.cImagePath, "%s", outfolder);
 
-	if(rawdump)
-		status = io_writeDump(&sSO2Parameters);
-	else
-		status = io_writeImage(&sSO2Parameters);
+	config.processing = rawdump;
 
+	io_init(&config);
+
+	status = io_write(&sSO2Parameters);
 	if(status == 0){
 		log_debug("Converted %s to %s", infile, outfolder);
 	} else {
 		log_error("Something wrong writing to File.");
 	}
+
+	io_uninit(&config);
 
 	return 0;
 }
