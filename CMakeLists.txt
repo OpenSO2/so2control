@@ -80,7 +80,6 @@ set(SRCFILES
 	./src/imageCreation.h
 	./src/imageCreation.c
 	./src/log/log.h
-	./src/log/custom/log.c
 	./src/kbhit.c
 	./src/SO2-Control.c
 )
@@ -88,7 +87,9 @@ set(SRCFILES
 option(mock "mock" none)
 
 if(${mock} STREQUAL "camera")
+	MESSAGE( "============" )
 	MESSAGE( "mock " ${mock} )
+	MESSAGE( "============" )
 	include_directories(./src/camera/mock)
 
 	set(CAMERASRC ./src/camera/mock/camera.c)
@@ -135,6 +136,10 @@ if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(so2-camera ${M_LIB})
 endif( ${UNIX} )
+
+# log subsystem
+add_subdirectory( src/log )
+target_link_libraries( so2-camera log )
 
 # io subsystem
 add_subdirectory( src/io )

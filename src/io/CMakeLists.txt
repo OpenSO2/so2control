@@ -74,7 +74,10 @@ if ( ZLIB_FOUND )
 endif( ZLIB_FOUND )
 
 # add log dependency (required by libio)
-add_subdirectory( ../log ./log)
+
+if(NOT TARGET log)
+	add_subdirectory( ../log ./log)
+endif()
 target_link_libraries( io-cli log )
 
 ########################################################################
