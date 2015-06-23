@@ -53,10 +53,10 @@ endif()
 include_directories( . )
 
 # create lib
-option(MOCK_LIB "MOCK_LIB" none)
+option(MOCK_LOG "MOCK_LOG" OFF)
 
-if( ${MOCK_LIB} STREQUAL "1"  )
-	MESSAGE( "=====MOCK_LIB=======")
+if(MOCK_LOG)
+	MESSAGE( "=====MOCK_LOG=======")
 	add_library( log log.h ./mock/log.c )
 else( )
 	add_library( log log.h ./custom/log.c )

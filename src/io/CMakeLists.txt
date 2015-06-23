@@ -74,8 +74,8 @@ if ( ZLIB_FOUND )
 endif( ZLIB_FOUND )
 
 # add log dependency (required by libio)
-
 if(NOT TARGET log)
+	SET(MOCK_LOG ON CACHE BOOL "Mock logging")
 	add_subdirectory( ../log ./log)
 endif()
 target_link_libraries( io-cli log )
