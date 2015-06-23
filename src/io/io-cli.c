@@ -37,7 +37,8 @@ int main(int argc, char *argv[])
 	char * infile = argv[1];
 	char * outfolder = argv[2];
 	int rawdump = argv[3] || 0;
-	char * buffer;
+	short * buffer;
+	timeStruct time;
 	int status = 1;
 	sParameterStruct sSO2Parameters;
 
@@ -65,7 +66,6 @@ int main(int argc, char *argv[])
 			   ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
 	#endif
 
-	timeStruct time;
 	parse_filename_to_timeStruct(infile, &time);
 
 	sSO2Parameters.dImageCounter = 0;
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
 	sSO2Parameters.timestampBefore = &time;
 	sSO2Parameters.dFixTime = 0.000000;
 
-	sprintf(sSO2Parameters.cFileNamePrefix, "");
-	sprintf(sSO2Parameters.cImagePath, outfolder);
+	sprintf(sSO2Parameters.cFileNamePrefix, "%s", "image");
+	sprintf(sSO2Parameters.cImagePath, "%s", outfolder);
 
 	if(rawdump)
 		status = io_writeDump(&sSO2Parameters);

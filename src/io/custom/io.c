@@ -2,6 +2,7 @@
 #include<time.h>
 #include<string.h>
 #include<opencv/cv.h>
+#include<opencv/highgui.h>
 #include "common.h"
 #include "configurations.h"
 #include "../io.h"
@@ -12,11 +13,13 @@
 /*prototypes*/
 static int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
 IplImage *bufferToImage(short *buffer);
-char * dateStructToISO8601(timeStruct * time);
+int dateStructToISO8601(timeStruct * time, char * iso_date);
 int insertValue(char * png, char * name, float value, int png_length);
+int insertHeader(char * png, char * name, char * content, int png_length);
+int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length);
 
-/* io_init
- *
+/*
+ * io_init
  */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_init(sParameterStruct * sSO2Parameters){
@@ -53,6 +56,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	char rawfile[100];
 	int fwriteReturn;
 	int status = 0;
+	char iso_date[25];
 
 	/* generate filenames */
 	status = createFilename(sSO2Parameters, headerfile, "txt");
@@ -94,7 +98,8 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 		fprintf(fp, "dFixTime %i\n", sSO2Parameters->dFixTime);
 		fprintf(fp, "dfilesize %i\n", sSO2Parameters->dfilesize);
 		fprintf(fp, "dImagesFile %i\n", sSO2Parameters->dImagesFile);
-		fprintf(fp, "timestampBefore %s\n", dateStructToISO8601(sSO2Parameters->timestampBefore));
+		dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
+		fprintf(fp, "timestampBefore %s\n", iso_date);
 
 		fclose(fp);
 	} else {
@@ -119,6 +124,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	int ii;
 	char filename[100];
 	int status;
+	char * buffer;
 
 	/*
 	 * int head[HEADERLENGTH];
@@ -152,9 +158,9 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	cvReleaseImage(&img);
 
 	// pry the actual buffer pointer from png
-	char * buffer = (unsigned char *)malloc(l);
+	buffer = (char *)malloc(l);
 	memcpy(buffer, png->data.s, l);
-	cvReleaseImage(&png);
+	cvReleaseMat(&png);
 
 	/* add headers */
 	l_pad = insertHeaders(buffer, sSO2Parameters, l);
@@ -178,7 +184,9 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 }
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
-	png_length = insertHeader(png, "Creation Time ",    dateStructToISO8601(sSO2Parameters->timestampBefore), png_length);
+	char iso_date[25];
+	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
+	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
 	png_length = insertValue(png, "dBufferlength",      (float)sSO2Parameters->dBufferlength,      png_length);
 	png_length = insertValue(png, "dHistMinInterval",   (float)sSO2Parameters->dHistMinInterval,   png_length);
 	png_length = insertValue(png, "dHistPercentage",    (float)sSO2Parameters->dHistPercentage,    png_length);
@@ -220,7 +228,7 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 
 	png_length_padded = png_length + header_length;
 
-	padded_png = (unsigned char *)realloc(png, png_length_padded);
+	padded_png = (char *)realloc(png, png_length_padded);
 	if(padded_png == NULL){
 		log_error("could not realloc!");
 		free(padded_png);
@@ -258,12 +266,11 @@ int io_uninit(sParameterStruct * sSO2Parameters){
  *
  * This should conform to /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/
  */
-char * dateStructToISO8601(timeStruct * time)
+int dateStructToISO8601(timeStruct * time, char iso_date[25])
 {
+	int strl;
 	// date is of the form YYYY-MM-DDThh:mm:ss.sssZ (ISO 8601)
-	char * format = "%04i-%02i-%02iT%02i:%02i:%02i.%03iZ";
-	char iso_date[25];
-	sprintf(iso_date, format,
+	strl = sprintf(iso_date, "%04i-%02i-%02iT%02i:%02i:%02i.%03iZ",
 		time->year,
 		time->mon,
 		time->day,
@@ -275,5 +282,5 @@ char * dateStructToISO8601(timeStruct * time)
 
 	log_debug("iso_date %s", iso_date);
 
-	return iso_date;
+	return strl > 0 ? 1 : 0;
 }

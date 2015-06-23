@@ -25,13 +25,12 @@ int log_debug(char * message, ... )
 {
 	char buffer[512];
 	va_list args;
-	char * format = "MOCK DEBUG: %s\n";
 
 	va_start( args, message );
 	vsprintf( buffer, message, args );
 	va_end( args );
 
-	printf(format, buffer);
+	printf("MOCK DEBUG: %s\n", buffer);
 
 	return 0;
 }

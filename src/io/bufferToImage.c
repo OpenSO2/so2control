@@ -1,4 +1,5 @@
 #include <opencv/cv.h>
+#include <stdio.h>
 
 IplImage * bufferToImage(short *buffer);
 IplImage * bufferToImage(short *buffer)
@@ -14,7 +15,7 @@ IplImage * bufferToImage(short *buffer)
 	memcpy(img->imageData, buffer, BUFFERSIZE);
 	free(buffer);
 	if (!img) {
-		printf("failed to decode image\n");
+		printf("%s", "failed to decode image\n");
 		return img;
 	}
 	// rotate image

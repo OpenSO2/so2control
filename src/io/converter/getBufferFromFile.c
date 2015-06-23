@@ -1,10 +1,10 @@
 
 // HEADER is 64 bytes
 // image size is  1344 * 1024 * 16/8
-char *getBufferFromFile(char *filename);
-char *getBufferFromFile(char *filename)
+short * getBufferFromFile(char *filename);
+short * getBufferFromFile(char *filename)
 {
-	char *buffer = 0;
+	short * buffer = 0;
 	long length;
 
 	FILE *f = fopen(filename, "rb");

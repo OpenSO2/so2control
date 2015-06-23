@@ -88,12 +88,12 @@ enable_testing()
 add_test (IO_runs io-cli tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./)
 
 # does the produce png conform to png specs
-add_test (IO_valid_png pngcheck _2014_09_22-23_43_55_984_cam_bot.png)
+add_test (IO_valid_png pngcheck image_2014_09_22-23_43_55_984_cam_bot.png)
 
 # does the produce png contain all the headers
 find_program (BASH_PROGRAM bash)
 if (BASH_PROGRAM)
-  add_test (IO_check_png_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.sh _2014_09_22-23_43_55_984_cam_bot.png)
+	add_test (IO_check_png_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.sh image_2014_09_22-23_43_55_984_cam_bot.png)
 endif (BASH_PROGRAM)
 
 # can raw dumps be made
@@ -101,5 +101,5 @@ add_test (IO_runs_raw ./io-cli tests/fixtures/testing_2014_09_22-23_43_55_984_ca
 
 # do raw dumps contain all header data
 if (BASH_PROGRAM)
-  add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh _2014_09_22-23_43_55_984_cam_bot.txt)
+	add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh image_2014_09_22-23_43_55_984_cam_bot.txt)
 endif (BASH_PROGRAM)
