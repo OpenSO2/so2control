@@ -21,7 +21,7 @@ int roundToInt(double value)
 
 int sleepMs(int x)
 {
-#if defined(WIN32)
+#if defined(WIN)
 	Sleep(x);
 #else
 	usleep(x * 1000);

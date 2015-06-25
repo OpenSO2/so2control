@@ -2,7 +2,7 @@
  * See http://www.undertec.de/blog/2009/05/kbhit-und-getch-fur-linux.html
  */
 
-#if defined(WIN32)
+#if defined(WIN)
 #include<conio.h>
 #else
 #include<termios.h>

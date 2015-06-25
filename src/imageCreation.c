@@ -1,4 +1,4 @@
-#ifdef WIN32
+#ifdef WIN
 #include<windows.h>
 #else
 #define _POSIX_C_SOURCE 200809L
@@ -16,8 +16,6 @@
 #include "camera.h"
 #include "kbhit.h"
 #include "io/io.h"
-
-#define HEADER_SIZE 64
 
 void callbackFunction(sParameterStruct * sSO2Parameters)
 {
@@ -143,7 +141,7 @@ time_t TimeFromTimeStruct(const timeStruct * pTime)
 	return mktime(&tm);
 }
 
-#ifdef WIN32
+#ifdef WIN
 
 /* WINDOWS VERSION */
 int getTime(timeStruct * pTS)
