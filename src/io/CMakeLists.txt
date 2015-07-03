@@ -69,12 +69,6 @@ if ( OpenCV_FOUND )
 	target_link_libraries( io-cli ${OpenCV_LIBS} )
 endif( OpenCV_FOUND )
 
-find_package( ZLIB REQUIRED )
-if ( ZLIB_FOUND )
-    include_directories( ${ZLIB_INCLUDE_DIRS} )
-    target_link_libraries( io-cli ${ZLIB_LIBRARIES} )
-endif( ZLIB_FOUND )
-
 # add log dependency (required by libio)
 if(NOT TARGET log)
 	SET(MOCK_LOG ON CACHE BOOL "Mock logging")
