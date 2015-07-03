@@ -1,6 +1,10 @@
 #include<math.h>
-#include<string.h>		/* memset */
-#include<unistd.h>		/* usleep */
+#include<string.h> /* memset */
+#if defined(WIN)
+	#include<windows.h> /* Sleep */
+#else
+	#include<unistd.h> /* usleep */
+#endif
 
 int roundToInt(double value)
 {

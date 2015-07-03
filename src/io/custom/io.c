@@ -74,13 +74,24 @@ int io_write(sParameterStruct * sSO2Parameters)
 	 *  !2 &&  1 = 1
 	 *  !1 %% !2 = 3
 	 */
+	int state = 0;
 	if(processing != 1){
-		io_writeImage(sSO2Parameters);
+		state = io_writeImage(sSO2Parameters);
+
+		if (state != 0) {
+			log_error("failed to write png");
+			return state;
+		}
 	}
 	if(processing != 2){
-		io_writeDump(sSO2Parameters);
+		state = io_writeDump(sSO2Parameters);
+
+		if (state != 0) {
+			log_error("failed to write raw dump");
+			return state;
+		}
 	}
-	// FIXME: return correct status
+
 	return 0;
 }
 
@@ -112,16 +123,16 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	char headerfile[100];
 	char rawfile[100];
 	int fwriteReturn;
-	int status = 0;
+	int state = 0;
 	char iso_date[25];
 
 	/* generate filenames */
-	status = createFilename(sSO2Parameters, headerfile, "txt");
-	if(status){
+	state = createFilename(sSO2Parameters, headerfile, "txt");
+	if(state){
 		log_error("could not create txt filename");
 	}
-	status = createFilename(sSO2Parameters, rawfile, "raw");
-	if(status){
+	state = createFilename(sSO2Parameters, rawfile, "raw");
+	if(state){
 		log_error("could not create txt filename");
 	}
 
@@ -168,31 +179,29 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-/*
- *
- */
 int io_writeImage(sParameterStruct * sSO2Parameters){
 	FILE * fp;
 	short * stBuffer;
 	IplImage *img;
 	CvMat *png;
-	int l_pad;
 	int l;
-	int ii;
+	int writen_bytes;
 	char filename[100];
-	int status;
+	int state;
 	char * buffer;
 
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
-	status = createFilename(sSO2Parameters, filename, "png");
-	if(status){
+	state = createFilename(sSO2Parameters, filename, "png");
+	if(state){
 		log_error("could not create txt filename");
+		return state;
 	}
 
 	/* convert the image buffer to an openCV image */
 	// TODO: check if this has already been done
+	// TODO: check return code
 	img = bufferToImage(stBuffer);
 
 	/*
@@ -201,7 +210,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	 */
 	png = cvEncodeImage(".png", img, 0);
 	l = png->rows * png->cols;
-	l_pad = l;
 	cvReleaseImage(&img);
 
 	// pry the actual buffer pointer from png
@@ -210,26 +218,30 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	cvReleaseMat(&png);
 
 	/* add headers */
-	l_pad = insertHeaders(buffer, sSO2Parameters, l);
+	l = insertHeaders(buffer, sSO2Parameters, l);
 
 	/* save image to disk*/
 	fp = fopen(filename, "wb");
 	if (fp) {
-		ii = fwrite(buffer, 1, l_pad, fp);
-		log_debug("write image l_pad %i, return %i", l_pad, ii);
-		// FIXME: check return value
+		writen_bytes = fwrite(buffer, 1, l, fp);
+		state = writen_bytes == l ? 0 : 1;
+		if(state){
+			log_error("PNG image wasn't written correctly");
+		}
 	} else {
-		log_error("Something wrong writing to File.");
+		state = 1;
+		log_error("Couldn't open png file");
 	}
 
-	// cleanup
+	/* cleanup */
 	free(buffer);
 
-	log_message("png image written");
+	if(!state){
+		log_message("png image written");
+	}
 
-	return 0;
+	return state;
 }
-
 
 int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
 	char iso_date[25];
@@ -258,7 +270,7 @@ int insertValue(char * png, char * name, float value, int png_length){
 
 int insertHeader(char * png, char * name, char * content, int png_length){
 	int head[200];
-	char text[180]; // can be of arbitrary length, but must be shorter than HEADERLENGTH
+	char text[180]; // can be of arbitrary length
 	int png_length_padded;
 	int name_length = strlen(name);
 	int l, i;
@@ -269,41 +281,67 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	strcat(text, content);
 
 	l = strlen(text);
-	header_length = l + 12;
-	text[name_length-1] = 0; // FIXME: explain
 
+	/*
+	 * the header length is the header content length, plus 12 bytes
+	 * for the chunks signature (see below)
+	 */
+	header_length = l + 12;
+
+	/*
+	 * In PNG text chunks, the keyword and content is separated by a
+	 * NULL byte. This will also means that strlen and printf("%s")
+	 * wont work anymore after this point, since they depend on the
+	 * NULL byte as the string terminator.
+	 */
+	text[name_length - 1] = 0;
+
+	// TODO: handle return code
 	make_png_header(text, l, head, header_length);
 
+	/* the new PNG length is the old one, plus the header*/
 	png_length_padded = png_length + header_length;
 
+	/* Resize the PNG buffer to accommodate for the additional text chunk*/
 	padded_png = (char *)realloc(png, png_length_padded);
 	if(padded_png == NULL){
-		log_error("could not realloc!");
+		log_error("Could not resize PNG memory buffer");
 		free(padded_png);
 	} else {
 		png = padded_png;
 	}
 
-	// copy end of png %% FIXME: Explain better what is being done here
-	for (i = 12; i > 0; i--) { // 4 bytes content length (00 00 00 00), 4 bytes type (IEND), 4 bytes crc (ae 42 60 82)
+	/*
+	 * Any PNG ends with the sequence 00 00 00 00 I E N D ae 42 60 82,
+	 * and does the new one we are creating. To do this, copy the old
+	 * end sequence to the new place, moved by the diff
+	 * between header_length & png_length_padded
+	 *
+	 * Every chunk is at least 12 bytes long (if the content is empty).
+	 * 4 bytes content length (00 00 00 00) = empty
+	 * 4 bytes type (IEND)
+	 * 0 bytes for content, because there is none
+	 * 4 bytes crc (ae 42 60 82)
+	 */
+	for (i = 12; i > 0; i--) {
 		png[png_length_padded - i] = png[png_length - i];
 	}
 
-	// fill in
-	for (i = 0; i < l + 12; i++) {
+	/*
+	 * copy the new header into the PNG buffer
+	 */
+	for (i = 0; i < header_length; i++) {
 		png[png_length - 12 + i] = head[i];
 	}
 
 	return png_length_padded;
 }
 
-
-
 /*
  * convert timeStruct to ISO 8601 as in http://www.w3.org/TR/NOTE-datetime
  * which is the standard time format for PNG Creation Time text chunks
  *
- * Time is allways in UTC.
+ * Time is always in UTC.
  *
  * This should conform to /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/
  */
@@ -326,10 +364,9 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-
 int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
 {
-	int status;
+	int state;
 	char id = sSO2Parameters->identifier;
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
@@ -337,11 +374,11 @@ int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filet
 	char * camname = id == 'a' ? "top" : "bot";
 
 	/* write header string with information from system time for camera B. */
-	status = sprintf(filename,
+	state = sprintf(filename,
 		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
 		sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
 		time->year, time->mon, time->day, time->hour, time->min,
 		time->sec, time->milli, camname, filetype);
 
-	return status > 0 ? 0 : 1;
+	return state > 0 ? 0 : 1;
 }
