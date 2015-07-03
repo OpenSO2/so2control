@@ -146,6 +146,13 @@ add_subdirectory( src/io )
 target_link_libraries( so2-camera io )
 
 # dependencies
+if( DEFINED $ENV{OPENCV_ROOT_PATH} )
+	set (OpenCV_DIR "C:/OpenCV249/opencv/build")
+	message( "OPENCV_ROOT_PATH not set, setting OpenCV_DIR to C:/OpenCV249/opencv/build" )
+else()
+	set (OpenCV_DIR "$ENV{OPENCV_ROOT_PATH}/build")
+	message( "setting OpenCV_DIR to $ENV{OPENCV_ROOT_PATH}/build" )
+endif()
 find_package( OpenCV REQUIRED )
 if ( OpenCV_FOUND )
 	message( "OpenCV_FOUND found" )
