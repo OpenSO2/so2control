@@ -55,6 +55,11 @@ int main(int argc, char *argv[])
 
 	sConfigStruct config;
 
+	config.dHistMinInterval = 350;
+	config.dHistPercentage = 5;
+	config.dInterFrameDelay = 10;
+	config.dBufferlength = 1376256;
+
 	/* Handle signals. This is useful to intercept accidental Ctrl+C
 	 * which would otherwise just kill the process without any cleanup.
 	 * This could also be useful when the process is managed by some
@@ -67,20 +72,34 @@ int main(int argc, char *argv[])
 	 * functionality only works there.
 	 */
 	#ifdef POSIX
-	struct sigaction sa, osa;
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = &stop_program;
-	sigaction(SIGINT, &sa, &osa);
-	sigaction(SIGTERM, &sa, &osa);
+		struct sigaction sa, osa;
+		memset(&sa, 0, sizeof(sa));
+		sa.sa_handler = &stop_program;
+		sigaction(SIGINT, &sa, &osa);
+		sigaction(SIGTERM, &sa, &osa);
 	#endif
 
 	/* initiate the logfile and start logging */
 	state = log_init();
 	if (state != 0) {
-		/* if creating a logfile fails we have to terminate the program. The error message then has to go directly to the screen */
-		log_error("creating a logfile failed. Program is aborting...\n");
+		/*
+		 * if creating a logfile fails we have to terminate the program.
+		 * The error message then has to go directly to the screen
+		 */
+		printf(stderr, "creating a logfile failed. Program is aborting...\n");
 		stop_program(state);
 		return state;
+	}
+
+	/*
+	 * read config file and process cli arguments, which override
+	 * settings in the config file
+	 */
+	state = load_config("configurations//SO2Config.conf", &config);
+	if (state != 0) {
+		log_error("loading configuration failed");
+		stop_program(1);
+		return 1;
 	}
 
 	state = process_cli_arguments(argc, argv, &config);
@@ -90,11 +109,8 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialise parameter structures */
-	memset(&sParameters_A, 0, sizeof(sParameterStruct));
-	memset(&sParameters_B, 0, sizeof(sParameterStruct));
-
-	structInit(&sParameters_A, 'a');
-	structInit(&sParameters_B, 'b');
+	structInit(&sParameters_A, &config, 'a');
+	structInit(&sParameters_B, &config, 'b');
 
 	/* initialize IO */
 	state = io_init(&config);
@@ -121,18 +137,24 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
-	/* function for initialising basic values for sParameterStruct */
-	state = configurations(&sParameters_A);
-	state = configurations(&sParameters_B);
+	/* configure camera */
+	state = camera_config(&sParameters_A);
 	if (state != 0) {
-		log_error("configuration failed");
+		log_error("config camera A failed");
+		stop_program(1);
+		return 1;
+	}
+
+	state = camera_config(&sParameters_B);
+	if (state != 0) {
+		log_error("config camera B failed");
 		stop_program(1);
 		return 1;
 	}
 
 	/* set exposure */
-	setExposureTime(&sParameters_A);
-	setExposureTime(&sParameters_B);
+	setExposureTime(&sParameters_A, &config);
+	setExposureTime(&sParameters_B, &config);
 
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
 	state = startAquisition(&sParameters_A, &sParameters_B, &config);

@@ -64,26 +64,25 @@ int main(int argc, char *argv[])
 
 	parse_filename_to_timeStruct(infile, &time);
 
-	sSO2Parameters.dImageCounter = 0;
+	config.dImageCounter = 0;
 	sSO2Parameters.dTriggerPulseWidth = 15;
-	sSO2Parameters.dBufferlength = 1376256;
-	sSO2Parameters.dHistMinInterval = 350;
-	sSO2Parameters.dHistPercentage = 5;
-	sSO2Parameters.dInterFrameDelay = 10;
-	sSO2Parameters.fid = NULL;
+	config.dBufferlength = 1376256;
+	config.dHistMinInterval = 350;
+	config.dHistPercentage = 5;
+	config.dInterFrameDelay = 10;
 	sSO2Parameters.identifier = 'A';
 	sSO2Parameters.stBuffer = buffer;
 	sSO2Parameters.timestampBefore = &time;
-	sSO2Parameters.dFixTime = 0.000000;
+	config.dFixTime = 0.000000;
 
-	sprintf(sSO2Parameters.cFileNamePrefix, "%s", "image");
-	sprintf(sSO2Parameters.cImagePath, "%s", outfolder);
+	sprintf(config.cFileNamePrefix, "%s", "image");
+	sprintf(config.cImagePath, "%s", outfolder);
 
 	config.processing = rawdump;
 
 	io_init(&config);
 
-	status = io_write(&sSO2Parameters);
+	status = io_write(&sSO2Parameters, &config);
 	if(status == 0){
 		log_debug("Converted %s to %s", infile, outfolder);
 	} else {

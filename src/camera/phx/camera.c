@@ -362,8 +362,6 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 		if (PHX_OK == eStat) {
 			/* if starting the capture was successful reset error counter to zero */
 			startErrCount = 0;
-			/* Wait for a user defined period between each camera trigger call */
-			_PHX_SleepMs(sSO2Parameters->dInterFrameDelay);
 
 			/* Wait here until either:
 			 * (a) The user aborts the wait by pressing a key in the console window

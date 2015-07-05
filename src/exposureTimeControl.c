@@ -9,12 +9,12 @@
 #include "imageCreation.h"
 #include "log.h"
 
-int setExposureTime(sParameterStruct * sSO2Parameters)
+int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int status = 0;		/* status variable */
 	int timeSwitch = 0;	/* Integer switch to switch between exposure modi */
 
-	if (sSO2Parameters->dFixTime != 0) {
+	if (config->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file if so set it. */
 		log_message("Set program to use a fix exposure time.");
 		return camera_setExposure(sSO2Parameters);
@@ -26,7 +26,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
 		}
 
 		/* calculate histogram to test for over or under exposition */
-		evalHist(sSO2Parameters, &timeSwitch);
+		evalHist(sSO2Parameters, config, &timeSwitch);
 
 		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
 	}
@@ -49,12 +49,12 @@ int setExposureTime(sParameterStruct * sSO2Parameters)
  * this might be different on different compilers.
  * IF POSSIBLE CHANGE THIS TO SOMETHING LESS DIRTY
  */
-int evalHist(sParameterStruct * sSO2Parameters,
+int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 	     int *timeSwitch)
 {
-	int bufferlength = sSO2Parameters->dBufferlength;
-	int percentage = sSO2Parameters->dHistPercentage;
-	int intervalMin = sSO2Parameters->dHistMinInterval;
+	int bufferlength = config->dBufferlength;
+	int percentage = config->dHistPercentage;
+	int intervalMin = config->dHistMinInterval;
 	int histogram[4096] = { 0 };
 	int summe = 0;
 	int i;

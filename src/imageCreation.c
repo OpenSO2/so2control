@@ -61,7 +61,7 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 		/* Wait for a user defined period between each camera trigger call */
 		/* should be identical in both parameter structures */
-		sleepMs(sParameters_A->dInterFrameDelay);
+		sleepMs(config->dInterFrameDelay);
 
 		/* Wait here until either:
 		 * (a) The user aborts the wait by pressing a key in the console window
@@ -86,8 +86,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 		/* save the captured image */
 		/* FIXME: Check return values */
-		io_write(sParameters_A);
-		io_write(sParameters_B);
+		io_write(sParameters_A, config);
+		io_write(sParameters_B, config);
 
 		if (0 != status) {
 			log_error("Saving an image failed. This is not fatal");
@@ -103,8 +103,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		} else {
 			/* if saving was successful error counter is reset to zero */
 			/* image counter is set +1 */
-			sParameters_A->dImageCounter++;
-			sParameters_B->dImageCounter++;
+			config->dImageCounter++;
+			config->dImageCounter++;
 
 			saveErrCount = 0;
 		}

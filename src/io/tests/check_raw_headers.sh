@@ -16,5 +16,3 @@ $check_cmd "dInterFrameDelay 10" $file
 $check_cmd "dTriggerPulseWidth 15" $file
 $check_cmd "dExposureTime 0.000000" $file
 $check_cmd "dFixTime 0" $file
-$check_cmd "dfilesize " $file
-$check_cmd "dImagesFile " $file

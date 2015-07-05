@@ -28,14 +28,14 @@
 #include "make_png_header.c"
 
 /* local prototypes */
-int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype);
+int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, char * filetype);
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char * iso_date);
 int insertValue(char * png, char * name, float value, int png_length);
 int insertHeader(char * png, char * name, char * content, int png_length);
-int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length);
-int io_writeImage(sParameterStruct * sSO2Parameters);
-int io_writeDump(sParameterStruct * sSO2Parameters);
+int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
+int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
+int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 
 /* local variables */
 static int processing = 0;
@@ -60,7 +60,7 @@ int io_init(sConfigStruct * config)
  * `io_writeImage` or `io_writeDump`, depending on the value of processing
  * which was set in `io_init`.
  */
-int io_write(sParameterStruct * sSO2Parameters)
+int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	/*
 	 * processing:
@@ -76,7 +76,7 @@ int io_write(sParameterStruct * sSO2Parameters)
 	 */
 	int state = 0;
 	if(processing != 1){
-		state = io_writeImage(sSO2Parameters);
+		state = io_writeImage(sSO2Parameters, config);
 
 		if (state != 0) {
 			log_error("failed to write png");
@@ -84,7 +84,7 @@ int io_write(sParameterStruct * sSO2Parameters)
 		}
 	}
 	if(processing != 2){
-		state = io_writeDump(sSO2Parameters);
+		state = io_writeDump(sSO2Parameters, config);
 
 		if (state != 0) {
 			log_error("failed to write raw dump");
@@ -116,7 +116,7 @@ int io_uninit(sConfigStruct * config)
  */
 
 
-int io_writeDump(sParameterStruct * sSO2Parameters)
+int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	FILE * imageFile;
 	FILE * fp;
@@ -127,11 +127,11 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	char iso_date[25];
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, headerfile, "txt");
+	state = createFilename(sSO2Parameters, config, headerfile, "txt");
 	if(state){
 		log_error("could not create txt filename");
 	}
-	state = createFilename(sSO2Parameters, rawfile, "raw");
+	state = createFilename(sSO2Parameters, config, rawfile, "raw");
 	if(state){
 		log_error("could not create txt filename");
 	}
@@ -139,8 +139,9 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	/* Open a new file for the image (writeable, binary) */
 	imageFile = fopen(rawfile, "wb");
 	if(imageFile != NULL){
-		fwriteReturn = fwrite(sSO2Parameters->stBuffer, 1, sSO2Parameters->dBufferlength * 2, imageFile);
-		if(fwriteReturn != sSO2Parameters->dBufferlength * 2){
+		fwriteReturn = fwrite(sSO2Parameters->stBuffer, 1, config->dBufferlength * 2, imageFile);
+		if(fwriteReturn != config->dBufferlength * 2){
+			printf("could not write raw file %i\n", config->dBufferlength);
 			log_error("could not write raw file");
 		}
 		fclose(imageFile);
@@ -152,20 +153,18 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	fp = fopen(headerfile, "ab");
 	if (fp != NULL)
 	{
-		fprintf(fp, "dBufferlength %i\n", sSO2Parameters->dBufferlength);
-		fprintf(fp, "dHistMinInterval %i\n", sSO2Parameters->dHistMinInterval);
-		fprintf(fp, "dHistPercentage %i\n", sSO2Parameters->dHistPercentage);
+		fprintf(fp, "dBufferlength %i\n", config->dBufferlength);
+		fprintf(fp, "dHistMinInterval %i\n", config->dHistMinInterval);
+		fprintf(fp, "dHistPercentage %i\n", config->dHistPercentage);
 		fprintf(fp, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
-		fprintf(fp, "dImageCounter %i\n", (int)sSO2Parameters->dImageCounter);
-		fprintf(fp, "dInterFrameDelay %i\n", (int)sSO2Parameters->dInterFrameDelay);
+		fprintf(fp, "dImageCounter %i\n", (int)config->dImageCounter);
+		fprintf(fp, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
 		fprintf(fp, "dTriggerPulseWidth %i\n", (int)sSO2Parameters->dTriggerPulseWidth);
-		fprintf(fp, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
-		fprintf(fp, "cConfigFileName %s\n", sSO2Parameters->cConfigFileName);
-		fprintf(fp, "cFileNamePrefix %s\n", sSO2Parameters->cFileNamePrefix);
-		fprintf(fp, "cImagePath %s\n", sSO2Parameters->cImagePath);
-		fprintf(fp, "dFixTime %i\n", sSO2Parameters->dFixTime);
-		fprintf(fp, "dfilesize %i\n", sSO2Parameters->dfilesize);
-		fprintf(fp, "dImagesFile %i\n", sSO2Parameters->dImagesFile);
+		fprintf(fp, "dExposureTime %f\n", config->dExposureTime);
+		fprintf(fp, "cConfigFileName %s\n", config->cConfigFileName);
+		fprintf(fp, "cFileNamePrefix %s\n", config->cFileNamePrefix);
+		fprintf(fp, "cImagePath %s\n", config->cImagePath);
+		fprintf(fp, "dFixTime %i\n", config->dFixTime);
 		dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 		fprintf(fp, "timestampBefore %s\n", iso_date);
 
@@ -179,7 +178,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-int io_writeImage(sParameterStruct * sSO2Parameters){
+int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	FILE * fp;
 	short * stBuffer;
 	IplImage *img;
@@ -193,7 +192,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, filename, "png");
+	state = createFilename(sSO2Parameters, config, filename, "png");
 	if(state){
 		log_error("could not create txt filename");
 		return state;
@@ -218,7 +217,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	cvReleaseMat(&png);
 
 	/* add headers */
-	l = insertHeaders(buffer, sSO2Parameters, l);
+	l = insertHeaders(buffer, sSO2Parameters, config, l);
 
 	/* save image to disk*/
 	fp = fopen(filename, "wb");
@@ -243,21 +242,19 @@ int io_writeImage(sParameterStruct * sSO2Parameters){
 	return state;
 }
 
-int insertHeaders(char * png, sParameterStruct * sSO2Parameters, int png_length){
+int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length){
 	char iso_date[25];
 	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
-	png_length = insertValue(png, "dBufferlength",      (float)sSO2Parameters->dBufferlength,      png_length);
-	png_length = insertValue(png, "dHistMinInterval",   (float)sSO2Parameters->dHistMinInterval,   png_length);
-	png_length = insertValue(png, "dHistPercentage",    (float)sSO2Parameters->dHistPercentage,    png_length);
+	png_length = insertValue(png, "dBufferlength",      (float)config->dBufferlength,      png_length);
+	png_length = insertValue(png, "dHistMinInterval",   (float)config->dHistMinInterval,   png_length);
+	png_length = insertValue(png, "dHistPercentage",    (float)config->dHistPercentage,    png_length);
 	png_length = insertValue(png, "dDarkCurrent",       (float)sSO2Parameters->dDarkCurrent,       png_length);
-	png_length = insertValue(png, "dImageCounter",      (float)sSO2Parameters->dImageCounter,      png_length);
-	png_length = insertValue(png, "dInterFrameDelay",   (float)sSO2Parameters->dInterFrameDelay,   png_length);
+	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
+	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
 	png_length = insertValue(png, "dTriggerPulseWidth", (float)sSO2Parameters->dTriggerPulseWidth, png_length);
-	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
-	png_length = insertValue(png, "dFixTime",           (float)sSO2Parameters->dFixTime,           png_length);
-	png_length = insertValue(png, "dfilesize",          (float)sSO2Parameters->dfilesize,          png_length);
-	png_length = insertValue(png, "dImagesFile",        (float)sSO2Parameters->dImagesFile,        png_length);
+	png_length = insertValue(png, "dExposureTime",      (float)config->dExposureTime,      png_length);
+	png_length = insertValue(png, "dFixTime",           (float)config->dFixTime,           png_length);
 
 	return png_length;
 }
@@ -364,11 +361,11 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filetype)
+int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, char * filetype)
 {
 	int state;
 	char id = sSO2Parameters->identifier;
-	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+	timeStruct * time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify Camera for filename Prefix */
 	char * camname = id == 'a' ? "top" : "bot";
@@ -376,7 +373,7 @@ int createFilename(sParameterStruct *sSO2Parameters, char *filename, char *filet
 	/* write header string with information from system time for camera B. */
 	state = sprintf(filename,
 		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
-		sSO2Parameters->cImagePath, sSO2Parameters->cFileNamePrefix,
+		config->cImagePath, config->cFileNamePrefix,
 		time->year, time->mon, time->day, time->hour, time->min,
 		time->sec, time->milli, camname, filetype);
 

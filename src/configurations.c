@@ -11,22 +11,20 @@
 
 #define MAXBUF 1024
 
-int structInit(sParameterStruct * sSO2Parameters, char identifier)
+/* local prototypes*/
+int readConfig(char *filename, sConfigStruct * config);
+
+int structInit(sParameterStruct * sSO2Parameters, sConfigStruct * config, char identifier)
 {
-	sSO2Parameters->dImageCounter = 0;
-	sSO2Parameters->dTriggerPulseWidth = 15;
-	sSO2Parameters->dBufferlength = 1376256;
-	sSO2Parameters->dHistMinInterval = 350;
-	sSO2Parameters->dHistPercentage = 5;
-	sSO2Parameters->dInterFrameDelay = 10;
-	sSO2Parameters->fid = NULL;
+	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
 
 	return 0;
 }
 
-int process_cli_arguments(int argc, char * argv[], sConfigStruct * config) {
+int process_cli_arguments(int argc, char * argv[], sConfigStruct * config)
+{
 	int i;
 	char errstr[512];
 
@@ -46,14 +44,12 @@ int process_cli_arguments(int argc, char * argv[], sConfigStruct * config) {
 	return 0;
 }
 
-int readConfig(char *filename, sParameterStruct * sSO2Parameters)
+int readConfig(char *filename, sConfigStruct * config)
 {
 	FILE *pFILE;		/* filehandle for config file */
 	char *lineBuf;		/* buffer that holds the current line of the config file */
 	char *delimeterBuf;	/* buffer that holds the line after a specified delimeter */
 	int linenumber = 1;
-	double sizeOfImage = 2.7;
-	int dTmp;
 	char cTmp[MAXBUF];	/* a temporal buffer used when strings are read from the config file */
 	char errbuff[MAXBUF];	/* a buffer to construct a proper error message */
 
@@ -61,112 +57,79 @@ int readConfig(char *filename, sParameterStruct * sSO2Parameters)
 
 	pFILE = fopen(filename, "r");
 
-	if (pFILE != NULL) {
-		while (fgets(lineBuf, MAXBUF, pFILE) != NULL) {
-			/* skip lines which are marked as a commend */
-			if (lineBuf[0] != '#') {
-				/* search for corresponding strings */
-				if (strstr(lineBuf, "HistogramMinInterval")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dHistMinInterval =
-					    atoi(delimeterBuf + 1);
-				}
-
-				else if (strstr(lineBuf, "HistogramPercentage")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dHistPercentage =
-					    atoi(delimeterBuf + 1);
-				}
-
-				else if (strstr(lineBuf, "InterFrameDelay")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dInterFrameDelay =
-					    atoi(delimeterBuf + 1);
-				}
-
-				else if (strstr(lineBuf, "TriggerPulseWidth")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dTriggerPulseWidth =
-					    atoi(delimeterBuf + 1);
-				}
-
-				else if (strstr(lineBuf, "FixTime")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dFixTime =
-					    atoi(delimeterBuf + 1);
-				}
-
-				else if (strstr(lineBuf, "ImageSize")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					dTmp = atoi(delimeterBuf + 1);
-					sSO2Parameters->dfilesize = dTmp;
-					sSO2Parameters->dImagesFile =
-					    (int)(dTmp / sizeOfImage);
-				}
-
-				else if (strstr(lineBuf, "ExposureTime")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					sSO2Parameters->dExposureTime =
-					    atoi(delimeterBuf + 1);
-				} else if (strstr(lineBuf, "FileNamePrefix")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					if (delimeterBuf[1] == ' ')
-						sprintf(cTmp, "%s",
-							delimeterBuf + 2);
-					else
-						sprintf(cTmp, "%s",
-							delimeterBuf + 1);
-
-					/* remove LF */
-					sprintf(sSO2Parameters->cFileNamePrefix,
-						"%s", strtok(cTmp, "\n"));
-				} else if (strstr(lineBuf, "ImagePath")) {
-					delimeterBuf = strstr(lineBuf, "=");
-					if (delimeterBuf[1] == ' ')
-						sprintf(cTmp, "%s",
-							delimeterBuf + 2);
-					else
-						sprintf(cTmp, "%s",
-							delimeterBuf + 1);
-
-					/* remove LF */
-					sprintf(sSO2Parameters->cImagePath,
-						"%s", strtok(cTmp, "\n"));
-				}
-			} /* end if(lineBuf[0] != '#') */
-			linenumber++;
-		} /* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
-		fclose(pFILE);
-
-		/* not an error but errbuff is used anyway */
-		sprintf(errbuff,
-			"Reading config file was successfull %d lines were read",
-			linenumber);
-		log_message(errbuff);
-	} else {
+	if (pFILE == NULL) {
 		sprintf(errbuff, "opening Configfile: %s failed!", filename);
 		log_error(errbuff);
 		return 1;
 	}
 
+	while (fgets(lineBuf, MAXBUF, pFILE) != NULL) {
+		/* skip lines which are marked as a commend */
+		if (lineBuf[0] != '#') {
+			delimeterBuf = strstr(lineBuf, "=");
+
+			/* search for corresponding strings */
+			if (strstr(lineBuf, "HistogramMinInterval")) {
+				config->dHistMinInterval = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "HistogramPercentage")) {
+				config->dHistPercentage = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "InterFrameDelay")) {
+				config->dInterFrameDelay = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "TriggerPulseWidth")) {
+				config->dTriggerPulseWidth = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "FixTime")) {
+				config->dFixTime = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "ExposureTime")) {
+				config->dExposureTime = atoi(delimeterBuf + 1);
+			}
+
+			else if (strstr(lineBuf, "FileNamePrefix")) {
+				if (delimeterBuf[1] == ' ')
+					sprintf(cTmp, "%s", delimeterBuf + 2);
+				else
+					sprintf(cTmp, "%s", delimeterBuf + 1);
+
+				/* remove LF */
+				sprintf(config->cFileNamePrefix,
+					"%s", strtok(cTmp, "\n"));
+			}
+
+			else if (strstr(lineBuf, "ImagePath")) {
+				if (delimeterBuf[1] == ' ')
+					sprintf(cTmp, "%s", delimeterBuf + 2);
+				else
+					sprintf(cTmp, "%s", delimeterBuf + 1);
+
+				/* remove LF */
+				sprintf(config->cImagePath,
+					"%s", strtok(cTmp, "\n"));
+			}
+		} /* end if(lineBuf[0] != '#') */
+		linenumber++;
+	} /* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
+	fclose(pFILE);
+
+	/* not an error but errbuff is used anyway */
+	sprintf(errbuff,
+		"Reading config file was successfull %d lines were read",
+		linenumber);
+	log_message(errbuff);
+
 	return 0;
 }
 
-
-int configurations(sParameterStruct * sSO2Parameters)
+int load_config(char * filename, sConfigStruct * config)
 {
-	int status = 0;		/* status variable for return values */
-
-	/* name of Configfile is hard coded maybe change this sometime */
-	status = readConfig("configurations//SO2Config.conf", sSO2Parameters);
-	if (status != 0)
-		log_error("readConfig(...) failed");
-
-	/* load the default configurations for the framegrabber */
-	status = camera_config(sSO2Parameters);
-	if (status != 0) {
-		log_error("configuring camera failed");
-		return status;
-	}
-	return status;
+	return readConfig(filename, config);
 }
+
