@@ -1,32 +1,12 @@
-shallow_clone: false
-clone_depth: 1
-clone_folder: c:\dev\so2-camera
-# to add several platforms to build matrix:
-platform:
-  - x64
 install:
-  - cmd: choco install -y OpenCV
-  - cmd: curl -L http://prdownloads.sourceforge.net/png-mng/pngcheck-2.3.0-win32.zip -o pngcheck.zip
-  - cmd: unzip pngcheck.zip
-  - cmd: SET PATH=%CD%;%PATH%
-before_build:
-  - cmd: SET ARCH=x64
-  - cmd: SET APP_PATH=%CD%
-  - cmd: IF EXIST C:\OpenCV* CD C:\OpenCV*
-  - cmd: SET OPENCV_ROOT_PATH=%CD%\opencv
-  - cmd: SETX OPENCV_ROOT_PATH %OPENCV_ROOT_PATH%
-  - cmd: CD %APP_PATH%
-  - cmd: SET OPENCV_DIR=%OPENCV_ROOT_PATH%\build\%ARCH%\vc12\bin
-  - cmd: SETX OPENCV_DIR %OPENCV_DIR%
-  - cmd: SET PATH=%OPENCV_DIR%;%PATH%
+  - cinst OpenCV
+  - set PATH=%PATH%;c:\OpenCV249\opencv\build\x86\vc11\bin
+  - curl -L http://prdownloads.sourceforge.net/png-mng/pngcheck-2.3.0-win32.zip -o pngcheck.zip
+  - unzip pngcheck.zip
+  - copy pngcheck.exe src\io
+os: unstable
 build_script:
-  - cd c:\dev\so2-camera
-  - git submodule update --init --recursive
-  - set
-  - cmake -DMOCK_LOG=ON -Dmock=camera .
-  - dir
-  - msbuild ALL_BUILD.vcxproj /p:Configuration=Debug /p:Platform="Any CPU"
-  - dir
-  - dir Debug
-  - tree
-  - ctest -VV -C "Debug" || type Testing\Temporary\*
+  - git submodule update --init
+  - cmake -DCMAKE_BUILD_TYPE=Release -Dmock=camera -DMOCK_LOG=ON -DOpenCV_DIR=c:\OpenCV249\opencv\build .
+  - cmake --build . --config Release
+  - ctest --output-on-failure

@@ -1,7 +1,10 @@
-Debug/
+Debug
 *.ncb
 *.opt
 *.plgMakefile
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
+CTestTestfile.cmake
+Testing
+Makefile

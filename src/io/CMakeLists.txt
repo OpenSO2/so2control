@@ -63,13 +63,8 @@ add_executable(io-cli io-cli.c)
 target_link_libraries( io-cli io )
 
 # dependencies
-if( DEFINED $ENV{OPENCV_ROOT_PATH} )
-	set (OpenCV_DIR "$ENV{OPENCV_ROOT_PATH}/build")
-	message( "setting OpenCV_DIR to $ENV{OPENCV_ROOT_PATH}/build" )
-else()
-	set (OpenCV_DIR "C:/OpenCV249/opencv/build")
-	message( "OPENCV_ROOT_PATH not set, setting OpenCV_DIR to C:/OpenCV249/opencv/build" )
-endif()
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake)
+
 
 find_package( OpenCV REQUIRED )
 if ( OpenCV_FOUND )
@@ -89,7 +84,7 @@ target_link_libraries( io-cli log )
 enable_testing()
 
 # does the application run
-add_test (IO_runs io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./)
+add_test (IO_runs io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 # does the produce png conform to png specs
 add_test (IO_valid_png pngcheck ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_43_55_984_cam_bot.png)
@@ -98,20 +93,20 @@ add_test (IO_valid_png pngcheck ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_
 if( ${UNIX} )
 	find_program (BASH_PROGRAM bash)
 	if (BASH_PROGRAM)
-		add_test (IO_check_png_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.sh image_2014_09_22-23_43_55_984_cam_bot.png)
+		add_test (IO_check_png_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.sh ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_43_55_984_cam_bot.png)
 	endif (BASH_PROGRAM)
 else( )
 	add_test (IO_check_png_headers ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.bat image_2014_09_22-23_43_55_984_cam_bot.png)
 endif()
 
 # can raw dumps be made
-add_test (IO_runs_raw ./io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./ raw)
+add_test (IO_runs_raw ./io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ${CMAKE_CURRENT_SOURCE_DIR}/ raw)
 
 # do raw dumps contain all header data
 if( ${UNIX} )
 	if (BASH_PROGRAM)
-		add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh image_2014_09_22-23_43_55_984_cam_bot.txt)
+		add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_43_55_984_cam_bot.txt)
 	endif (BASH_PROGRAM)
 else( )
-	add_test (IO_check_raw_headers ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.bat image_2014_09_22-23_43_55_984_cam_bot.txt)
+	add_test (IO_check_raw_headers ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.bat ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_43_55_984_cam_bot.txt)
 endif()

@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 3 || argc > 4) {
 		printf("Usage: %s in.raw outfolder [write_raw_dump]\n", argv[0]);
+		printf("i.e. %s tests/fixtures/testing_2014_09_22-23_43_55_984_cam_top.raw ./ 1\n", argv[0]);
 		return 1;
 	}
 

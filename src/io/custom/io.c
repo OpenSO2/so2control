@@ -28,7 +28,7 @@
 #include "make_png_header.c"
 
 /* local prototypes */
-int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, char * filetype);
+int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype);
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char * iso_date);
 int insertValue(char * png, char * name, float value, int png_length);
@@ -37,9 +37,6 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct *
 int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 
-/* local variables */
-static int processing = 0;
-
 /*
  * `io_init`
  * Initialize the IO functionality. Currently, this does nothing, but this could be the place to
@@ -47,10 +44,7 @@ static int processing = 0;
  */
 int io_init(sConfigStruct * config)
 {
-	if(config->processing){
-		processing = config->processing;
-	}
-	log_message("io_init");
+	log_debug("io_init %i", config->processing);
 	return 0;
 }
 
@@ -75,7 +69,7 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	 *  !1 %% !2 = 3
 	 */
 	int state = 0;
-	if(processing != 1){
+	if(config->processing != 1){
 		state = io_writeImage(sSO2Parameters, config);
 
 		if (state != 0) {
@@ -83,7 +77,7 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 			return state;
 		}
 	}
-	if(processing != 2){
+	if(config->processing != 2){
 		state = io_writeDump(sSO2Parameters, config);
 
 		if (state != 0) {
@@ -120,18 +114,21 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	FILE * imageFile;
 	FILE * fp;
-	char headerfile[100];
-	char rawfile[100];
+	char headerfile[512];
+	int headerfilelength = 512;
+	char rawfile[512];
+	int rawfilelength = 512;
 	int fwriteReturn;
 	int state = 0;
 	char iso_date[25];
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, config, headerfile, "txt");
+	state = createFilename(sSO2Parameters, config, headerfile, headerfilelength, "txt");
 	if(state){
 		log_error("could not create txt filename");
 	}
-	state = createFilename(sSO2Parameters, config, rawfile, "raw");
+
+	state = createFilename(sSO2Parameters, config, rawfile, rawfilelength, "raw");
 	if(state){
 		log_error("could not create txt filename");
 	}
@@ -185,14 +182,15 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	CvMat *png;
 	int l;
 	int writen_bytes;
-	char filename[100];
+	char filename[512];
+	int filenamelength = 512;
 	int state;
 	char * buffer;
 
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, config, filename, "png");
+	state = createFilename(sSO2Parameters, config, filename, filenamelength, "png");
 	if(state){
 		log_error("could not create txt filename");
 		return state;
@@ -361,7 +359,7 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, char * filetype)
+int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype)
 {
 	int state;
 	char id = sSO2Parameters->identifier;
@@ -370,12 +368,16 @@ int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, ch
 	/* identify Camera for filename Prefix */
 	char * camname = id == 'a' ? "top" : "bot";
 
-	/* write header string with information from system time for camera B. */
 	state = sprintf(filename,
 		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
 		config->cImagePath, config->cFileNamePrefix,
 		time->year, time->mon, time->day, time->hour, time->min,
 		time->sec, time->milli, camname, filetype);
+
+	if(state > filenamelength){
+		log_error("The filename I was ask to generate is longer then allowed.");
+		log_debug("Filename length is %i", state);
+	}
 
 	return state > 0 ? 0 : 1;
 }
