@@ -29,4 +29,4 @@ build_script:
   - dir
   - dir Debug
   - tree
-  - ctest -VV -C "Debug"
+  - ctest -VV -C "Debug" || type Testing\Temporary\*
