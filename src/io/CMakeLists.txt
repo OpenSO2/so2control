@@ -64,11 +64,11 @@ target_link_libraries( io-cli io )
 
 # dependencies
 if( DEFINED $ENV{OPENCV_ROOT_PATH} )
-	set (OpenCV_DIR "C:/OpenCV249/opencv/build")
-	message( "OPENCV_ROOT_PATH not set, setting OpenCV_DIR to C:/OpenCV249/opencv/build" )
-else()
 	set (OpenCV_DIR "$ENV{OPENCV_ROOT_PATH}/build")
 	message( "setting OpenCV_DIR to $ENV{OPENCV_ROOT_PATH}/build" )
+else()
+	set (OpenCV_DIR "C:/OpenCV249/opencv/build")
+	message( "OPENCV_ROOT_PATH not set, setting OpenCV_DIR to C:/OpenCV249/opencv/build" )
 endif()
 
 find_package( OpenCV REQUIRED )
@@ -89,12 +89,10 @@ target_link_libraries( io-cli log )
 enable_testing()
 
 # does the application run
-add_test (IO_runs io-cli tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./)
+add_test (IO_runs io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./)
 
 # does the produce png conform to png specs
-if( ${UNIX} )
-	add_test (IO_valid_png pngcheck image_2014_09_22-23_43_55_984_cam_bot.png)
-endif()
+add_test (IO_valid_png pngcheck ${CMAKE_CURRENT_SOURCE_DIR}/image_2014_09_22-23_43_55_984_cam_bot.png)
 
 # does the produce png contain all the headers
 if( ${UNIX} )
@@ -102,14 +100,18 @@ if( ${UNIX} )
 	if (BASH_PROGRAM)
 		add_test (IO_check_png_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.sh image_2014_09_22-23_43_55_984_cam_bot.png)
 	endif (BASH_PROGRAM)
+else( )
+	add_test (IO_check_png_headers ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_png_headers.bat image_2014_09_22-23_43_55_984_cam_bot.png)
 endif()
 
 # can raw dumps be made
-add_test (IO_runs_raw ./io-cli tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./ raw)
+add_test (IO_runs_raw ./io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ./ raw)
 
 # do raw dumps contain all header data
 if( ${UNIX} )
-if (BASH_PROGRAM)
-	add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh image_2014_09_22-23_43_55_984_cam_bot.txt)
-endif (BASH_PROGRAM)
+	if (BASH_PROGRAM)
+		add_test (IO_check_raw_headers ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.sh image_2014_09_22-23_43_55_984_cam_bot.txt)
+	endif (BASH_PROGRAM)
+else( )
+	add_test (IO_check_raw_headers ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_raw_headers.bat image_2014_09_22-23_43_55_984_cam_bot.txt)
 endif()

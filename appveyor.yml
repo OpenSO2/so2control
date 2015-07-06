@@ -6,6 +6,9 @@ platform:
   - x64
 install:
   - cmd: choco install -y OpenCV
+  - cmd: curl -L http://prdownloads.sourceforge.net/png-mng/pngcheck-2.3.0-win32.zip -o pngcheck.zip
+  - cmd: unzip pngcheck.zip
+  - cmd: SET PATH=%CD%;%PATH%
 before_build:
   - cmd: SET ARCH=x64
   - cmd: SET APP_PATH=%CD%
@@ -27,4 +30,3 @@ build_script:
   - dir Debug
   - tree
   - ctest -VV -C "Debug"
-  - cmake -DMOCK_LOG=ON -Dmock=camera --build . --target RUN_TESTS --config debug
