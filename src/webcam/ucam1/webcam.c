@@ -62,7 +62,7 @@ int isSYNC( char msg[6] ){
 }
 
 /**
- *
+ * sends a single message to the camera
  */
 int send(char * message, int messageLength){
 	int n = write(fd, message, messageLength);
@@ -70,7 +70,7 @@ int send(char * message, int messageLength){
 }
 
 /**
- *
+ * read data from the camera
  */
 int receive(char *buffer, int buffer_size)
 {
@@ -158,6 +158,8 @@ int webcam_init()
 
 		send(ack, 6);
 	}
+
+	usleep(1000*15);
 
 	// setup             AA    05    01    00    00    00
 	//~ char ini[6] = {0xAA, 0x05, 0x01, 0x00, 0x00, 0x00};
@@ -259,9 +261,7 @@ int request(){
 /**
  *
  */
-int waitForData(){
-	#define PACKAGE_SIZE 512
-	char data[PACKAGE_SIZE];
+int waitForData(data, data_size){
 
 	printf("waitForData\n");
 
@@ -280,7 +280,7 @@ int waitForData(){
 
 }
 
-int webcam_get(){
+int webcam_get(data, data_size){
 	printf("get\n");
 	usleep(1000*2000);
 
@@ -288,14 +288,8 @@ int webcam_get(){
 
 	usleep(1000*3000);
 
-	waitForData();
-
+	waitForData(data, data_size);
 }
 
-void main(void){
-        webcam_init();
-        webcam_get();
-        webcam_uninit();
-}
 
 
