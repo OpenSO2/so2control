@@ -71,7 +71,6 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	int state = 0;
 	if(config->processing != 1){
 		state = io_writeImage(sSO2Parameters, config);
-
 		if (state != 0) {
 			log_error("failed to write png");
 			return state;
@@ -85,7 +84,6 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 			return state;
 		}
 	}
-
 	return 0;
 }
 
@@ -138,7 +136,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	if(imageFile != NULL){
 		fwriteReturn = fwrite(sSO2Parameters->stBuffer, 1, config->dBufferlength * 2, imageFile);
 		if(fwriteReturn != config->dBufferlength * 2){
-			printf("could not write raw file %i\n", config->dBufferlength);
+			log_debug("could not write raw file %i != %i", config->dBufferlength, fwriteReturn);
 			log_error("could not write raw file");
 		}
 		fclose(imageFile);
@@ -157,7 +155,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		fprintf(fp, "dImageCounter %i\n", (int)config->dImageCounter);
 		fprintf(fp, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
 		fprintf(fp, "dTriggerPulseWidth %i\n", (int)sSO2Parameters->dTriggerPulseWidth);
-		fprintf(fp, "dExposureTime %f\n", config->dExposureTime);
+		fprintf(fp, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
 		fprintf(fp, "cConfigFileName %s\n", config->cConfigFileName);
 		fprintf(fp, "cFileNamePrefix %s\n", config->cFileNamePrefix);
 		fprintf(fp, "cImagePath %s\n", config->cImagePath);
@@ -195,6 +193,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 		log_error("could not create txt filename");
 		return state;
 	}
+	log_debug("filename created: %s", filename);
 
 	/* convert the image buffer to an openCV image */
 	// TODO: check if this has already been done
@@ -206,6 +205,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	 * playing with the compression is a huge waste of time with no benefit
 	 */
 	png = cvEncodeImage(".png", img, 0);
+
 	l = png->rows * png->cols;
 	cvReleaseImage(&img);
 
@@ -251,7 +251,7 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct *
 	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
 	png_length = insertValue(png, "dTriggerPulseWidth", (float)sSO2Parameters->dTriggerPulseWidth, png_length);
-	png_length = insertValue(png, "dExposureTime",      (float)config->dExposureTime,      png_length);
+	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
 	png_length = insertValue(png, "dFixTime",           (float)config->dFixTime,           png_length);
 
 	return png_length;

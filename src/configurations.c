@@ -16,6 +16,7 @@ int readConfig(char *filename, sConfigStruct * config);
 
 int structInit(sParameterStruct * sSO2Parameters, sConfigStruct * config, char identifier)
 {
+	sSO2Parameters->dExposureTime = config->dExposureTime;
 	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));

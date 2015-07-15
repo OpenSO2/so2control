@@ -96,6 +96,9 @@ typedef struct {
 	/* length of the triggerpulse in [ms] */
 	ui32 dTriggerPulseWidth;
 
+	/* contains the Exposuretime in [ms] */
+	double dExposureTime;
+
 	/* Pointer to image buffer */
 	short * stBuffer;
 
