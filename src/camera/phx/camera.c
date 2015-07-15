@@ -31,6 +31,8 @@ void PHXcallbackFunction(tHandle hCamera,	/* Camera handle. */
 	if (PHX_INTRPT_BUFFER_READY & dwInterruptMask) {
 		callbackFunction(sSO2Parameters);
 	}
+
+	log_debug("Internal phx callback called, cam %c. dwInterruptMask: %i", sSO2Parameters->identifier, dwInterruptMask);
 }
 
 int camera_init(sParameterStruct * sSO2Parameters)
@@ -78,12 +80,14 @@ int camera_init(sParameterStruct * sSO2Parameters)
 
 int camera_abort(sParameterStruct * sSO2Parameters)
 {
+	log_debug("camera_abort");
 	tHandle hCamera = sSO2Parameters->hCamera;
 	return PHX_Acquire(hCamera, PHX_ABORT, NULL);
 }
 
 int camera_uninit(sParameterStruct * sSO2Parameters)
 {
+	log_debug("camera_uninit");
 	tHandle hCamera = sSO2Parameters->hCamera;
 	return PHX_CameraRelease(&hCamera);
 }
@@ -91,11 +95,14 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 int camera_get(sParameterStruct * sSO2Parameters)
 {
 	int status;
+	tHandle hCamera = sSO2Parameters->hCamera;
 	stImageBuff buffythevampireslayer;
 
+	log_debug("get image from phx cam %c", sSO2Parameters->identifier);
+
 	status =
-	    PHX_Acquire(sSO2Parameters->hCamera, PHX_BUFFER_GET,
-			&buffythevampireslayer);
+	    PHX_Acquire(hCamera, PHX_BUFFER_GET, &buffythevampireslayer);
+
 	sSO2Parameters->stBuffer = buffythevampireslayer.pvAddress;
 
 	return status;
@@ -104,6 +111,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 int camera_trigger(sParameterStruct * sSO2Parameters,
 		   void (*callbackFunction) (sParameterStruct * sSO2Parameters))
 {
+	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
 	tHandle hCamera = sSO2Parameters->hCamera;
 	return PHX_Acquire(hCamera, PHX_START, (void *)PHXcallbackFunction);
 }
