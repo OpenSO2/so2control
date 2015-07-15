@@ -13,20 +13,15 @@
 #endif
 
 #ifndef PHX
-typedef unsigned long ui32;
-typedef unsigned long mu32;
-typedef mu32 tHandle;
-typedef ui32 tFlag;
+	typedef unsigned long ui32;
+	typedef unsigned long mu32;
+	typedef mu32 tHandle;
+	typedef ui32 tFlag;
+#endif
 
 /******************************
  *   Structures
  ******************************/
-typedef struct {
-	void *pvAddress;
-	void *pvContext;
-} stImageBuff;
-#endif
-
 typedef struct {
 	int milli;		/* milliseconds after second */
 	int sec;		/* seconds after the minute */
