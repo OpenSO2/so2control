@@ -6,14 +6,15 @@ IplImage * bufferToImage(short *buffer)
 {
 	IplImage * img;
 	int BUFFERSIZE = 1344 * 1024 * 16 / 8;
-
 	// create new image to hold the loaded data
 	CvSize mSize;
 	mSize.height = 1024;
 	mSize.width = 1344;
+
 	img = cvCreateImage(mSize, IPL_DEPTH_16U, 1);
+
 	memcpy(img->imageData, buffer, BUFFERSIZE);
-	free(buffer);
+
 	if (!img) {
 		printf("%s", "failed to decode image\n");
 		return img;
