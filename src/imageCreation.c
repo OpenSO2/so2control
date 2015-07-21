@@ -47,11 +47,15 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	int startErrCount = 0; /* counting how often the start of capture process failed */
 	int status = 0;        /* status variable */
 
-	/* get current time with milliseconds precision */
+	/* get current time with milliseconds precision
+	 * TODO: handle return codes
+	 */
 	getTime(sParameters_A->timestampBefore);
 	getTime(sParameters_B->timestampBefore);
 
-	/* Now start our capture, return control immediately back to program */
+	/* Now start our capture, return control immediately back to program
+	 * TODO: handle return codes
+	 */
 	status = camera_trigger(sParameters_A, (void *)&callbackFunction);
 	status = camera_trigger(sParameters_B, (void *)&callbackFunction);
 
@@ -60,7 +64,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		startErrCount = 0;
 
 		/* Wait for a user defined period between each camera trigger call */
-		/* should be identical in both parameter structures */
 		sleepMs(config->dInterFrameDelay);
 
 		/* Wait here until either:

@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return state;
 	}
+	log_debug("camera A initialized");
 
 	state = camera_init(&sParameters_B);
 	if (state != 0) {
@@ -136,6 +137,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return state;
 	}
+	log_debug("camera B initialized");
 
 	/* configure camera */
 	state = camera_config(&sParameters_A);
@@ -144,6 +146,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
+	log_debug("camera A configured");
 
 	state = camera_config(&sParameters_B);
 	if (state != 0) {
@@ -151,10 +154,16 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
+	log_debug("camera B configured");
 
-	/* set exposure */
+	/* set exposure
+	 * TODO: handle return codes
+	 */
 	setExposureTime(&sParameters_A, &config);
+	log_debug("exposure time for cam A set");
+
 	setExposureTime(&sParameters_B, &config);
+	log_debug("exposure time for cam B set");
 
 	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
 	state = startAquisition(&sParameters_A, &sParameters_B, &config);

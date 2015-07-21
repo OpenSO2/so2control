@@ -9,6 +9,15 @@
 #include "imageCreation.h"
 #include "log.h"
 
+void cb(sParameterStruct * sSO2Parameters)
+{
+	sSO2Parameters->fBufferReady = TRUE;
+
+	/* Increment the Display Buffer Ready Count */
+	sSO2Parameters->dBufferReadyCount++;
+}
+
+
 int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int status = 0;		/* status variable */
@@ -20,10 +29,22 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		return camera_setExposure(sSO2Parameters);
 	} else {
 		/* Acquire first buffer to decide between FBL or SHT */
+		camera_trigger(sSO2Parameters, cb);
+
+		/* wait for camera aquisition */
+		while(!sSO2Parameters->fBufferReady)
+			sleepMs(10);
+
+		sSO2Parameters->fBufferReady = FALSE;
+
 		status = camera_get(sSO2Parameters);
 		if (status != 0) {
+			log_error("could not get buffer for exposure control");
 			return status;
 		}
+
+		/* clean up*/
+		camera_abort(sSO2Parameters);
 
 		/* calculate histogram to test for over or under exposition */
 		evalHist(sSO2Parameters, config, &timeSwitch);
