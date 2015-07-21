@@ -31,9 +31,9 @@
 int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype);
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char * iso_date);
-int insertValue(char * png, char * name, float value, int png_length);
-int insertHeader(char * png, char * name, char * content, int png_length);
-int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
+int insertValue(char ** png, char * name, float value, int png_length);
+int insertHeader(char ** png, char * name, char * content, int png_length);
+int insertHeaders(char ** png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
 int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 
@@ -215,9 +215,11 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	cvReleaseMat(&png);
 
 	/* add headers */
-	l = insertHeaders(buffer, sSO2Parameters, config, l);
+	log_debug("insert headers %i", l);
+	l = insertHeaders(&buffer, sSO2Parameters, config, l);
 
 	/* save image to disk*/
+	log_debug("open new png file %i", l);
 	fp = fopen(filename, "wb");
 	if (fp) {
 		writen_bytes = fwrite(buffer, 1, l, fp);
@@ -240,7 +242,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	return state;
 }
 
-int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length){
+int insertHeaders(char ** png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length){
 	char iso_date[25];
 	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
@@ -257,13 +259,13 @@ int insertHeaders(char * png, sParameterStruct * sSO2Parameters, sConfigStruct *
 	return png_length;
 }
 
-int insertValue(char * png, char * name, float value, int png_length){
+int insertValue(char ** png, char * name, float value, int png_length){
 	char text[200];
 	sprintf(text, "%s: %f", name, value);
 	return insertHeader(png, "Comment ", text , png_length);
 }
 
-int insertHeader(char * png, char * name, char * content, int png_length){
+int insertHeader(char ** png, char * name, char * content, int png_length){
 	int head[200];
 	char text[180]; // can be of arbitrary length
 	int png_length_padded;
@@ -276,6 +278,7 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	strcat(text, content);
 
 	l = strlen(text);
+	log_debug("strlen of new header %i", l);
 
 	/*
 	 * the header length is the header content length, plus 12 bytes
@@ -297,18 +300,21 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	/* the new PNG length is the old one, plus the header*/
 	png_length_padded = png_length + header_length;
 
+	log_debug("trying to realloc %i chars at %i", png_length_padded, png);
 	/* Resize the PNG buffer to accommodate for the additional text chunk*/
-	padded_png = (char *)realloc(png, png_length_padded);
+	padded_png = (char *)realloc(*png, png_length_padded * sizeof(char));
 	if(padded_png == NULL){
 		log_error("Could not resize PNG memory buffer");
 		free(padded_png);
+		return png_length;
 	} else {
-		png = padded_png;
+		*png = padded_png;
 	}
+	log_debug("realloced %i", png);
 
 	/*
-	 * Any PNG ends with the sequence 00 00 00 00 I E N D ae 42 60 82,
-	 * and does the new one we are creating. To do this, copy the old
+	 * Every PNG ends with the sequence 00 00 00 00 I E N D ae 42 60 82,
+	 * and so does the new one we are creating. To do this, copy the old
 	 * end sequence to the new place, moved by the diff
 	 * between header_length & png_length_padded
 	 *
@@ -317,16 +323,19 @@ int insertHeader(char * png, char * name, char * content, int png_length){
 	 * 4 bytes type (IEND)
 	 * 0 bytes for content, because there is none
 	 * 4 bytes crc (ae 42 60 82)
+	 *
+	 * Note: we continue to use padded_png instead of *png because they
+	 * point to the same thing anyway and double pointers make my brain hurt.
 	 */
 	for (i = 12; i > 0; i--) {
-		png[png_length_padded - i] = png[png_length - i];
+		padded_png[png_length_padded - i] = padded_png[png_length - i];
 	}
 
 	/*
 	 * copy the new header into the PNG buffer
 	 */
 	for (i = 0; i < header_length; i++) {
-		png[png_length - 12 + i] = head[i];
+		padded_png[png_length - 12 + i] = head[i];
 	}
 
 	return png_length_padded;
