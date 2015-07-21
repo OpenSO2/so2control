@@ -26,7 +26,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	if (config->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file if so set it. */
 		log_message("Set program to use a fix exposure time.");
-		return camera_setExposure(sSO2Parameters);
+		return camera_setExposure(sSO2Parameters, config);
 	} else {
 		/* Acquire first buffer to decide between FBL or SHT */
 		camera_trigger(sSO2Parameters, cb);
@@ -49,7 +49,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		/* calculate histogram to test for over or under exposition */
 		evalHist(sSO2Parameters, config, &timeSwitch);
 
-		camera_setExposureSwitch(sSO2Parameters, timeSwitch);
+		camera_setExposureSwitch(sSO2Parameters, config, timeSwitch);
 	}
 
 	return 0;
@@ -90,9 +90,8 @@ int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 
 	/* scanning the whole buffer and creating a histogram */
 	for (i = 0; i < bufferlength; i++) {
-		temp = *shortBuffer;
+		temp = shortBuffer[i];
 		histogram[temp]++;
-		shortBuffer++;
 	}
 
 	/* sum over a through config file given interval to check if image is underexposed */
@@ -103,7 +102,7 @@ int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 	/* pre-set the switch to 0 if image is neither over or under exposed it remains 0 */
 	*timeSwitch = 0;
 
-	/* check if the image is underexposed by testing if the sum of al values in a given interval
+	/* check if the image is underexposed by testing if the sum of all values in a given interval
 	 * is greater than a given confidence value */
 	if (summe > (bufferlength * percentage / 100)) {
 		*timeSwitch = 1;

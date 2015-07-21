@@ -297,7 +297,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 	return eStat;
 }
 
-int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch)
+int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch)
 {
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -319,12 +319,12 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch)
 
 	case 1:
 		log_message("Camera is set to frameblanking mode.");
-		setFrameBlanking(sSO2Parameters);
+		setFrameBlanking(sSO2Parameters, config);
 		break;
 
 	case 2:
 		log_message("Camera is set to electronic shutter mode.");
-		setElektronicShutter(sSO2Parameters);
+		setElektronicShutter(sSO2Parameters, config);
 		break;
 
 	case 3:
@@ -420,7 +420,7 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
  * FIXME: merge setFrameBlanking with setElektronicShutter and document
  */
 
-int setFrameBlanking(sParameterStruct * sSO2Parameters)
+int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -466,7 +466,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 		}
 
 		/* calculate histogram to test for over or under exposition */
-		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
+		evalHist(sSO2Parameters, config, &timeSwitch);
 
 		/* a little bit hacky but it works */
 		if (switchMemory2 == timeSwitch) {
@@ -518,7 +518,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters)
 	return eStat;
 }
 
-int setElektronicShutter(sParameterStruct * sSO2Parameters)
+int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -563,8 +563,8 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters)
 		}
 
 		/* calculate histogram to test for over or unter exposition */
-		evalHist(&stBuffer, sSO2Parameters, &timeSwitch);
-
+		evalHist(sSO2Parameters, config, &timeSwitch);
+	
 		/* a little bit hacky but it works */
 		if (switchMemory2 == timeSwitch) {
 			sprintf(errbuff,

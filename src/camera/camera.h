@@ -53,12 +53,12 @@ int camera_abort(sParameterStruct * sSO2Parameters);
 /**
  *
  */
-int camera_setExposure(sParameterStruct * sSO2Parameters);
+int camera_setExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 
 /**
  *
  */
-int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch);
+int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch);
 
 /**
  *
