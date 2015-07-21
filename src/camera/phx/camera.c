@@ -80,15 +80,15 @@ int camera_init(sParameterStruct * sSO2Parameters)
 
 int camera_abort(sParameterStruct * sSO2Parameters)
 {
-	log_debug("camera_abort");
 	tHandle hCamera = sSO2Parameters->hCamera;
+	log_debug("camera_abort");
 	return PHX_Acquire(hCamera, PHX_ABORT, NULL);
 }
 
 int camera_uninit(sParameterStruct * sSO2Parameters)
 {
-	log_debug("camera_uninit");
 	tHandle hCamera = sSO2Parameters->hCamera;
+	log_debug("camera_uninit");
 	return PHX_CameraRelease(&hCamera);
 }
 
@@ -111,8 +111,8 @@ int camera_get(sParameterStruct * sSO2Parameters)
 int camera_trigger(sParameterStruct * sSO2Parameters,
 		   void (*callbackFunction) (sParameterStruct * sSO2Parameters))
 {
-	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
 	tHandle hCamera = sSO2Parameters->hCamera;
+	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
 	return PHX_Acquire(hCamera, PHX_START, (void *)PHXcallbackFunction);
 }
 
