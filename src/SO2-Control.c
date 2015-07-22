@@ -1,6 +1,9 @@
 #include<string.h>
 #include<signal.h>
 #include<stdlib.h>
+#ifdef WIN
+#include<windows.h>
+#endif
 #include "camera.h"
 #include "configurations.h"
 #include "imageCreation.h"
@@ -48,6 +51,20 @@ int stop_program(int reason)
 	exit(reason);
 }
 
+
+/*
+ * Windows control handlers, almost directly taken from
+ * https://msdn.microsoft.com/en-us/library/ms685049%28VS.85%29.aspx
+ */
+#ifdef WIN
+BOOL CtrlHandler( DWORD fdwCtrlType )
+{
+	if (fdwCtrlType == CTRL_C_EVENT)
+		stop_program(1);
+	return 0;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	/* definition of basic variables */
@@ -68,8 +85,8 @@ int main(int argc, char *argv[])
 	 * - SIGTERM will be send by process managers, e.g. systemD
 	 *   wishing to stop the process
 	 *
-	 * Signals really only exist on posix (linux) systems, hence this
-	 * functionality only works there.
+	 * Windows has its own ctrl handlers, we only really care about
+	 * Ctrl+C, but others could be implemented as well (see above).
 	 */
 #ifdef POSIX
 	struct sigaction sa, osa;
@@ -77,7 +94,13 @@ int main(int argc, char *argv[])
 	sa.sa_handler = &stop_program;
 	sigaction(SIGINT, &sa, &osa);
 	sigaction(SIGTERM, &sa, &osa);
+#else
+	if( !SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE ) ){
+		log_error("Control handler could not be installed, Ctrl+C won't work");
+	}
 #endif
+
+
 
 	/* initiate the logfile and start logging */
 	state = log_init();
