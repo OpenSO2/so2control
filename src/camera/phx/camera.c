@@ -63,18 +63,18 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	 * for conversion to milliseconds see camera manual
 	 *
 
-	status = sendMessage(hCamera, "NMD S");
-	if (0 != status ){
-		log_error("setting camera to electronic shutter mode failed");
-		return status;
-	}
+	 status = sendMessage(hCamera, "NMD S");
+	 if (0 != status ){
+	 log_error("setting camera to electronic shutter mode failed");
+	 return status;
+	 }
 
-	status = sendMessage(hCamera, "SHT 1055");
-	if (0 != status ){
-		log_error("setting SHT value 1055 failed");
-		return status;
-	}
-	/**/
+	 status = sendMessage(hCamera, "SHT 1055");
+	 if (0 != status ){
+	 log_error("setting SHT value 1055 failed");
+	 return status;
+	 }
+	 /**/
 	return status;
 }
 
@@ -100,8 +100,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 
 	log_debug("get image from phx cam %c", sSO2Parameters->identifier);
 
-	status =
-	    PHX_Acquire(hCamera, PHX_BUFFER_GET, &buffythevampireslayer);
+	status = PHX_Acquire(hCamera, PHX_BUFFER_GET, &buffythevampireslayer);
 
 	sSO2Parameters->stBuffer = buffythevampireslayer.pvAddress;
 
@@ -199,7 +198,8 @@ int fixExposureTime(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD F");
 		if (PHX_OK != eStat) {
-			log_error("Setting camera to frameblanking mode failed");
+			log_error
+			    ("Setting camera to frameblanking mode failed");
 			return eStat;
 		}
 		/* Shutter speed, 1 - 12 */
@@ -275,7 +275,8 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 		/* N normal, S Shutter, F frameblanking */
 		eStat = sendMessage(hCamera, "NMD F");
 		if (PHX_OK != eStat) {
-			log_error("Setting camera to frameblanking mode failed");
+			log_error
+			    ("Setting camera to frameblanking mode failed");
 			return eStat;
 		}
 		/* Shutter speed, 1 - 12 */
@@ -564,7 +565,7 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * conf
 
 		/* calculate histogram to test for over or unter exposition */
 		evalHist(sSO2Parameters, config, &timeSwitch);
-	
+
 		/* a little bit hacky but it works */
 		if (switchMemory2 == timeSwitch) {
 			sprintf(errbuff,

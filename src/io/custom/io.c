@@ -30,10 +30,10 @@
 /* local prototypes */
 int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype);
 IplImage *bufferToImage(short *buffer);
-int dateStructToISO8601(timeStruct * time, char * iso_date);
-int insertValue(char ** png, char * name, float value, int png_length);
-int insertHeader(char ** png, char * name, char * content, int png_length);
-int insertHeaders(char ** png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
+int dateStructToISO8601(timeStruct * time, char *iso_date);
+int insertValue(char **png, char *name, float value, int png_length);
+int insertHeader(char **png, char *name, char *content, int png_length);
+int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
 int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 
@@ -69,14 +69,14 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	 *  !1 %% !2 = 3
 	 */
 	int state = 0;
-	if(config->processing != 1){
+	if (config->processing != 1) {
 		state = io_writeImage(sSO2Parameters, config);
 		if (state != 0) {
 			log_error("failed to write png");
 			return state;
 		}
 	}
-	if(config->processing != 2){
+	if (config->processing != 2) {
 		state = io_writeDump(sSO2Parameters, config);
 
 		if (state != 0) {
@@ -99,19 +99,18 @@ int io_uninit(sConfigStruct * config)
 	log_message("io_uninit");
 	return 0;
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 /*--------------------------------------------------------------------
  * Additional, private functions that are used within this file
  * (compilation unit) but are not available elsewhere.
  */
 
-
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
-	FILE * imageFile;
-	FILE * fp;
+	FILE *imageFile;
+	FILE *fp;
 	char headerfile[512];
 	int headerfilelength = 512;
 	char rawfile[512];
@@ -127,13 +126,13 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	}
 
 	state = createFilename(sSO2Parameters, config, rawfile, rawfilelength, "raw");
-	if(state){
+	if (state) {
 		log_error("could not create txt filename");
 	}
 
 	/* Open a new file for the image (writeable, binary) */
 	imageFile = fopen(rawfile, "wb");
-	if(imageFile != NULL){
+	if (imageFile != NULL) {
 		fwriteReturn = fwrite(sSO2Parameters->stBuffer, 1, config->dBufferlength * 2, imageFile);
 		if(fwriteReturn != config->dBufferlength * 2){
 			log_debug("could not write raw file %i != %i", config->dBufferlength, fwriteReturn);
@@ -146,8 +145,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 
 	/* write a text file containing header information */
 	fp = fopen(headerfile, "ab");
-	if (fp != NULL)
-	{
+	if (fp != NULL) {
 		fprintf(fp, "dBufferlength %i\n", config->dBufferlength);
 		fprintf(fp, "dHistMinInterval %i\n", config->dHistMinInterval);
 		fprintf(fp, "dHistPercentage %i\n", config->dHistPercentage);
@@ -173,9 +171,10 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	return 0;
 }
 
-int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
-	FILE * fp;
-	short * stBuffer;
+int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
+{
+	FILE *fp;
+	short *stBuffer;
 	IplImage *img;
 	CvMat *png;
 	int l;
@@ -183,13 +182,13 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	char filename[512];
 	int filenamelength = 512;
 	int state;
-	char * buffer;
+	char *buffer;
 
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
 	state = createFilename(sSO2Parameters, config, filename, filenamelength, "png");
-	if(state){
+	if (state) {
 		log_error("could not create txt filename");
 		return state;
 	}
@@ -218,13 +217,13 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	log_debug("insert headers %i", l);
 	l = insertHeaders(&buffer, sSO2Parameters, config, l);
 
-	/* save image to disk*/
+	/* save image to disk */
 	log_debug("open new png file %i", l);
 	fp = fopen(filename, "wb");
 	if (fp) {
 		writen_bytes = fwrite(buffer, 1, l, fp);
 		state = writen_bytes == l ? 0 : 1;
-		if(state){
+		if (state) {
 			log_error("PNG image wasn't written correctly");
 		}
 	} else {
@@ -235,14 +234,14 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config){
 	/* cleanup */
 	free(buffer);
 
-	if(!state){
+	if (!state) {
 		log_message("png image written");
 	}
 
 	return state;
 }
 
-int insertHeaders(char ** png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length){
+int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *config, int png_length){
 	char iso_date[25];
 	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
@@ -259,20 +258,22 @@ int insertHeaders(char ** png, sParameterStruct * sSO2Parameters, sConfigStruct 
 	return png_length;
 }
 
-int insertValue(char ** png, char * name, float value, int png_length){
+int insertValue(char **png, char *name, float value, int png_length)
+{
 	char text[200];
 	sprintf(text, "%s: %f", name, value);
-	return insertHeader(png, "Comment ", text , png_length);
+	return insertHeader(png, "Comment ", text, png_length);
 }
 
-int insertHeader(char ** png, char * name, char * content, int png_length){
+int insertHeader(char **png, char *name, char *content, int png_length)
+{
 	int head[200];
-	char text[180]; // can be of arbitrary length
+	char text[180];		/* can be of arbitrary length */
 	int png_length_padded;
 	int name_length = strlen(name);
 	int l, i;
 	int header_length;
-	char * padded_png;
+	char *padded_png;
 
 	strcpy(text, name);
 	strcat(text, content);
@@ -297,13 +298,13 @@ int insertHeader(char ** png, char * name, char * content, int png_length){
 	// TODO: handle return code
 	make_png_header(text, l, head, header_length);
 
-	/* the new PNG length is the old one, plus the header*/
+	/* the new PNG length is the old one, plus the header */
 	png_length_padded = png_length + header_length;
 
 	log_debug("trying to realloc %i chars at %i", png_length_padded, png);
-	/* Resize the PNG buffer to accommodate for the additional text chunk*/
+	/* Resize the PNG buffer to accommodate for the additional text chunk */
 	padded_png = (char *)realloc(*png, png_length_padded * sizeof(char));
-	if(padded_png == NULL){
+	if (padded_png == NULL) {
 		log_error("Could not resize PNG memory buffer");
 		free(padded_png);
 		return png_length;
@@ -372,18 +373,18 @@ int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, ch
 {
 	int state;
 	char id = sSO2Parameters->identifier;
-	timeStruct * time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify Camera for filename Prefix */
-	char * camname = id == 'a' ? "top" : "bot";
+	char *camname = id == 'a' ? "top" : "bot";
 
 	state = sprintf(filename,
-		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
-		config->cImagePath, config->cFileNamePrefix,
-		time->year, time->mon, time->day, time->hour, time->min,
-		time->sec, time->milli, camname, filetype);
+			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
+			config->cImagePath, config->cFileNamePrefix,
+			time->year, time->mon, time->day, time->hour, time->min,
+			time->sec, time->milli, camname, filetype);
 
-	if(state > filenamelength){
+	if (state > filenamelength) {
 		log_error("The filename I was ask to generate is longer then allowed.");
 		log_debug("Filename length is %i", state);
 	}

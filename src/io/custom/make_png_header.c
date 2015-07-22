@@ -52,7 +52,7 @@ void make_png_header(char *content, int content_length, int *header, int header_
 		header[i + 8] = (int)content[i];
 	}
 	for (i = content_length + 8; i < header_length; i++) {
-		header[i] = (int)' '; /* write spaces into the rest */
+		header[i] = (int)' ';	/* write spaces into the rest */
 	}
 
 	/* CRC-32 of chunk type code and chunk data fields, but not crc itself or length (77-8) */

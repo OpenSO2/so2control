@@ -14,7 +14,7 @@
 /* local prototypes*/
 int readConfig(char *filename, sConfigStruct * config);
 
-int structInit(sParameterStruct * sSO2Parameters, sConfigStruct * config, char identifier)
+int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier)
 {
 	sSO2Parameters->dExposureTime = config->dExposureTime;
 	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
@@ -24,7 +24,7 @@ int structInit(sParameterStruct * sSO2Parameters, sConfigStruct * config, char i
 	return 0;
 }
 
-int process_cli_arguments(int argc, char * argv[], sConfigStruct * config)
+int process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 {
 	int i;
 	char errstr[512];
@@ -122,9 +122,9 @@ int readConfig(char *filename, sConfigStruct * config)
 				config->processing = atoi(delimeterBuf + 1);
 			}
 
-		} /* end if(lineBuf[0] != '#') */
+		}		/* end if(lineBuf[0] != '#') */
 		linenumber++;
-	} /* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
+	}			/* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
 	fclose(pFILE);
 
 	/* not an error but errbuff is used anyway */
@@ -136,8 +136,7 @@ int readConfig(char *filename, sConfigStruct * config)
 	return 0;
 }
 
-int load_config(char * filename, sConfigStruct * config)
+int load_config(char *filename, sConfigStruct * config)
 {
 	return readConfig(filename, config);
 }
-

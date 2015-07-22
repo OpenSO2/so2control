@@ -17,7 +17,6 @@ void cb(sParameterStruct * sSO2Parameters)
 	sSO2Parameters->dBufferReadyCount++;
 }
 
-
 int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int status = 0;		/* status variable */
@@ -32,7 +31,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		camera_trigger(sSO2Parameters, cb);
 
 		/* wait for camera aquisition */
-		while(!sSO2Parameters->fBufferReady)
+		while (!sSO2Parameters->fBufferReady)
 			sleepMs(10);
 
 		sSO2Parameters->fBufferReady = FALSE;
@@ -43,7 +42,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 			return status;
 		}
 
-		/* clean up*/
+		/* clean up */
 		camera_abort(sSO2Parameters);
 
 		/* calculate histogram to test for over or under exposition */

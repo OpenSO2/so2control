@@ -10,9 +10,9 @@
 #endif
 
 /* prototypes */
-void parse_filename_to_timeStruct(char * infile, timeStruct *time);
+void parse_filename_to_timeStruct(char *infile, timeStruct * time);
 
-void parse_filename_to_timeStruct(char * inf, timeStruct *time)
+void parse_filename_to_timeStruct(char *inf, timeStruct * time)
 {
 	int offset = strlen(inf) - 43;
 	// infile is of the form testing_2014_09_22-23_43_55_984_cam_bot.raw
@@ -29,39 +29,37 @@ void parse_filename_to_timeStruct(char * inf, timeStruct *time)
 
 int main(int argc, char *argv[])
 {
-	char * infile = argv[1];
-	char * outfolder = argv[2];
+	char *infile = argv[1];
+	char *outfolder = argv[2];
 	int rawdump = argv[3] ? 1 : 2;
-	short * buffer;
+	short *buffer;
 	timeStruct time;
 	int status = 1;
 	sParameterStruct sSO2Parameters;
 	sConfigStruct config;
 
-	if(log_init()){
+	if (log_init()) {
 		printf("could not start log file, stop.\n");
 	}
-
-	#ifdef BENCHMARK
-		float startTime;
-	#endif
+#ifdef BENCHMARK
+	float startTime;
+#endif
 
 	if (argc < 3 || argc > 4) {
 		printf("Usage: %s in.raw outfolder [write_raw_dump]\n", argv[0]);
 		printf("i.e. %s tests/fixtures/testing_2014_09_22-23_43_55_984_cam_top.raw ./ 1\n", argv[0]);
 		return 1;
 	}
-
-	#ifdef BENCHMARK
-		startTime = (float)clock() / CLOCKS_PER_SEC;
-	#endif
+#ifdef BENCHMARK
+	startTime = (float)clock() / CLOCKS_PER_SEC;
+#endif
 
 	buffer = getBufferFromFile(infile);
 
-	#ifdef BENCHMARK
-		log_debug("reading file took %fms \n",
-			   ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
-	#endif
+#ifdef BENCHMARK
+	log_debug("reading file took %fms \n",
+		  ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
+#endif
 
 	parse_filename_to_timeStruct(infile, &time);
 
@@ -84,7 +82,7 @@ int main(int argc, char *argv[])
 	io_init(&config);
 
 	status = io_write(&sSO2Parameters, &config);
-	if(status == 0){
+	if (status == 0) {
 		log_debug("Converted %s to %s", infile, outfolder);
 	} else {
 		log_error("Something wrong writing to File.");

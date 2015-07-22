@@ -17,21 +17,21 @@
 static sParameterStruct sParameters_A;
 static sParameterStruct sParameters_B;
 
-
 /* Stop programs and do general clean up
  *
  * @author Jan Itor
  */
-int stop_program(int reason){
+int stop_program(int reason)
+{
 
 	log_message("Stopping program...");
 
 	/* Cease all captures */
-	if (&sParameters_A.hCamera){
+	if (&sParameters_A.hCamera) {
 		camera_abort(&sParameters_A);
 		camera_uninit(&sParameters_A);
 	}
-	if (&sParameters_B.hCamera){
+	if (&sParameters_B.hCamera) {
 		camera_abort(&sParameters_B);
 		camera_uninit(&sParameters_B);
 	}
@@ -71,13 +71,13 @@ int main(int argc, char *argv[])
 	 * Signals really only exist on posix (linux) systems, hence this
 	 * functionality only works there.
 	 */
-	#ifdef POSIX
-		struct sigaction sa, osa;
-		memset(&sa, 0, sizeof(sa));
-		sa.sa_handler = &stop_program;
-		sigaction(SIGINT, &sa, &osa);
-		sigaction(SIGTERM, &sa, &osa);
-	#endif
+#ifdef POSIX
+	struct sigaction sa, osa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = &stop_program;
+	sigaction(SIGINT, &sa, &osa);
+	sigaction(SIGTERM, &sa, &osa);
+#endif
 
 	/* initiate the logfile and start logging */
 	state = log_init();
@@ -103,9 +103,9 @@ int main(int argc, char *argv[])
 	}
 
 	state = process_cli_arguments(argc, argv, &config);
-	if(state != 0){
-			log_error("Could not handle command line arguments");
-			return state;
+	if (state != 0) {
+		log_error("Could not handle command line arguments");
+		return state;
 	}
 
 	/* Initialise parameter structures */

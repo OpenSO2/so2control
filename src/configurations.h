@@ -36,7 +36,7 @@ typedef struct {
 	/* flag. If trueish, processing is done */
 	int processing;
 
-	/* Number of images that are to be taken. Useful for testing*/
+	/* Number of images that are to be taken. Useful for testing */
 	int noofimages;
 
 	/* Number of pixels in 1 Image */
@@ -91,7 +91,7 @@ typedef struct {
 	tHandle hCamera;
 
 	/* Timestamp taken *before* the image has been triggered */
-	timeStruct * timestampBefore;
+	timeStruct *timestampBefore;
 
 	/* length of the triggerpulse in [ms] */
 	ui32 dTriggerPulseWidth;
@@ -100,7 +100,7 @@ typedef struct {
 	double dExposureTime;
 
 	/* Pointer to image buffer */
-	short * stBuffer;
+	short *stBuffer;
 
 	/* ~Callback stuff~ */
 
@@ -118,7 +118,7 @@ typedef struct {
  /******************************
  *   FUNCTIONS
  ******************************/
-int structInit(sParameterStruct * sSO2Parameters, sConfigStruct * config, char identifier);
-int process_cli_arguments(int argc, char *argv[], sConfigStruct * config);
-int load_config(char * filename, sConfigStruct * config);
+int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier);
+int process_cli_arguments(int argc, char *argv[], sConfigStruct *config);
+int load_config(char *filename, sConfigStruct * config);
 #endif

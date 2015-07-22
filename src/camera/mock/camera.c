@@ -69,13 +69,13 @@ short *getBufferFromFile(char *filename)
 
 int camera_get(sParameterStruct * sSO2Parameters)
 {
-	char * filename;
-	short * stBuffer;
+	char *filename;
+	short *stBuffer;
 	int bufferSet = 0;
 
 	log_message("! Mocking camera ! No real measurements are beeing taken");
 
-	if (sSO2Parameters->identifier == 'a'){
+	if (sSO2Parameters->identifier == 'a') {
 		bufferSet = bufferSetA;
 		bufferSetA = 1;
 		filename = "src/camera/mock/fixtures/top.raw";
@@ -85,7 +85,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 		filename = "src/camera/mock/fixtures/bot.raw";
 	}
 
-	if(bufferSet == 1)
+	if (bufferSet == 1)
 		free(sSO2Parameters->stBuffer);
 
 	stBuffer = getBufferFromFile(filename);
