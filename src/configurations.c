@@ -32,7 +32,9 @@ int process_cli_arguments(int argc, char * argv[], sConfigStruct * config)
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--speedy-gonzales") == 0
 		    || strcmp(argv[i], "--noprocessing") == 0) {
-			config->processing = 0;
+			config->processing = 1;
+		} else if (strcmp(argv[i], "--png-only") == 0) {
+			config->processing = 2;
 		} else if (strcmp(argv[i], "--noofimages") == 0 && argv[i + 1]) {
 			config->noofimages = strtol(argv[i + 1], NULL, 10);
 			i++;
@@ -115,6 +117,11 @@ int readConfig(char *filename, sConfigStruct * config)
 				sprintf(config->cImagePath,
 					"%s", strtok(cTmp, "\n"));
 			}
+
+			else if (strstr(lineBuf, "processing")) {
+				config->processing = atoi(delimeterBuf + 1);
+			}
+
 		} /* end if(lineBuf[0] != '#') */
 		linenumber++;
 	} /* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
