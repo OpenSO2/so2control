@@ -1,5 +1,5 @@
 #
-# make clean; make 2> wc; wc wc; head -n 30 wc
+# make clean; make 2> wc; wc wc; head -n 30 wc; rm -f wc
 
 # settings
 cmake_minimum_required(VERSION 2.8)
@@ -79,8 +79,6 @@ set(SRCFILES
 	./src/filterwheel/custom/darkCurrent.c
 	./src/exposureTimeControl.h
 	./src/exposureTimeControl.c
-	./src/processing/imageFunctions.h
-	./src/processing/imageFunctions.c
 	./src/imageCreation.h
 	./src/imageCreation.c
 	./src/log/log.h

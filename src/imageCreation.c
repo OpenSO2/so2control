@@ -12,7 +12,6 @@
 #include "configurations.h"
 #include "imageCreation.h"
 #include "log.h"
-#include "imageFunctions.h"
 #include "camera.h"
 #include "kbhit.h"
 #include "io/io.h"

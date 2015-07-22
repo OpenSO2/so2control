@@ -9,10 +9,8 @@ static char buffer[512];
 static time_t time_ptr;
 static struct tm logTime;
 
-int log_init()
+int log_init(void)
 {
-	time_t time_ptr;
-	struct tm logTime;
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
 
@@ -75,6 +73,8 @@ int log_error(char *message)
 	return 0;
 }
 
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int log_debug(char *message, ...)
 {
 #ifdef DEBUG
@@ -91,11 +91,12 @@ int log_debug(char *message, ...)
 	fprintf(logfile, format, logTime.tm_hour,
 		logTime.tm_min, logTime.tm_sec, buffer);
 #endif
-
 	return 0;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
-int log_uninit()
+
+int log_uninit(void)
 {
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);

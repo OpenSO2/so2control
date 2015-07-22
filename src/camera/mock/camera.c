@@ -11,9 +11,12 @@
 #include<stdlib.h>
 #include "configurations.h"
 #include "camera.h"
+#include "log.h"
 
-int bufferSetA;
-int bufferSetB;
+/* local vars and prototypes */
+short *getBufferFromFile(char *filename);
+static int bufferSetA;
+static int bufferSetB;
 
 int camera_init(sParameterStruct * sSO2Parameters)
 {
@@ -46,7 +49,7 @@ int camera_trigger(sParameterStruct * sSO2Parameters,
 short *getBufferFromFile(char *filename)
 {
 	short *buffer;
-	size_t length;
+	int length;
 	int bytesReadFromFile;
 	FILE *f = fopen(filename, "rb");
 	if (f) {
@@ -56,7 +59,8 @@ short *getBufferFromFile(char *filename)
 		buffer = malloc(length);
 		if (buffer) {
 			bytesReadFromFile = fread(buffer, 1, length, f);
-			/* printf("bytesReadFromFile %i of %i \n", bytesReadFromFile, length); */
+			if(bytesReadFromFile != length)
+				printf("failed to read mock image from file. %i of %i \n", bytesReadFromFile, length);
 		} else {
 			printf("failed to read into buffer\n");
 		}
@@ -95,12 +99,12 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-int camera_setExposure(sParameterStruct * sSO2Parameters)
+int camera_setExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	return 0;
 }
 
-int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, int timeSwitch)
+int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch)
 {
 	return 0;
 }

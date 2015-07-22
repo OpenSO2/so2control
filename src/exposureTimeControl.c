@@ -9,6 +9,7 @@
 #include "imageCreation.h"
 #include "log.h"
 
+void cb(sParameterStruct * sSO2Parameters);
 void cb(sParameterStruct * sSO2Parameters)
 {
 	sSO2Parameters->fBufferReady = TRUE;

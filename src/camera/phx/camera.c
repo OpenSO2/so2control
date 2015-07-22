@@ -14,7 +14,10 @@
 #include<stdlib.h>
 #include"configurations.h"
 
-#define _PHX_LINE_SIZE		256
+#define _PHX_LINE_SIZE 256
+
+/* local functions */
+static int roundToInt(double value);
 
 void PHXcallbackFunction(tHandle hCamera,	/* Camera handle. */
 			 int dwInterruptMask,	/* Interrupt mask. */
@@ -910,4 +913,21 @@ int sendMessage(tHandle hCamera, char *inputBuffer)
 	}
 	log_error("sending message failed 3 times");
 	return eStat;
+}
+
+/* This function is necessary because round()
+ * seems not implemented in the VC6.0 version of "math.h"
+ */
+int roundToInt(double value)
+{
+	int result;
+	double temp;
+
+	temp = value - floor(value);
+	if (temp >= 0.5)
+		result = (int)(floor(value) + 1);
+	else
+		result = (int)(floor(value));
+
+	return result;
 }
