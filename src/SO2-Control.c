@@ -9,6 +9,7 @@
 #include "imageCreation.h"
 #include "exposureTimeControl.h"
 #include "log.h"
+#include "io.h"
 
 /* explanation of prefixes:
  * d = Integer (int)
@@ -19,6 +20,10 @@
 
 static sParameterStruct sParameters_A;
 static sParameterStruct sParameters_B;
+
+static sConfigStruct config;
+
+static int stop_program(int reason);
 
 /* Stop programs and do general clean up
  *
@@ -40,7 +45,7 @@ int stop_program(int reason)
 	}
 
 	/* uninitialize io */
-	io_uninit();
+	io_uninit(&config);
 
 	/* stop logging and return file handle */
 	log_uninit();
@@ -70,13 +75,6 @@ int main(int argc, char *argv[])
 	/* definition of basic variables */
 	int state;
 
-	sConfigStruct config;
-
-	config.dHistMinInterval = 350;
-	config.dHistPercentage = 5;
-	config.dInterFrameDelay = 10;
-	config.dBufferlength = 1376256;
-
 	/* Handle signals. This is useful to intercept accidental Ctrl+C
 	 * which would otherwise just kill the process without any cleanup.
 	 * This could also be useful when the process is managed by some
@@ -100,8 +98,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-
-
 	/* initiate the logfile and start logging */
 	state = log_init();
 	if (state != 0) {
@@ -109,15 +105,20 @@ int main(int argc, char *argv[])
 		 * if creating a logfile fails we have to terminate the program.
 		 * The error message then has to go directly to the screen
 		 */
-		printf(stderr, "creating a logfile failed. Program is aborting...\n");
+		printf("creating a logfile failed. Program is aborting...\n");
 		stop_program(state);
 		return state;
 	}
 
 	/*
-	 * read config file and process cli arguments, which override
-	 * settings in the config file
+	 * set default values, read config file and process cli arguments,
+	 * which override settings in the config file
 	 */
+	config.dHistMinInterval = 350;
+	config.dHistPercentage = 5;
+	config.dInterFrameDelay = 10;
+	config.dBufferlength = 1376256;
+
 	state = load_config("configurations//SO2Config.conf", &config);
 	if (state != 0) {
 		log_error("loading configuration failed");

@@ -10,6 +10,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include "configurations.h"
+#include "camera.h"
 
 int bufferSetA;
 int bufferSetB;

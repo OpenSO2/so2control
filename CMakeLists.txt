@@ -65,6 +65,7 @@ include_directories(
 	./src/filterwheel/custom
 	./src/processing
 	./src/log
+	./src/io
 )
 
 set(SRCFILES
