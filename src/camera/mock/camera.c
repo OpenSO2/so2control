@@ -35,8 +35,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-int camera_trigger(sParameterStruct * sSO2Parameters,
-		   void (*callbackFunction) (void *sSO2Parameters))
+int camera_trigger(sParameterStruct * sSO2Parameters, void (*callbackFunction) (sParameterStruct *sSO2Parameters))
 {
 	sleepMs(100);
 	callbackFunction(sSO2Parameters);

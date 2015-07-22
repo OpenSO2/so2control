@@ -16,7 +16,7 @@
 #include "kbhit.h"
 #include "io/io.h"
 
-void callbackFunction(sParameterStruct * sSO2Parameters)
+void callback(sParameterStruct * sSO2Parameters)
 {
 	sSO2Parameters->fBufferReady = TRUE;
 
@@ -55,8 +55,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	/* Now start our capture, return control immediately back to program
 	 * TODO: handle return codes
 	 */
-	status = camera_trigger(sParameters_A, (void *)&callbackFunction);
-	status = camera_trigger(sParameters_B, (void *)&callbackFunction);
+	status = camera_trigger(sParameters_A, callback);
+	status = camera_trigger(sParameters_B, callback);
 
 	if (!status) {
 		/* if starting the capture was successful reset error counter to zero */

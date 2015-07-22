@@ -110,8 +110,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	return status;
 }
 
-int camera_trigger(sParameterStruct * sSO2Parameters,
-		   void (*callbackFunction) (sParameterStruct * sSO2Parameters))
+int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct * sSO2Parameters))
 {
 	tHandle hCamera = sSO2Parameters->hCamera;
 	log_debug("trigger phx cam %c", sSO2Parameters->identifier);

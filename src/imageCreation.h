@@ -6,7 +6,7 @@
 /******************************
  *   FUNCTIONS
  ******************************/
-void callbackFunction(sParameterStruct * sSO2Parameters);
+void callback(sParameterStruct * sSO2Parameters);
 int startAquisition(sParameterStruct * sParameters_A,
 		    sParameterStruct * sParameters_B, sConfigStruct * config);
 int aquire(sParameterStruct * sParameters_A,

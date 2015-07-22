@@ -37,8 +37,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters);
 /**
  *
  */
-int camera_trigger(sParameterStruct * sSO2Parameters,
-		   void (*callbackFunction) (void *sSO2Parameters));
+int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters));
 
 /**
  * aquires one image/frame from the camera/framegrabber

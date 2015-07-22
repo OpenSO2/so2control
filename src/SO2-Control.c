@@ -23,13 +23,13 @@ static sParameterStruct sParameters_B;
 
 static sConfigStruct config;
 
-static int stop_program(int reason);
+static void stop_program(int reason);
 
 /* Stop programs and do general clean up
  *
  * @author Jan Itor
  */
-int stop_program(int reason)
+static void stop_program(int reason)
 {
 
 	log_message("Stopping program...");
