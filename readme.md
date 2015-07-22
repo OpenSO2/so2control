@@ -79,10 +79,14 @@ thus entails rewriting that file (i.e. `src/camera/mock/camera.c`).
 For development, the camera subsystem can be mocked using
 
 ```
-$ cmake . -Dmock=camera
+$ cmake . -DMOCK_CAMERA=ON
 ```
 
 which circumvents this dependency.
+
+
+Command line and configuration options
+--------------------------------------
 
 
 Coding style

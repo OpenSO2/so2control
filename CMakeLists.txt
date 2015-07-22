@@ -1,6 +1,4 @@
 #
-# run with cmake . -Dmock=camera
-#
 # make clean; make 2> wc; wc wc; head -n 30 wc
 
 # settings
@@ -49,12 +47,17 @@ if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions ("-Wdeclaration-after-statement")
 endif()
 
+# set env variables
 if( ${UNIX} )
 	add_definitions(-DPOSIX)
 else( ${UNIX} )
-	add_definitions(-DWIN32)
 	add_definitions(-DWIN)
 endif( ${UNIX} )
+
+SET(DEBUG ON CACHE BOOL "More logging")
+if( ${DEBUG} )
+	add_definitions(-DDEBUG)
+endif( ${DEBUG} )
 
 include_directories(
 	./src
@@ -84,17 +87,13 @@ set(SRCFILES
 	./src/SO2-Control.c
 )
 
-option(mock "mock" none)
-
-if(${mock} STREQUAL "camera")
-	MESSAGE( "============" )
-	MESSAGE( "mock " ${mock} )
-	MESSAGE( "============" )
+SET(MOCK_CAMERA ON CACHE BOOL "Mock camera")
+if(${MOCK_CAMERA})
+	MESSAGE( "=====MOCK_CAMERA=======")
 	include_directories(./src/camera/mock)
 
 	set(CAMERASRC ./src/camera/mock/camera.c)
-
-else(${mock} STREQUAL "camera")
+else()
 
 	if( ${UNIX} )
 		add_definitions(-D_PHX_LINUX)
@@ -115,7 +114,7 @@ else(${mock} STREQUAL "camera")
 
 	set(CAMERASRC ./src/camera/phx/camera.c)
 
-endif(${mock} STREQUAL "camera")
+endif()
 
 
 

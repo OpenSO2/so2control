@@ -80,19 +80,21 @@ int log_error(char * message)
 
 int log_debug(char * message, ... )
 {
-	va_list args;
-	char * format = "%02d:%02d:%02d | DEBUG | %s\n";
-	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
+	#ifdef DEBUG
+		va_list args;
+		char * format = "%02d:%02d:%02d | DEBUG | %s\n";
+		time(&time_ptr);
+		logTime = *gmtime(&time_ptr);
 
-	va_start( args, message );
-	vsprintf( buffer, message, args );
-	va_end( args );
+		va_start( args, message );
+		vsprintf( buffer, message, args );
+		va_end( args );
 
-	printf(format, logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, buffer);
-	fprintf(logfile, format, logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, buffer);
+		printf(format, logTime.tm_hour,
+			logTime.tm_min, logTime.tm_sec, buffer);
+		fprintf(logfile, format, logTime.tm_hour,
+			logTime.tm_min, logTime.tm_sec, buffer);
+	#endif
 
 	return 0;
 }
