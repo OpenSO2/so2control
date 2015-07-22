@@ -1,5 +1,3 @@
-#include<math.h>
-#include<string.h>		/* memset */
 #if defined(WIN)
 #include<windows.h>		/* Sleep */
 #else
