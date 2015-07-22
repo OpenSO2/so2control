@@ -73,6 +73,8 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	short * stBuffer;
 	int bufferSet = 0;
 
+	log_message("! Mocking camera ! No real measurements are beeing taken");
+
 	if (sSO2Parameters->identifier == 'a'){
 		bufferSet = bufferSetA;
 		bufferSetA = 1;
