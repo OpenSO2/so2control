@@ -31,26 +31,31 @@ Building:
 From a terminal, run:
 
 ````
-$ # install dependencies
-$ sudo yum/apt-get install cmake zlib-devel opencv-devel gcc gcc-c++
+$ # install dependencies on RHEL, Fedora, Scientific Linux, CentOS etc:
+$ sudo yum install cmake opencv-devel gcc gcc-c++
+$ # or Debian, Ubuntu, etc:
+$ sudo apt-get install cmake libopencv-dev libcv-dev libhighgui-dev gcc gcc-c++
 $
 $ # prepare
-$ cmake .
+$ cmake . -DMOCK_CAMERA=ON
 $
 $ # compile
 $ make
 ````
+or run `droneio.sh`.
 
 ### On Windows:
 
-Download and install [CMake][cmake], [zLib][zlib] and [OpenCV][opencv]. Then run
+Download and install [CMake][cmake] and [OpenCV][opencv]. Then run
 
 ```
-$ cmake .
+$ cmake . -DMOCK_CAMERA=ON
 ```
 
 from the command prompt in the project folder. This generates a Visual Studio Workspace,
 which can be opened in Visual Studio. Compile and run from there.
+
+Or take a look at `appveyor.yml` and do whats done there.
 
 
 Usage:
@@ -85,17 +90,34 @@ $ cmake . -DMOCK_CAMERA=ON
 which circumvents this dependency.
 
 
-Command line and configuration options
---------------------------------------
+Command line and configuration options, compilation flags
+---------------------------------------------------------
+
+There are several command line options that can change the runtime
+behaviour of the program:
+
+* `--noprocessing` - only raw images are saved to disk and no further processing is done
+* `--png-only` - only png images are saved to disk
+* `--noofimages %i` - only %i images are taken after which the programm exits itself.
+
+More configuration options can be set in configation/SO2Config.conf.
+
+Compilation flags can be used to controll the compilation of the program
+
+* `DEBUG` - increases the logging output. Use as `cmake -DDEBUG=ON` or `-DDEBUG=OFF`
+* `MOCK_CAMERA` - Replaces the camera code with a mock that always returns a dummy picture. Useful for testing. Use as `cmake -DMOCK_CAMERA=ON` or `-DMOCK_CAMERA=OFF`.
+* `MOCK_LOG` - Prevents the creation and the writing to log files, which is useful for unit testing. Use as `cmake -DMOCK_LOG=ON` or `-DMOCK_LOG=OFF`.
 
 
 Coding style
 ------------
 
 This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle)
-which is enforced using [indent](http://www.gnu.org/software/indent/).
+which is enforced using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
 
-
+```
+$ make checkstyle
+```
 
 [jj]: johann.jacobsohn@uni-hamburg.de
 [opencv]: http://opencv.org/
