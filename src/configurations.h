@@ -16,11 +16,6 @@
 #include<math.h>
 #include "common.h"
 
-#if defined(PHX)
-#include<phx_api.h>
-#include<phx_os.h>
-#endif
-
 /******************************
  *   MACROS
  ******************************/
@@ -55,7 +50,7 @@ typedef struct {
 	int dHistPercentage;
 
 	/* length of the triggerpulse in [ms] */
-	ui32 dTriggerPulseWidth;
+	unsigned long dTriggerPulseWidth;
 
 	/* contains the Exposuretime in [ms] */
 	double dExposureTime;
@@ -85,16 +80,16 @@ typedef struct {
 /* Camera parameters */
 typedef struct {
 	/* not used right now. should contain a value for image noise */
-	ui32 dDarkCurrent;
+	unsigned long dDarkCurrent;
 
 	/* A handle to identify the camera */
-	tHandle hCamera;
+	unsigned long hCamera;
 
 	/* Timestamp taken *before* the image has been triggered */
 	timeStruct *timestampBefore;
 
 	/* length of the triggerpulse in [ms] */
-	ui32 dTriggerPulseWidth;
+	unsigned long dTriggerPulseWidth;
 
 	/* contains the Exposuretime in [ms] */
 	double dExposureTime;
@@ -105,11 +100,11 @@ typedef struct {
 	/* ~Callback stuff~ */
 
 	/* Event Flags */
-	volatile tFlag fBufferReady;
+	volatile unsigned long fBufferReady;
 	volatile int dBufferReadyCount;
 
 	/* Control Flags */
-	volatile tFlag fFifoOverFlow;
+	volatile unsigned long fFifoOverFlow;
 
 	/* Camera identifier */
 	char identifier;

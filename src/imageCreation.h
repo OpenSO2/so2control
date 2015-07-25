@@ -6,11 +6,10 @@
 /******************************
  *   FUNCTIONS
  ******************************/
-void callback(sParameterStruct * sSO2Parameters);
 int startAquisition(sParameterStruct * sParameters_A,
-		    sParameterStruct * sParameters_B, sConfigStruct * config);
+	sParameterStruct * sParameters_B, sConfigStruct * config);
 int aquire(sParameterStruct * sParameters_A,
-	   sParameterStruct * sParameters_B, sConfigStruct * config);
+	sParameterStruct * sParameters_B, sConfigStruct * config);
 int getTime(timeStruct * pTS);
 time_t TimeFromTimeStruct(const timeStruct * pTime);
 

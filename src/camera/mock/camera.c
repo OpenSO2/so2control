@@ -14,9 +14,17 @@
 #include "log.h"
 
 /* local vars and prototypes */
-short *getBufferFromFile(char *filename);
+static short *getBufferFromFile(char *filename);
+static void (*externalCallback)(sParameterStruct *);
+static void internalCallback(sParameterStruct *);
 static int bufferSetA;
 static int bufferSetB;
+
+
+static void internalCallback(sParameterStruct * sSO2Parameters)
+{
+	externalCallback(sSO2Parameters);
+}
 
 int camera_init(sParameterStruct * sSO2Parameters)
 {
@@ -38,8 +46,8 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 int camera_trigger(sParameterStruct * sSO2Parameters, void (*callbackFunction) (sParameterStruct *sSO2Parameters))
 {
 	sleepMs(100);
-	callbackFunction(sSO2Parameters);
-
+	externalCallback = callbackFunction;
+	internalCallback(sSO2Parameters);
 	return 0;
 }
 

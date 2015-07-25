@@ -16,7 +16,9 @@
 #include "kbhit.h"
 #include "io/io.h"
 
-void callback(sParameterStruct * sSO2Parameters)
+static void callback(sParameterStruct * sSO2Parameters);
+
+static void callback(sParameterStruct * sSO2Parameters)
 {
 	sSO2Parameters->fBufferReady = TRUE;
 

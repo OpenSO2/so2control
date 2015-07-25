@@ -12,13 +12,6 @@
 #define FALSE    (!TRUE)
 #endif
 
-#ifndef PHX
-typedef unsigned long ui32;
-typedef unsigned long mu32;
-typedef mu32 tHandle;
-typedef ui32 tFlag;
-#endif
-
 /******************************
  *   Structures
  ******************************/

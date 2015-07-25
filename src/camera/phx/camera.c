@@ -1,10 +1,7 @@
 /*
- * This file provides support for the Silicon Active Framegrabber vie the
- * PHX SDK, thus this file is mostly just a wrapper:
- *
- * - camera_init -> PHX_CameraConfigLoad
- * - camera_get  -> PHX_Acquire
- * - camera_uninit -> PHX_CameraRelease
+ * This file provides support for the Silicon Active Framegrabber via the
+ * PHX SDK, which is not part of this program and has to be acquired and installed
+ * separately.
  */
 #include<phx_api.h>
 #include<phx_os.h>
@@ -13,16 +10,30 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include"configurations.h"
+#include"log.h"
+#include"camera.h"
+#include"kbhit.h"
+#include"exposureTimeControl.h"
 
 #define _PHX_LINE_SIZE 256
 
-/* local functions */
-static int roundToInt(double value);
+/* local vars */
+static void (*externalCallback)(sParameterStruct *);
 
-void PHXcallbackFunction(tHandle hCamera,	/* Camera handle. */
-			 int dwInterruptMask,	/* Interrupt mask. */
-			 sParameterStruct * sSO2Parameters	/* Pointer to user supplied context */
-    )
+/* prototypes for private functions */
+static void internalCallback(tHandle hCamera, int dwInterruptMask, sParameterStruct * sSO2Parameters);
+static void bufferready(sParameterStruct * sSO2Parameters);
+static int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer);
+static int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config);
+static int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * config);
+static int triggerConfig(sParameterStruct * sSO2Parameters);
+static int defaultConfig(sParameterStruct * sSO2Parameters);
+static int defaultCameraConfig(sParameterStruct * sSO2Parameters);
+static int sendMessage(tHandle hCamera, char *inputBuffer);
+static double roundToDouble(double value);
+static int toInt(double);
+
+static void internalCallback(tHandle hCamera, int dwInterruptMask, sParameterStruct *sSO2Parameters)
 {
 
 	/* Fifo Overflow */
@@ -32,8 +43,10 @@ void PHXcallbackFunction(tHandle hCamera,	/* Camera handle. */
 
 	/* Handle the Buffer Ready event */
 	if (PHX_INTRPT_BUFFER_READY & dwInterruptMask) {
-		callbackFunction(sSO2Parameters);
+		externalCallback(sSO2Parameters);
 	}
+
+	sSO2Parameters->hCamera = hCamera;
 
 	log_debug("Internal phx callback called, cam %c. dwInterruptMask: %i", sSO2Parameters->identifier, dwInterruptMask);
 }
@@ -41,15 +54,13 @@ void PHXcallbackFunction(tHandle hCamera,	/* Camera handle. */
 int camera_init(sParameterStruct * sSO2Parameters)
 {
 	int status = 0;
-	int channel =
-	    sSO2Parameters->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
+	int channel = sSO2Parameters->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
 	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
-	status =
-	    PHX_CameraConfigLoad(&sSO2Parameters->hCamera,
-				 "src/camera/phx/c8484.pcf",
-				 (etCamConfigLoad) PHX_BOARD_AUTO | PHX_DIGITAL
-				 | channel | PHX_NO_RECONFIGURE | 1,
-				 &PHX_ErrHandlerDefault);
+	status = PHX_CameraConfigLoad(&sSO2Parameters->hCamera,
+		"src/camera/phx/c8484.pcf",
+		(etCamConfigLoad) PHX_BOARD_AUTO | PHX_DIGITAL
+		| channel | PHX_NO_RECONFIGURE | 1,
+		&PHX_ErrHandlerDefault);
 
 	if (0 != status) {
 		log_error("loading camera config failed");
@@ -77,7 +88,7 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	 log_error("setting SHT value 1055 failed");
 	 return status;
 	 }
-	 /**/
+	 */
 	return status;
 }
 
@@ -113,13 +124,15 @@ int camera_get(sParameterStruct * sSO2Parameters)
 int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct * sSO2Parameters))
 {
 	tHandle hCamera = sSO2Parameters->hCamera;
+	externalCallback = callback;
 	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
-	return PHX_Acquire(hCamera, PHX_START, (void *)PHXcallbackFunction);
+	return PHX_Acquire(hCamera, PHX_START, (void *)internalCallback);
 }
 
 int camera_config(sParameterStruct * sSO2Parameters)
 {
 	int status;
+	status = 0;
 
 	/* load the default configurations for the framegrabber */
 	status = defaultConfig(sSO2Parameters);
@@ -131,99 +144,21 @@ int camera_config(sParameterStruct * sSO2Parameters)
 	/* load the configurations for the exposure trigger */
 	status = triggerConfig(sSO2Parameters);
 	if (status != 0) {
-		log_error("function triggerConfig(...) for camera 1 failed");
+		log_error("function triggerConfig(...) for camera failed");
 		return status;
 	}
 
 	/* set the camera with the right options */
 	status = defaultCameraConfig(sSO2Parameters);
 	if (status != 0) {
-		log_error
-		    ("function defaultCameraConfig(...) for camera 1 failed");
-		return status;
-	}
-}
-
-int fixExposureTime(sParameterStruct * sSO2Parameters)
-{
-	int exposureTime = (int)sSO2Parameters->dExposureTime;	/* exposure time in parameter structure */
-	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
-	int status = 0;		/* status variable */
-	int shutterSpeed = 1;	/* in case something went wrong this value is accepted by both modi */
-	char message[9];
-	char messbuff[512];
-	char errbuff[512];
-	etStat eStat;
-
-	/* before doing anything check if exposure time is within the limits */
-	if (exposureTime < 2.4 || exposureTime > 1004400) {
-		log_error
-		    ("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
-		status = 1;
+		log_error("function defaultCameraConfig(...) for camera failed");
 		return status;
 	}
 
-	if (exposureTime <= 83560) {
-		/*===========ELECTRONIC=SHUTTER==========*/
-
-		shutterSpeed = roundToInt(((exposureTime - 2.4) / 79.275) + 1);
-		sprintf(message, "SHT %d", shutterSpeed);
-
-		/* N normal, S Shutter, F frameblanking */
-		eStat = sendMessage(hCamera, "NMD S");
-		if (PHX_OK != eStat) {
-			log_error
-			    ("setting camera to electronic shutter mode failed");
-			return eStat;
-		}
-		/* Shutter speed, 1 - 1055 */
-		eStat = sendMessage(hCamera, message);
-		if (PHX_OK != eStat) {
-			sprintf(errbuff,
-				"setting SHT value to %d failed (exposuretime %d ms)",
-				shutterSpeed, exposureTime);
-			log_error(errbuff);
-			return eStat;
-		} else {
-			exposureTime = (int)(2.4 + (shutterSpeed - 1) * 79.275);
-			sprintf(messbuff,
-				"Camera uses electronic shutter mode. exposure time is: %d ms",
-				exposureTime);
-			log_message(messbuff);
-		}
-	} else {
-		/* ===========FRAME=BLANKING========== */
-
-		shutterSpeed = roundToInt(exposureTime / 83700);
-		sprintf(message, "FBL %d", shutterSpeed);
-
-		/* N normal, S Shutter, F frameblanking */
-		eStat = sendMessage(hCamera, "NMD F");
-		if (PHX_OK != eStat) {
-			log_error
-			    ("Setting camera to frameblanking mode failed");
-			return eStat;
-		}
-		/* Shutter speed, 1 - 12 */
-		eStat = sendMessage(hCamera, message);
-		if (PHX_OK != eStat) {
-			sprintf(errbuff,
-				"setting FBL value to %d failed (exposuretime %d ms)",
-				shutterSpeed, exposureTime);
-			log_error(errbuff);
-			return eStat;
-		} else {
-			exposureTime = shutterSpeed * 83700;
-			sprintf(messbuff,
-				"Camera uses Frameblanking mode. exposure time is: %d ms",
-				exposureTime);
-			log_message(messbuff);
-		}
-	}
-	return eStat;
+	return status;
 }
 
-int camera_setExposure(sParameterStruct * sSO2Parameters)
+int camera_setExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int exposureTime = (int)sSO2Parameters->dExposureTime;	/* exposure time in parameter structure */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -243,7 +178,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 
 	if (exposureTime <= 83560) {
 		/* ===========ELECTRONIC=SHUTTER========== */
-		shutterSpeed = roundToInt(((exposureTime - 2.4) / 79.275) + 1);
+		shutterSpeed = toInt(roundToDouble(((exposureTime - 2.4) / 79.275) + 1));
 		sprintf(message, "SHT %d", shutterSpeed);
 
 		/* N normal, S Shutter, F frameblanking */
@@ -271,7 +206,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 	} else {
 		/*===========FRAME=BLANKING==========*/
 
-		shutterSpeed = roundToInt(exposureTime / 83700);
+		shutterSpeed = toInt(roundToDouble(exposureTime / 83700));
 		sprintf(message, "FBL %d", shutterSpeed);
 
 		/* N normal, S Shutter, F frameblanking */
@@ -302,9 +237,6 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 
 int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch)
 {
-	etStat eStat = PHX_OK;	/* Phoenix status variable */
-	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
-	stImageBuff stBuffer;	/* Buffer where the Framegrabber stores the image */
 	char messbuff[512];
 	char errbuff[512];
 
@@ -346,14 +278,18 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * 
 		log_error(errbuff);
 		return 1;
 	}
-
+	return 0;
 }
 
 /*
  * The following functions are phx specific and not exposed
  */
 
-int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
+static void bufferready(sParameterStruct * sSO2Parameters){
+	sSO2Parameters->fBufferReady = TRUE;
+}
+
+static int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 {
 	/*  this function is very similar to startAquisition( ... ) */
 	etStat eStat = PHX_OK;	/* Status variable */
@@ -366,10 +302,9 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 	PHX_Acquire(hCamera, PHX_EXPOSE, NULL);
 
 	do {
-		/* start capture, hand over callback function */
-		eStat =
-		    PHX_Acquire(hCamera, PHX_START,
-				(void *)PHXcallbackFunction);
+		/* start capture, hand over callback function, and do nothing when callback called */
+		externalCallback = bufferready;
+		eStat = PHX_Acquire(hCamera, PHX_START, (void *)internalCallback);
 		if (PHX_OK == eStat) {
 			/* if starting the capture was successful reset error counter to zero */
 			startErrCount = 0;
@@ -422,8 +357,7 @@ int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
 /*
  * FIXME: merge setFrameBlanking with setElektronicShutter and document
  */
-
-int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
+static int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -452,9 +386,9 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		}
 		divisor = divisor / 2;
 		/* it seems we are doing this twice not sure why */
-		divisor = (double)roundToInt(divisor);
+		divisor = roundToDouble(divisor);
 
-		sprintf(message, "FBL %d", roundToInt(FBvalue));
+		sprintf(message, "FBL %d", toInt(roundToDouble(FBvalue)));
 		eStat = sendMessage(hCamera, message);
 		if (PHX_OK != eStat) {
 			log_error("setting FBL value failed failed");
@@ -475,9 +409,9 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		if (switchMemory2 == timeSwitch) {
 			sprintf(messbuff,
 				"setFrameBlanking(...) is stuck between FB values %d and %d. value is set to %d. This is not fatal",
-				roundToInt(switchMemory1),
-				roundToInt(switchMemory2),
-				roundToInt(switchMemory2));
+				toInt(roundToDouble(switchMemory1)),
+				toInt(roundToDouble(switchMemory2)),
+				toInt(roundToDouble(switchMemory2)));
 			log_message(messbuff);
 			timeSwitch = 0;
 		}
@@ -521,7 +455,7 @@ int setFrameBlanking(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	return eStat;
 }
 
-int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * config)
+static int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
@@ -551,7 +485,7 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * conf
 
 		divisor = divisor / 2.;
 
-		sprintf(message, "SHT %d", roundToInt(SHTvalue));
+		sprintf(message, "SHT %d", toInt(roundToDouble(SHTvalue)));
 		eStat = sendMessage(hCamera, message);
 		if (PHX_OK != eStat) {
 			log_error("setting SHT value failed failed");
@@ -572,9 +506,9 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * conf
 		if (switchMemory2 == timeSwitch) {
 			sprintf(errbuff,
 				"setElectronicShutter(...) is stuck between SHT values %d and %d. value is set to %d. This is not fatal",
-				roundToInt(switchMemory1),
-				roundToInt(switchMemory2),
-				roundToInt(switchMemory2));
+				toInt(roundToDouble(switchMemory1)),
+				toInt(roundToDouble(switchMemory2)),
+				toInt(roundToDouble(switchMemory2)));
 			log_error(errbuff);
 			timeSwitch = 0;
 		}
@@ -623,9 +557,9 @@ int setElektronicShutter(sParameterStruct * sSO2Parameters, sConfigStruct * conf
 	return eStat;
 }
 
-int triggerConfig(sParameterStruct * sSO2Parameters)
+static int triggerConfig(sParameterStruct * sSO2Parameters)
 {
-	/* in my opinion this function is the most complicated shit in the whole programm ;) */
+	/* in my opinion this function is the most complicated shit in the whole program ;) */
 
 	etStat eStat = PHX_OK;	/* Status variable */
 	etParamValue eParamValue;
@@ -644,14 +578,14 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 		return eStat;
 	}
 
-	/* Initialise the CCIO bit 1 pin as a negative going output driven from the exposure
+	/* Initialize the CCIO bit 1 pin as a negative going output driven from the exposure
 	 * timer 1 with a pre-defined pulse width
 	 */
 	eParamValue = (etParamValue) (PHX_IO_METHOD_BIT_TIMER_NEG | 1);
 	eStat = PHX_ParameterSet(hCamera, PHX_IO_CCIO, (void *)&eParamValue);
 	if (PHX_OK != eStat) {
 		log_error
-		    ("Initialsing the CCIO bit 1 pin as a negative output for exposure timing failed");
+		    ("Initializing the CCIO bit 1 pin as a negative output for exposure timing failed");
 		return eStat;
 	}
 
@@ -679,7 +613,7 @@ int triggerConfig(sParameterStruct * sSO2Parameters)
 	return eStat;
 }
 
-int defaultConfig(sParameterStruct * sSO2Parameters)
+static int defaultConfig(sParameterStruct * sSO2Parameters)
 {
 	etStat eStat = PHX_OK;	/* Status variable */
 	etParamValue eParamValue;
@@ -753,8 +687,8 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 		log_message("Image depth recieved from camera is set to 12-bit");
 
 	/* these two options are commented out because they are set in the PHX config file. Somehow the right resolution only
-	 * works if these options are set in the PHX config file. A goal would be to completly remove this config file but
-	 * because of this two options whe still have to keep them */
+	 * works if these options are set in the PHX config file. A goal would be to completely remove this config file but
+	 * because of this two options we still have to keep them */
 
 	/*eParamValue= (etParamValue)1344;
 	   eStat = PHX_ParameterSet(hCamera, PHX_CAM_ACTIVE_XLENGTH, (etParamValue*) &eParamValue );
@@ -794,7 +728,7 @@ int defaultConfig(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-int defaultCameraConfig(sParameterStruct * sSO2Parameters)
+static int defaultCameraConfig(sParameterStruct * sSO2Parameters)
 {
 	etStat eStat = PHX_OK;
 	tHandle hCamera = sSO2Parameters->hCamera;
@@ -835,7 +769,7 @@ int defaultCameraConfig(sParameterStruct * sSO2Parameters)
 	return eStat;
 }
 
-int sendMessage(tHandle hCamera, char *inputBuffer)
+static int sendMessage(tHandle hCamera, char *inputBuffer)
 {
 	/* error handling is inverted in this function. cant remember why */
 	etStat eStat = PHX_OK;
@@ -917,16 +851,17 @@ int sendMessage(tHandle hCamera, char *inputBuffer)
 /* This function is necessary because round()
  * seems not implemented in the VC6.0 version of "math.h"
  */
-int roundToInt(double value)
+static double roundToDouble(double value)
 {
-	int result;
-	double temp;
+	double result;
+	result = value;
 
-	temp = value - floor(value);
-	if (temp >= 0.5)
-		result = (int)(floor(value) + 1);
-	else
-		result = (int)(floor(value));
+	if (value - floor(value) >= 0.5)
+		result += 1.0;
 
 	return result;
+}
+
+static int toInt(double value){
+	return (value);
 }
