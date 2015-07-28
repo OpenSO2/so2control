@@ -1,3 +1,11 @@
+/*
+ * Very basic crc algorithm, taken straight from the documentation:
+ * http://www.w3.org/TR/PNG-CRCAppendix.html
+ *
+ * We used to use zlib as a dependency, but that is an enormous
+ * headache under win.
+ */
+
 void make_crc_table(void);
 unsigned long update_crc(unsigned long crc, unsigned char *buf, int len);
 unsigned long crc(unsigned char *buf, int len);
