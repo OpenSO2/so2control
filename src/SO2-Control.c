@@ -180,16 +180,27 @@ int main(int argc, char *argv[])
 	}
 	log_debug("camera B configured");
 
-	/* set exposure
-	 * TODO: handle return codes
-	 */
-	setExposureTime(&sParameters_A, &config);
+	/* set exposure */
+	state = setExposureTime(&sParameters_A, &config);
+	if (state != 0) {
+		log_error("setExposureTime for cam B failed");
+		stop_program(1);
+		return 1;
+	}
 	log_debug("exposure time for cam A set");
 
-	setExposureTime(&sParameters_B, &config);
+	state = setExposureTime(&sParameters_B, &config);
+	if (state != 0) {
+		log_error("setExposureTime for cam B failed");
+		stop_program(1);
+		return 1;
+	}
 	log_debug("exposure time for cam B set");
 
-	/* Starting the acquisition with the exposure parameter set in configurations.c and exposureTimeControl.c */
+	/*
+	 * Starting the acquisition with the exposure parameter set in
+	 * configurations.c and exposureTimeControl.c
+	 */
 	state = startAquisition(&sParameters_A, &sParameters_B, &config);
 	log_message("Aquisition stopped");
 	if (state != 0) {
