@@ -44,14 +44,12 @@ int process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 
 int readConfig(char *filename, sConfigStruct * config)
 {
-	FILE *pFILE;		/* filehandle for config file */
-	char *lineBuf;		/* buffer that holds the current line of the config file */
-	char *delimeterBuf;	/* buffer that holds the line after a specified delimeter */
-	int linenumber = 1;
-	char cTmp[MAXBUF];	/* a temporal buffer used when strings are read from the config file */
-	char errbuff[MAXBUF];	/* a buffer to construct a proper error message */
-
-	lineBuf = (char *)malloc(MAXBUF);
+	FILE *pFILE;          /* filehandle for config file */
+	char lineBuf[MAXBUF]; /* buffer that holds the current line of the config file */
+	char *delimeterBuf;   /* buffer that holds the line after a specified delimeter */
+	int linenumber = 0;
+	char cTmp[MAXBUF];    /* a temporal buffer used when strings are read from the config file */
+	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
 	pFILE = fopen(filename, "r");
 
@@ -62,69 +60,54 @@ int readConfig(char *filename, sConfigStruct * config)
 	}
 
 	while (fgets(lineBuf, MAXBUF, pFILE) != NULL) {
-		/* skip lines which are marked as a commend */
-		if (lineBuf[0] != '#') {
-			delimeterBuf = strstr(lineBuf, "=");
-
-			/* search for corresponding strings */
-			if (strstr(lineBuf, "HistogramMinInterval")) {
-				config->dHistMinInterval = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "HistogramPercentage")) {
-				config->dHistPercentage = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "InterFrameDelay")) {
-				config->dInterFrameDelay = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "TriggerPulseWidth")) {
-				config->dTriggerPulseWidth = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "FixTime")) {
-				config->dFixTime = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "ExposureTime")) {
-				config->dExposureTime = atoi(delimeterBuf + 1);
-			}
-
-			else if (strstr(lineBuf, "FileNamePrefix")) {
-				if (delimeterBuf[1] == ' ')
-					sprintf(cTmp, "%s", delimeterBuf + 2);
-				else
-					sprintf(cTmp, "%s", delimeterBuf + 1);
-
-				/* remove LF */
-				sprintf(config->cFileNamePrefix,
-					"%s", strtok(cTmp, "\n"));
-			}
-
-			else if (strstr(lineBuf, "ImagePath")) {
-				if (delimeterBuf[1] == ' ')
-					sprintf(cTmp, "%s", delimeterBuf + 2);
-				else
-					sprintf(cTmp, "%s", delimeterBuf + 1);
-
-				/* remove LF */
-				sprintf(config->cImagePath,
-					"%s", strtok(cTmp, "\n"));
-			}
-
-			else if (strstr(lineBuf, "processing")) {
-				config->processing = atoi(delimeterBuf + 1);
-			}
-
-		}		/* end if(lineBuf[0] != '#') */
 		linenumber++;
-	}			/* end while(fgets(lineBuf, MAXBUF, pFILE) != NULL) */
+		/* skip lines which are marked as a commend */
+		if (lineBuf[0] == '#'){
+			continue;
+		}
+		delimeterBuf = strstr(lineBuf, "=");
+
+		/* search for corresponding strings */
+		if (strstr(lineBuf, "HistogramMinInterval")) {
+			config->dHistMinInterval = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "HistogramPercentage")) {
+			config->dHistPercentage = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "InterFrameDelay")) {
+			config->dInterFrameDelay = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "TriggerPulseWidth")) {
+			config->dTriggerPulseWidth = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "FixTime")) {
+			config->dFixTime = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "ExposureTime")) {
+			config->dExposureTime = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "FileNamePrefix")) {
+			if (delimeterBuf[1] == ' ')
+				sprintf(cTmp, "%s", delimeterBuf + 2);
+			else
+				sprintf(cTmp, "%s", delimeterBuf + 1);
+
+			/* remove LF */
+			sprintf(config->cFileNamePrefix,
+				"%s", strtok(cTmp, "\n"));
+		} else if (strstr(lineBuf, "ImagePath")) {
+			if (delimeterBuf[1] == ' ')
+				sprintf(cTmp, "%s", delimeterBuf + 2);
+			else
+				sprintf(cTmp, "%s", delimeterBuf + 1);
+
+			/* remove LF */
+			sprintf(config->cImagePath,
+				"%s", strtok(cTmp, "\n"));
+		} else if (strstr(lineBuf, "processing")) {
+			config->processing = atoi(delimeterBuf + 1);
+		}
+	}
+
 	fclose(pFILE);
 
 	/* not an error but errbuff is used anyway */
 	sprintf(errbuff,
-		"Reading config file was successfull %d lines were read",
+		"Reading config file was successfull, %d lines were read",
 		linenumber);
 	log_message(errbuff);
 
