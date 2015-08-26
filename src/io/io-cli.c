@@ -75,7 +75,12 @@ int main(int argc, char *argv[])
 	config.dFixTime = 0.000000;
 
 	sprintf(config.cFileNamePrefix, "%s", "image");
+
+#ifdef WIN
+	_snprintf_s(config.cImagePath, MAX_STRING_LENGTH, 250, "%s", outfolder);
+#else
 	snprintf(config.cImagePath, 250, "%s", outfolder);
+#endif
 
 	config.processing = rawdump;
 
