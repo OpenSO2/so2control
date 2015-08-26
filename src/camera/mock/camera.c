@@ -13,6 +13,8 @@
 #include "camera.h"
 #include "log.h"
 
+#include "getBufferFromFile.c"
+
 /* local vars and prototypes */
 static short *getBufferFromFile(char *filename);
 static void (*externalCallback)(sParameterStruct *);
@@ -49,34 +51,6 @@ int camera_trigger(sParameterStruct * sSO2Parameters, void (*callbackFunction) (
 	externalCallback = callbackFunction;
 	internalCallback(sSO2Parameters);
 	return 0;
-}
-
-/* HEADER is 64 bytes */
-/* image size is  1344 * 1024 * 16/8 */
-short *getBufferFromFile(char *filename)
-{
-	short *buffer;
-	int length;
-	int bytesReadFromFile;
-	FILE *f = fopen(filename, "rb");
-	if (f) {
-		(void)fseek(f, 0, SEEK_END);
-		length = (size_t) ftell(f);
-		(void)fseek(f, 0, SEEK_SET);
-		buffer = malloc(length);
-		if (buffer) {
-			bytesReadFromFile = fread(buffer, 1, length, f);
-			if(bytesReadFromFile != length)
-				printf("failed to read mock image from file. %i of %i \n", bytesReadFromFile, length);
-		} else {
-			printf("failed to read into buffer\n");
-		}
-		(void)fclose(f);
-	} else {
-		printf("failed to open file\n");
-	}
-
-	return buffer;
 }
 
 int camera_get(sParameterStruct * sSO2Parameters)
