@@ -16,6 +16,9 @@
 #include "kbhit.h"
 #include "io/io.h"
 
+static int saveErrCount = 0;  /* counting how often saving an image failed */
+static int startErrCount = 0; /* counting how often the start of capture process failed */
+
 static void callback(sParameterStruct * sSO2Parameters);
 
 static void callback(sParameterStruct * sSO2Parameters)
@@ -44,8 +47,6 @@ int startAquisition(sParameterStruct * sParameters_A,
 
 int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	int saveErrCount = 0;  /* counting how often saving an image failed */
-	int startErrCount = 0; /* counting how often the start of capture process failed */
 	int status = 0;        /* status variable */
 
 	/* get current time with milliseconds precision
@@ -90,10 +91,10 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 		/* save the captured image */
 		/* FIXME: Check return values */
-		io_write(sParameters_A, config);
-		io_write(sParameters_B, config);
+		status = io_write(sParameters_A, config);
+		status = io_write(sParameters_B, config);
 
-		if (0 != status) {
+		if (!status) {
 			log_error("Saving an image failed. This is not fatal");
 			/* if saving failed somehow more than 3 times program stops */
 			saveErrCount++;
