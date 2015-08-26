@@ -226,6 +226,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		if (state) {
 			log_error("PNG image wasn't written correctly");
 		}
+		fclose(fp);
 	} else {
 		state = 1;
 		log_error("Couldn't open png file");
@@ -268,17 +269,22 @@ int insertValue(char **png, char *name, float value, int png_length)
 int insertHeader(char **png, char *name, char *content, int png_length)
 {
 	int head[200];
-	char text[180];		/* can be of arbitrary length */
+	char *text;
 	int png_length_padded;
 	int name_length = strlen(name);
 	int l, i;
 	int header_length;
 	char *padded_png;
 
+	l = strlen(name) + strlen(content);
+	text = (char *)malloc(l * sizeof(char));
+	if(text == NULL){
+		log_error("unable to allocate memory for header text");
+		return 2;
+	}
 	strcpy(text, name);
 	strcat(text, content);
 
-	l = strlen(text);
 	log_debug("strlen of new header %i", l);
 
 	/*
@@ -338,6 +344,9 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	for (i = 0; i < header_length; i++) {
 		padded_png[png_length - 12 + i] = head[i];
 	}
+
+	/* cleanup */
+	free(text);
 
 	return png_length_padded;
 }
