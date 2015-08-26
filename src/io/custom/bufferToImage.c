@@ -13,12 +13,13 @@ IplImage *bufferToImage(short *buffer)
 
 	img = cvCreateImage(mSize, IPL_DEPTH_16U, 1);
 
-	memcpy(img->imageData, buffer, BUFFERSIZE);
-
 	if (!img) {
 		printf("%s", "failed to decode image\n");
 		return img;
 	}
+
+	memcpy(img->imageData, buffer, BUFFERSIZE);
+
 	// rotate image
 	cvFlip(img, img, -1);
 
