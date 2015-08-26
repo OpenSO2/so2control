@@ -14,7 +14,7 @@ short *getBufferFromFile(char *filename)
 		return NULL;
 	}
 
-	fseek(f, 0, SEEK_END);
+	(void)fseek(f, 0, SEEK_END);
 	length = ftell(f) - 64;  /* substract header */
 	if(length < 1){
 		printf("file to small or unreadable\n");
@@ -22,7 +22,7 @@ short *getBufferFromFile(char *filename)
 		return NULL;
 	}
 
-	fseek(f, 64, SEEK_SET); /* 64bit offset for header */
+	(void)fseek(f, 64, SEEK_SET); /* 64bit offset for header */
 	buffer = malloc(length);
 	if (!buffer) {
 		printf("failed to create buffer\n");

@@ -307,6 +307,9 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	/* the new PNG length is the old one, plus the header */
 	png_length_padded = png_length + header_length;
 
+	/* cleanup */
+	free(text);
+
 	log_debug("trying to realloc %i chars at %i", png_length_padded, png);
 	/* Resize the PNG buffer to accommodate for the additional text chunk */
 	padded_png = (char *)realloc(*png, png_length_padded * sizeof(char));
@@ -344,9 +347,6 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	for (i = 0; i < header_length; i++) {
 		padded_png[png_length - 12 + i] = head[i];
 	}
-
-	/* cleanup */
-	free(text);
 
 	return png_length_padded;
 }
