@@ -16,7 +16,6 @@
 #include "getBufferFromFile.c"
 
 /* local vars and prototypes */
-static short *getBufferFromFile(char *filename);
 static void (*externalCallback)(sParameterStruct *);
 static void internalCallback(sParameterStruct *);
 static int bufferSetA;

@@ -5,7 +5,7 @@ short *getBufferFromFile(char *filename);
 short *getBufferFromFile(char *filename)
 {
 	short *buffer = NULL;
-	int length;
+	unsigned int length;
 	int read_bytes;
 
 	FILE *f = fopen(filename, "rb");
@@ -32,7 +32,7 @@ short *getBufferFromFile(char *filename)
 	}
 
 	read_bytes = fread(buffer, sizeof(char), length, f);
-	if ( length != read_bytes * sizeof(char)) {
+	if (length != read_bytes * sizeof(char)) {
 		printf("failed to read into buffer\n");
 		free(buffer);
 		fclose(f);
