@@ -17,7 +17,7 @@ int kbhit(void)
 	int c = 0;
 	tcgetattr(fd, &oterm);
 	memcpy(&term, &oterm, sizeof(term));
-	term.c_lflag = term.c_lflag & (!ICANON);
+	term.c_lflag &= !ICANON;
 	term.c_cc[VMIN] = 0;
 	term.c_cc[VTIME] = 1;
 	tcsetattr(fd, TCSANOW, &term);
