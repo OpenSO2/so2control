@@ -278,7 +278,7 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 
 	l = strlen(name) + strlen(content);
 	text = (char *)malloc(l * sizeof(char));
-	if(text == NULL){
+	if (text == NULL) {
 		log_error("unable to allocate memory for header text");
 		return 2;
 	}

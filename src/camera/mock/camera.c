@@ -16,11 +16,10 @@
 #include "getBufferFromFile.c"
 
 /* local vars and prototypes */
-static void (*externalCallback)(sParameterStruct *);
+static void (*externalCallback) (sParameterStruct *);
 static void internalCallback(sParameterStruct *);
 static int bufferSetA;
 static int bufferSetB;
-
 
 static void internalCallback(sParameterStruct * sSO2Parameters)
 {

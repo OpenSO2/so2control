@@ -73,7 +73,6 @@ int log_error(char *message)
 	return 0;
 }
 
-
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int log_debug(char *message, ...)
 {
@@ -94,7 +93,6 @@ int log_debug(char *message, ...)
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
-
 
 int log_uninit(void)
 {

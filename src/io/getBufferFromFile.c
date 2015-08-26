@@ -15,8 +15,8 @@ short *getBufferFromFile(char *filename)
 	}
 
 	(void)fseek(f, 0, SEEK_END);
-	length = ftell(f) - 64;  /* substract header */
-	if(length < 1){
+	length = ftell(f) - 64;	/* substract header */
+	if (length < 1) {
 		printf("file to small or unreadable\n");
 		fclose(f);
 		return NULL;

@@ -56,13 +56,12 @@ static void stop_program(int reason)
 	exit(reason);
 }
 
-
 /*
  * Windows control handlers, almost directly taken from
  * https://msdn.microsoft.com/en-us/library/ms685049%28VS.85%29.aspx
  */
 #ifdef WIN
-BOOL CtrlHandler( DWORD fdwCtrlType )
+BOOL CtrlHandler(DWORD fdwCtrlType)
 {
 	if (fdwCtrlType == CTRL_C_EVENT)
 		stop_program(1);
@@ -93,7 +92,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGINT, &sa, &osa);
 	sigaction(SIGTERM, &sa, &osa);
 #else
-	if( !SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE ) ){
+	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE)) {
 		log_error("Control handler could not be installed, Ctrl+C won't work");
 	}
 #endif

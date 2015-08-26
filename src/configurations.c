@@ -62,7 +62,7 @@ int readConfig(char *filename, sConfigStruct * config)
 	while (fgets(lineBuf, MAXBUF, pFILE) != NULL) {
 		linenumber++;
 		/* skip lines which are marked as a commend */
-		if (lineBuf[0] == '#'){
+		if (lineBuf[0] == '#') {
 			continue;
 		}
 		delimeterBuf = strstr(lineBuf, "=");
@@ -96,8 +96,7 @@ int readConfig(char *filename, sConfigStruct * config)
 				sprintf(cTmp, "%s", delimeterBuf + 1);
 
 			/* remove LF */
-			sprintf(config->cImagePath,
-				"%s", strtok(cTmp, "\n"));
+			sprintf(config->cImagePath, "%s", strtok(cTmp, "\n"));
 		} else if (strstr(lineBuf, "processing")) {
 			config->processing = atoi(delimeterBuf + 1);
 		}
