@@ -17,9 +17,6 @@
 #include "kbhit.h"
 #include "io/io.h"
 
-static int saveErrCount = 0;  /* counting how often saving an image failed */
-static int startErrCount = 0; /* counting how often the start of capture process failed */
-
 static void callback(sParameterStruct * sSO2Parameters);
 
 static void callback(sParameterStruct * sSO2Parameters)
@@ -47,13 +44,12 @@ int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	int i = 0;
-	int darkframeinterval = 10;
+	int darkframeinterval = 20;
 	log_message("Starting acquisition...\n");
 	log_message("Press a key to exit\n");
 
 	for (i=0; !kbhit(); i++) {
 		if (i%darkframeinterval == 0){
-			log_message("---- --- ---");
 			aquire_darkframe(sParameters_A, sParameters_B, config);
 		}
 		aquire(sParameters_A, sParameters_B, config);
@@ -64,88 +60,75 @@ int startAquisition(sParameterStruct * sParameters_A,
 
 int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	int status = 0;        /* status variable */
+	int statusA = 0, statusB = 0;
 
-	/* get current time with milliseconds precision
-	 * TODO: handle return codes
-	 */
+	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampBefore);
 	getTime(sParameters_B->timestampBefore);
 
-	/* Now start our capture, return control immediately back to program
-	 * TODO: handle return codes
-	 */
-	status = camera_trigger(sParameters_A, callback);
-	status = camera_trigger(sParameters_B, callback);
-
-	if (!status) {
-		/* if starting the capture was successful reset error counter to zero */
-		startErrCount = 0;
-
-		/* Wait for a user defined period between each camera trigger call */
-		sleepMs(config->dInterFrameDelay);
-
-		/* Wait here until either:
-		 * (a) The user aborts the wait by pressing a key in the console window
-		 * (b) The BufferReady event occurs indicating that the image is complete
-		 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
-		 * Keep calling the sleep function to avoid burning CPU cycles */
-		while (
-			   !(sParameters_A->fBufferReady && sParameters_B->fBufferReady)
-		    && !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow)
-			&& !kbhit()
-		){
-			sleepMs(10);
-		}
-
-		/* Reset the buffer ready flags to false for next cycle */
-		sParameters_A->fBufferReady = FALSE;
-		sParameters_B->fBufferReady = FALSE;
-
-		/* download the captured image */
-		status = camera_get(sParameters_A);
-		status = camera_get(sParameters_B);
-
-		/* save the captured image */
-		/* FIXME: Check return values */
-		status = io_write(sParameters_A, config);
-		status = io_write(sParameters_B, config);
-
-		if (!status) {
-			log_error("Saving an image failed. This is not fatal");
-			/* if saving failed somehow more than 3 times program stops */
-			saveErrCount++;
-			if (saveErrCount >= 3) {
-				log_error
-				    ("Saving 3 images in a row failed. This is fatal");
-				camera_abort(sParameters_A);
-				camera_abort(sParameters_B);
-				return 1;
-			}
-		} else {
-			/* if saving was successful error counter is reset to zero */
-			/* image counter is set +1 */
-			config->dImageCounter++;
-			config->dImageCounter++;
-
-			saveErrCount = 0;
-		}
-		camera_abort(sParameters_A);
-		camera_abort(sParameters_B);
-	} else {
-		log_error("Starting the acquisition failed. This is not fatal");
-		/* if starting the capture failed more than 3 times program stops */
-		startErrCount++;
-		if (startErrCount >= 3) {
-			log_error
-			    ("starting the acquisition failed 3 times in a row. this is fatal");
-			camera_abort(sParameters_A);
-			camera_abort(sParameters_B);
-			return 2;
-		}
+	if (statusA || statusB) {
+		log_error("failed to get the timestampBefore time.");
+		return 3;
 	}
 
-	return 0;
+	/* Now start our capture, return control immediately back to program */
+	statusA = camera_trigger(sParameters_A, callback);
+	statusB = camera_trigger(sParameters_B, callback);
+
+	if (statusA || statusB) {
+		log_error("Starting the acquisition failed.");
+
+		camera_abort(sParameters_A);
+		camera_abort(sParameters_B);
+		return 2;
+	}
+
+	/* Wait for a user defined period between each camera trigger call */
+	sleepMs(config->dInterFrameDelay);
+
+	/* Wait here until either:
+	 * (a) The user aborts the wait by pressing a key in the console window
+	 * (b) The BufferReady event occurs indicating that the image is complete
+	 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
+	 * Keep calling the sleep function to avoid burning CPU cycles */
+	while (
+		   !(sParameters_A->fBufferReady && sParameters_B->fBufferReady)
+		&& !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow)
+		&& !kbhit()
+	){
+		sleepMs(10);
+	}
+
+	/* Reset the buffer ready flags to false for next cycle */
+	sParameters_A->fBufferReady = FALSE;
+	sParameters_B->fBufferReady = FALSE;
+
+	/* download the captured image */
+	statusA = camera_get(sParameters_A);
+	statusB = camera_get(sParameters_B);
+
+	if (statusA || statusB) {
+		log_error("Getting an image failed.");
+		camera_abort(sParameters_A);
+		camera_abort(sParameters_B);
+		return 1;
+	}
+
+	/* save the captured image */
+	statusA = io_write(sParameters_A, config);
+	statusB = io_write(sParameters_B, config);
+
+	if (statusA || statusB) {
+		log_error("Saving an image failed.");
+	}
+
+	config->dImageCounter++;
+	config->dImageCounter++;
+
+	camera_abort(sParameters_A);
+	camera_abort(sParameters_B);
+
+	return statusA + statusB;
 }
 
 time_t TimeFromTimeStruct(const timeStruct * pTime)
