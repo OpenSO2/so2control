@@ -1,3 +1,0 @@
-[submodule "src/filterwheel"]
-	path = src/filterwheel
-	url = git@bitbucket.org:jjacobsohn/arduino-filterwheel.git

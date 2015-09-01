@@ -1,0 +1,12 @@
+
+- Board
+- Arduino Nano
+- DRV8825  Stepper Motor Driver Carrier, High Current
+- Connector Sensor (2 Pins)
+- Connector 4-Way-Switch (5 Pins)
+- Connector Motor (4 Pins)
+- Power Connector (2 Pins)
+- Capacitator 100 uF
+- 5 Resistor 1KOhm
+- 1 Resistor 120 Ohm
+
