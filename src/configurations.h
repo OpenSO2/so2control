@@ -70,12 +70,20 @@ typedef struct {
 	/* path to image diretory */
 	char cImagePath[MAX_STRING_LENGTH];
 
-	/* A switch to set the exposuretime fix to the value given in
+	/*
+	 * A switch to set the exposuretime fix to the value given in
 	 * the config file
 	 */
 	int dFixTime;
 
+	/*
+	 * serial device used to talk to the filterwheel firmware
+	 * eg. /dev/ttyUSB0
+	 */
 	char filterwheel_device[MAX_STRING_LENGTH];
+
+	/* number of images between */
+	int darkframeintervall;
 } sConfigStruct;
 
 /* Camera parameters */
@@ -110,7 +118,7 @@ typedef struct {
 	/* Camera identifier */
 	char identifier;
 
-	/*  */
+	/* flag to indicate that the current image is a dark image */
 	int dark;
 } sParameterStruct;
 

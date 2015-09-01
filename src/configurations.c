@@ -7,7 +7,8 @@
 #define MAXBUF 1024
 
 /* local prototypes*/
-int readConfig(char *filename, sConfigStruct * config);
+static int readConfig(char *filename, sConfigStruct * config);
+static void getString(char * target, char * source);
 
 int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier)
 {
@@ -15,7 +16,7 @@ int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char ide
 	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
-sSO2Parameters->dark = 0;
+	sSO2Parameters->dark = 0;
 
 	return 0;
 }
@@ -43,13 +44,12 @@ int process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 	return 0;
 }
 
-int readConfig(char *filename, sConfigStruct * config)
+static int readConfig(char *filename, sConfigStruct * config)
 {
 	FILE *pFILE;          /* filehandle for config file */
 	char lineBuf[MAXBUF]; /* buffer that holds the current line of the config file */
 	char *delimeterBuf;   /* buffer that holds the line after a specified delimeter */
 	int linenumber = 0;
-	char cTmp[MAXBUF];    /* a temporal buffer used when strings are read from the config file */
 	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
 	pFILE = fopen(filename, "r");
@@ -82,45 +82,37 @@ int readConfig(char *filename, sConfigStruct * config)
 		} else if (strstr(lineBuf, "ExposureTime")) {
 			config->dExposureTime = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "FileNamePrefix")) {
-			if (delimeterBuf[1] == ' ')
-				sprintf(cTmp, "%s", delimeterBuf + 2);
-			else
-				sprintf(cTmp, "%s", delimeterBuf + 1);
-
-			/* remove LF */
-			sprintf(config->cFileNamePrefix,
-				"%s", strtok(cTmp, "\n"));
+			getString(config->cFileNamePrefix, delimeterBuf);
 		} else if (strstr(lineBuf, "ImagePath")) {
-			if (delimeterBuf[1] == ' ')
-				sprintf(cTmp, "%s", delimeterBuf + 2);
-			else
-				sprintf(cTmp, "%s", delimeterBuf + 1);
-
-			/* remove LF */
-			sprintf(config->cImagePath, "%s", strtok(cTmp, "\n"));
+			getString(config->cImagePath, delimeterBuf);
 		} else if (strstr(lineBuf, "filterwheel_device")) {
-			if (delimeterBuf[1] == ' ')
-				sprintf(cTmp, "%s", delimeterBuf + 2);
-			else
-				sprintf(cTmp, "%s", delimeterBuf + 1);
-
-			/* remove LF */
-			sprintf(config->filterwheel_device, "%s", strtok(cTmp, "\n"));
-			printf("read filterwheel device %s\n", config->filterwheel_device);
+			getString(config->filterwheel_device, delimeterBuf);
 		} else if (strstr(lineBuf, "processing")) {
 			config->processing = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "darkframeintervall")) {
+			config->darkframeintervall = atoi(delimeterBuf + 1);
 		}
 	}
 
 	fclose(pFILE);
 
 	/* not an error but errbuff is used anyway */
-	sprintf(errbuff,
-		"Reading config file was successfull, %d lines were read",
-		linenumber);
+	sprintf(errbuff, "Reading config file was successfull, %d lines were read", linenumber);
 	log_message(errbuff);
 
 	return 0;
+}
+
+static void getString(char * target, char * source)
+{
+	char cTmp[MAXBUF];
+	if (source[1] == ' ')
+		sprintf(cTmp, "%s", source + 2);
+	else
+		sprintf(cTmp, "%s", source + 1);
+
+	/* remove LF */
+	sprintf(target, "%s", strtok(cTmp, "\n"));
 }
 
 int load_config(char *filename, sConfigStruct * config)
