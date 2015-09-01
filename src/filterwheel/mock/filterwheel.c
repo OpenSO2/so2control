@@ -1,6 +1,7 @@
 #include <stdio.h>		/* Standard input/output definitions */
 #include <unistd.h>
-#include "../filterwheel.h"
+#include "filterwheel.h"
+#include "common.h"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int filterwheel_init(sConfigStruct * config)
 {
@@ -9,7 +10,7 @@ int filterwheel_init(sConfigStruct * config)
 
 int filterwheel_send(int position)
 {
-	sleep(2);
+	sleepMs(2000);
 	return 0;
 }
 

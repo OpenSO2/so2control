@@ -1,12 +1,13 @@
-#include <stdio.h>		/* Standard input/output definitions */
+#include <stdio.h>   /* Standard input/output definitions */
 #include "../filterwheel.h"
+#include "common.h"
 
 #if defined(POSIX)
-#include <string.h>		/* String function definitions */
-#include <unistd.h>		/* UNIX standard function definitions */
-#include <fcntl.h>		/* File control definitions */
-#include <errno.h>		/* Error number definitions */
-#include <termios.h>		/* POSIX terminal control definitions */
+#include <string.h>  /* String function definitions */
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
 
 static int fd;			/* File descriptor for the port */
 #else
@@ -80,6 +81,7 @@ int filterwheel_send(int position)
 		&& buffer[3] == 'e'){
 			break;
 		}
+		sleepMs(100);
 	}
 	return 0;
 #else
