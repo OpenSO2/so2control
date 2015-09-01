@@ -72,7 +72,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	if (bufferSet == 1)
 		free(sSO2Parameters->stBuffer);
 
-	stBuffer = getBufferFromFile(filename);
+	stBuffer = getBufferFromFile(filename, 0);
 
 	sSO2Parameters->stBuffer = stBuffer;
 	return 0;

@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	startTime = (float)clock() / CLOCKS_PER_SEC;
 #endif
 
-	buffer = getBufferFromFile(infile);
+	buffer = getBufferFromFile(infile, 64);
 
 #ifdef BENCHMARK
 	log_debug("reading file took %fms \n",

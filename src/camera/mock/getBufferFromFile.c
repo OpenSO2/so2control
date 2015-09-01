@@ -1,8 +1,8 @@
-/* HEADER is 64 bytes
+/* HEADER is N bytes
  * image size is  1344 * 1024 * 16/8
  */
-short *getBufferFromFile(char *filename);
-short *getBufferFromFile(char *filename)
+short *getBufferFromFile(char *filename, int offset);
+short *getBufferFromFile(char *filename, int offset)
 {
 	short *buffer = NULL;
 	unsigned int length;
@@ -15,14 +15,14 @@ short *getBufferFromFile(char *filename)
 	}
 
 	(void)fseek(f, 0, SEEK_END);
-	length = ftell(f) - 64;	/* substract header */
+	length = ftell(f) - offset;	/* substract header */
 	if (length < 1) {
 		printf("file to small or unreadable\n");
 		fclose(f);
 		return NULL;
 	}
 
-	(void)fseek(f, 64, SEEK_SET); /* 64bit offset for header */
+	(void)fseek(f, offset, SEEK_SET); /* offset for header */
 	buffer = malloc(length);
 	if (!buffer) {
 		printf("failed to create buffer\n");
