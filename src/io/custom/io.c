@@ -385,7 +385,7 @@ int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, ch
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify Camera for filename Prefix */
-	char *camname = id == 'a' ? "top" : "bot";
+	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
 
 	state = sprintf(filename,
 			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
