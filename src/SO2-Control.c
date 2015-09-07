@@ -156,6 +156,16 @@ int main(int argc, char *argv[])
 	}
 	log_message("filterwheel initialized");
 
+	/* open filterwheel */
+	state = filterwheel_send(FILTERWHEEL_OPENED_A);
+	if (state != 0) {
+		/* this is critical if this function fails no camera handle is returned */
+		log_error("failed to open filterwheel");
+		stop_program(1);
+		return state;
+	}
+	log_debug("filterwheel opened");
+
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
 	if (state != 0) {

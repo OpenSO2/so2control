@@ -17,7 +17,6 @@ static HANDLE hSerial;
 
 int filterwheel_init(sConfigStruct * config)
 {
-	printf("init filterwheel %s\n", config->filterwheel_device);
 #ifdef POSIX
 	fd = open(config->filterwheel_device, O_RDWR | O_NOCTTY | O_NDELAY);
 
@@ -63,6 +62,7 @@ int filterwheel_init(sConfigStruct * config)
 		fprintf(stderr, "Error setting timeouts\n");
 		return 1;
 	}
+	return 0;
 #endif
 }
 
