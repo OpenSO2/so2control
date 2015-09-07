@@ -23,11 +23,11 @@ int filterwheel_init(sConfigStruct * config)
 
 	return fd == -1 ? 1 : 0;
 #else
-	// Declare variables and structures
+	/* Declare variables and structures */
 	DCB dcbSerialParams = { 0 };
 	COMMTIMEOUTS timeouts = { 0 };
 
-	// Open the highest available serial port number
+	/* Open the highest available serial port number */
 	fprintf(stderr, "Opening serial port...");
 	hSerial = CreateFile(config->filterwheel_device, GENERIC_READ | GENERIC_WRITE, 0, NULL,
 			     OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -35,8 +35,10 @@ int filterwheel_init(sConfigStruct * config)
 		fprintf(stderr, "Error\n");
 		return 1;
 	}
-	// Set device parameters (38400 baud, 1 start bit,
-	// 1 stop bit, no parity)
+	/*
+	 * Set device parameters (38400 baud, 1 start bit,
+	 * 1 stop bit, no parity)
+	 */
 	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 	if (GetCommState(hSerial, &dcbSerialParams) == 0) {
 		fprintf(stderr, "Error getting device state\n");
@@ -51,7 +53,7 @@ int filterwheel_init(sConfigStruct * config)
 		fprintf(stderr, "Error setting device parameters\n");
 		return 1;
 	}
-	// Set COM port timeout settings
+	/* Set COM port timeout settings */
 	timeouts.ReadIntervalTimeout = 50;
 	timeouts.ReadTotalTimeoutConstant = 50;
 	timeouts.ReadTotalTimeoutMultiplier = 10;
@@ -64,7 +66,7 @@ int filterwheel_init(sConfigStruct * config)
 #endif
 }
 
-// position: o c
+/* position: o c */
 int filterwheel_send(int position)
 {
 	int bytes_to_send = 1;
@@ -85,12 +87,12 @@ int filterwheel_send(int position)
 	}
 	return 0;
 #else
-	// Send specified text (remaining command line arguments)
+	/* Send specified text (remaining command line arguments) */
 	DWORD bytes_written, total_bytes_written = 0;
 	return WriteFile(hSerial, bytes_to_send, 5, &bytes_written, NULL);
 #endif
 }
-
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int filterwheel_uninit(sConfigStruct * config)
 {
 #if defined(POSIX)
@@ -99,3 +101,4 @@ int filterwheel_uninit(sConfigStruct * config)
 	return CloseHandle(hSerial);
 #endif
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
