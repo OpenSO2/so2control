@@ -6,9 +6,11 @@
 /* ignore unused parameters in this file */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#include<unistd.h>
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include<pthread.h>
 #include "configurations.h"
 #include "camera.h"
 #include "log.h"
@@ -16,16 +18,27 @@
 #include "getBufferFromFile.c"
 
 /* local vars and prototypes */
-static void (*externalCallback) (sParameterStruct *);
-static void internalCallback(sParameterStruct *);
 static int bufferSetA;
 static int bufferSetB;
-
-static void internalCallback(sParameterStruct * sSO2Parameters)
+static void* timeout(void *args);
+struct data_struct{
+	void (*callback)(sParameterStruct *sSO2Parameters);
+	sParameterStruct *sSO2Parameters;
+};
+static void * timeout(void *args)
 {
-	externalCallback(sSO2Parameters);
+	void (*callback)(sParameterStruct *sSO2Parameters) = ((struct data_struct*) args)->callback;
+	sParameterStruct *sSO2Parameters = ((struct data_struct*) args)->sSO2Parameters;
+
+	printf("thread started\n");
+	sleep(3);
+	printf("thread done\n");
+
+	callback(sSO2Parameters);
+	pthread_exit((void *) 0);
 }
 
+/* public */
 int camera_init(sParameterStruct * sSO2Parameters)
 {
 	bufferSetA = 0;
@@ -43,11 +56,18 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-int camera_trigger(sParameterStruct * sSO2Parameters, void (*callbackFunction) (sParameterStruct *sSO2Parameters))
+/*
+ * windows http://stackoverflow.com/questions/1981459/how-to-use-threads-in-c-on-windows
+ */
+int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters))
 {
-	sleepMs(100);
-	externalCallback = callbackFunction;
-	internalCallback(sSO2Parameters);
+	pthread_t thread_id;
+	struct data_struct *g_data_struct = (struct data_struct*) calloc(1, sizeof(*g_data_struct));
+	g_data_struct->callback = callback;
+	g_data_struct->sSO2Parameters = sSO2Parameters;
+
+	pthread_create(&thread_id, NULL, timeout, (void *) g_data_struct);
+
 	return 0;
 }
 
