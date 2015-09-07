@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return state;
 	}
-	log_debug("filterwheel opened");
+	log_message("filterwheel opened");
 
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return state;
 	}
-	log_debug("camera A initialized");
+	log_message("camera A initialized");
 
 	state = camera_init(&sParameters_B);
 	if (state != 0) {
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return state;
 	}
-	log_debug("camera B initialized");
+	log_message("camera B initialized");
 
 	/* configure camera */
 	state = camera_config(&sParameters_A);
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
-	log_debug("camera A configured");
+	log_message("camera A configured");
 
 	state = camera_config(&sParameters_B);
 	if (state != 0) {
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
-	log_debug("camera B configured");
+	log_message("camera B configured");
 
 	/* set exposure */
 	state = setExposureTime(&sParameters_A, &config);
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
-	log_debug("exposure time for cam A set");
+	log_message("exposure time for cam A set");
 
 	state = setExposureTime(&sParameters_B, &config);
 	if (state != 0) {
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 		stop_program(1);
 		return 1;
 	}
-	log_debug("exposure time for cam B set");
+	log_message("exposure time for cam B set");
 
 	/*
 	 * Starting the acquisition with the exposure parameter set in
