@@ -1,5 +1,4 @@
-#include <stdio.h>		/* Standard input/output definitions */
-#include <unistd.h>
+#include <stdio.h>
 #include "filterwheel.h"
 #include "common.h"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
