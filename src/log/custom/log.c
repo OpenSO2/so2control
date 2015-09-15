@@ -8,6 +8,7 @@ static char nameLogFile[256];
 static char buffer[512];
 static time_t time_ptr;
 static struct tm logTime;
+static int debug;
 
 int log_init(void)
 {
@@ -51,6 +52,11 @@ int log_init(void)
 	return 0;
 }
 
+int log_set_debug(int dbg)
+{
+	debug = dbg;
+}
+
 int log_message(char *message)
 {
 	time(&time_ptr);
@@ -76,20 +82,20 @@ int log_error(char *message)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int log_debug(char *message, ...)
 {
-#ifdef DEBUG
-	va_list args;
-	char *format = "%02d:%02d:%02d | DEBUG | %s\n";
-	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
+	if(debug){
+		va_list args;
+		char *format = "%02d:%02d:%02d | DEBUG | %s\n";
+		time(&time_ptr);
+		logTime = *gmtime(&time_ptr);
 
-	va_start(args, message);
-	vsprintf(buffer, message, args);
-	va_end(args);
+		va_start(args, message);
+		vsprintf(buffer, message, args);
+		va_end(args);
 
-	printf(format, logTime.tm_hour, logTime.tm_min, logTime.tm_sec, buffer);
-	fprintf(logfile, format, logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, buffer);
-#endif
+		printf(format, logTime.tm_hour, logTime.tm_min, logTime.tm_sec, buffer);
+		fprintf(logfile, format, logTime.tm_hour,
+			logTime.tm_min, logTime.tm_sec, buffer);
+	}
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"

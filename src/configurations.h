@@ -31,6 +31,9 @@ typedef struct {
 	/* flag. If trueish, processing is done */
 	int processing;
 
+	/* flag. If falseish, debugging output is suppressed */
+	int debug;
+
 	/* Number of images that are to be taken. Useful for testing */
 	int noofimages;
 

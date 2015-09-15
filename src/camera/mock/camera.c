@@ -40,14 +40,15 @@ static void * timeout(void * args)
 	void (*callback)(sParameterStruct *sSO2Parameters) = ((struct data_struct*) args)->callback;
 	sParameterStruct *sSO2Parameters = ((struct data_struct*) args)->sSO2Parameters;
 
-	printf("thread started\n");
+	log_debug("thread started");
 
 #ifdef WIN
 	Sleep(3);
 #else
 	sleep(3);
 #endif
-	printf("thread done\n");
+
+	log_debug("thread done");
 
 	callback(sSO2Parameters);
 	#ifdef WIN

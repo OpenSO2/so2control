@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
 	config.dHistPercentage = 5;
 	config.dInterFrameDelay = 10;
 	config.dBufferlength = 1376256;
+	config.debug = 0;
 
 	state = load_config("configurations//SO2Config.conf", &config);
 	if (state != 0) {
@@ -134,6 +135,8 @@ int main(int argc, char *argv[])
 		log_error("Could not handle command line arguments");
 		return state;
 	}
+
+	log_set_debug(config.debug);
 
 	/* Initialise parameter structures */
 	structInit(&sParameters_A, &config, 'a');

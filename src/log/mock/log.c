@@ -8,6 +8,11 @@ int log_init(void)
 	return 0;
 }
 
+int log_set_debug(int dbg)
+{
+	return 0;
+}
+
 int log_message(char *message)
 {
 	printf("MOCK LOG: %s \n", message);

@@ -32,6 +32,8 @@ int process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 			config->processing = 1;
 		} else if (strcmp(argv[i], "--png-only") == 0) {
 			config->processing = 2;
+		} else if (strcmp(argv[i], "--debug") == 0) {
+			config->debug = 1;
 		} else if (strcmp(argv[i], "--noofimages") == 0 && argv[i + 1]) {
 			config->noofimages = strtol(argv[i + 1], NULL, 10);
 			i++;
