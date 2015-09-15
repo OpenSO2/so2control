@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 	sSO2Parameters.stBuffer = buffer;
 	sSO2Parameters.timestampBefore = &time;
 	config.dFixTime = 0.000000;
+	sSO2Parameters.dark = 0;
 
 	sprintf(config.cFileNamePrefix, "%s", "image");
 
