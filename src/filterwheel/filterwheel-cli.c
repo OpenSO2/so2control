@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 	#endif
 
 	filterwheel_init(&config);
+	printf("sending %i...\n", a);
 	filterwheel_send(a);
-	printf("sending %i\n", a);
 	filterwheel_uninit(&config);
 
 	return 0;

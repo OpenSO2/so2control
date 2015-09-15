@@ -70,18 +70,15 @@ int filterwheel_init(sConfigStruct * config)
 int filterwheel_send(int position)
 {
 	int bytes_to_send = 1;
-	char buffer[4];
+	char buffer[80];
 #ifdef POSIX
 	printf("write to filterwheel: %i \n", position);
 	write(fd, &position, bytes_to_send);
 	while(1){
-		read(fd, buffer, 4);
+		read(fd, buffer, 80);
 
-		if(buffer[0] == 'd'
-		&& buffer[1] == 'o'
-		&& buffer[2] == 'n'
-		&& buffer[3] == 'e'){
-			break;
+		if (strstr(buffer, "done") != NULL) {
+			return 0;
 		}
 		sleepMs(100);
 	}

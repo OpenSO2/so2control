@@ -163,6 +163,7 @@ int calibrate()
 }
 
 void done(){
+	delayMicroseconds(50);
 	Serial.write("done\n");
 	digitalWrite(ledPin, LOW);
 }
@@ -192,10 +193,11 @@ void loop()
 		int ser = Serial.read();
 
 		digitalWrite(ledPin, HIGH);
-		if (setting != ser && ser > 0 && ser < 5)
+		if (setting != ser && ser > 0 && ser < 5){
 			setting = ser;
-		else
+		} else {
 			done();
+		}
 	}
 
 	if (setting != oldsetting) {
