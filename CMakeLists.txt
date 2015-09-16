@@ -1,6 +1,3 @@
-#
-# make clean; make 2> wc; wc wc; head -n 30 wc; rm -f wc
-
 # settings
 cmake_minimum_required(VERSION 2.8)
 project( so2-camera )
@@ -118,6 +115,7 @@ endif()
 if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(so2-camera ${M_LIB})
+	target_link_libraries(so2-camera -lpthread)
 endif()
 
 # log subsystem
@@ -125,7 +123,6 @@ set(MOCK_LOG ON CACHE BOOL "Mock logging")
 if(MOCK_LOG)
 	message("=====MOCK_LOG=======")
 endif()
-
 add_subdirectory( src/log )
 target_link_libraries( so2-camera log )
 
