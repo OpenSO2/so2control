@@ -1,6 +1,8 @@
 SO2-Control Software
 ====================
 
+[![Join the chat at https://gitter.im/johannjacobsohn/so2-camera](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/johannjacobsohn/so2-camera?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 SO2 Camera control software written in C, licenced under MIT.
 
 | Windows | Linux | QA     |
