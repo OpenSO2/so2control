@@ -75,7 +75,7 @@ set(SRCFILES
 	./src/exposureTimeControl.c
 	./src/imageCreation.c
 	./src/kbhit.c
-	./src/SO2-Control.c
+	./src/so2-camera.c
 )
 
 set(MOCK_CAMERA ON CACHE BOOL "Mock camera")
