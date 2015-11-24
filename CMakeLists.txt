@@ -50,11 +50,6 @@ else()
 	add_definitions(-DWIN)
 endif()
 
-set(DEBUG ON CACHE BOOL "More logging")
-if( ${DEBUG} )
-	add_definitions(-DDEBUG)
-endif()
-
 include_directories(
 	./src
 	./src/camera
@@ -146,7 +141,9 @@ if( OpenCV_FOUND )
 	target_link_libraries( so2-camera ${OpenCV_LIBS} )
 endif()
 
-### custom commands
+
+########################################################################
+# custom commands
 add_custom_target(checkstyle
 	COMMAND indent -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33
 	-ncdb -ce -ci4 -cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs
@@ -160,9 +157,27 @@ add_custom_target(coverity
 )
 
 
+########################################################################
+# Testing
+
 # does the application run
-add_test(so2-camera_runs so2-camera --noofimages 1 --imagepath ./ --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/SO2Config.conf)
+add_test(so2-camera_runs so2-camera --noofimages 1 --imagepath ./ --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/so2-camera.conf)
 
 if( ${UNIX} )
-	add_test(so2-camera_valgrind valgrind --track-origins=yes --error-exitcode=11 --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp  ./so2-camera --noofimages 1 --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/SO2Config.conf)
+	add_test(so2-camera_valgrind valgrind --track-origins=yes --error-exitcode=11 --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp  ./so2-camera --noofimages 1 --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/so2-camera.conf)
 endif()
+
+
+########################################################################
+# Installation
+if( ${UNIX} )
+	install(TARGETS so2-camera
+		RUNTIME
+		DESTINATION bin
+		COMPONENT applications)
+	install(FILES configurations/so2-camera.conf
+		DESTINATION /etc/xdg/so2-camera
+	)
+	install(FILES so2-camera.service DESTINATION /usr/lib/systemd/system)
+endif()
+

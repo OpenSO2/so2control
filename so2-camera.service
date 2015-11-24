@@ -1,0 +1,8 @@
+[Unit]
+Description=SO2 camera
+
+[Service]
+ExecStart=/usr/bin/so2-camera
+
+[Install]
+WantedBy=multi-user.target

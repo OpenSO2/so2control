@@ -88,8 +88,24 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 }
 
 /*
- * Load and parse the config file at config->cConfigFileName or
- * configurations/SO2Config.conf
+ * Find, load and parse a config file.
+ *
+ * The first config file that is found is used, it is searched for (in
+ * this order), at:
+ * - config->cConfigFileName, if set (e.g. from the cli)
+ * - from the default source path (./configurations/so2-camera.conf)
+ * - home path
+ *   - XDG_CONFIG_HOME/so2-camera/so2-camera.conf (linux only)
+ *   - PROGRAMDATA/so2-camera/config/so2-camera.conf (windows only)
+ * - system path
+ *   - XDG_CONFIG_DIRS/so2-camera/so2-camera.conf (linux only)
+ *
+ * After a config file has been found, config->cConfigFileName is set
+ * to that path.
+ *
+ * The config file is parsed as a simple key=value syntax. Lines
+ * starting with '#' are ignored, as are unknown keys.
+ *
  */
 int config_load_configfile(sConfigStruct * config)
 {
@@ -99,14 +115,50 @@ int config_load_configfile(sConfigStruct * config)
 	int linenumber = 0;
 	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
+	char user_conffile[256] = "";
+	char system_conffile[256] = "";
+	char *token;
+	char *xdg_home_configdir = getenv("XDG_CONFIG_HOME");
+	char *home = getenv("HOME");
+	char *programdata = getenv("PROGRAMDATA");
+	char *xdg_configdir = getenv("XDG_CONFIG_DIRS");
+
+	// source path
 	if (!strlen(config->cConfigFileName)){
-		config->cConfigFileName = "configurations/SO2Config.conf";
+		config->cConfigFileName = "./configurations/so2-camera.conf";
 	}
 
-	pFILE = fopen(config->cConfigFileName, "r");
+	// home path
+	if(xdg_home_configdir){ // linux only
+		sprintf(user_conffile, "%s/so2-camera/so2-camera.conf", xdg_home_configdir);
+	} else if (programdata) { // windows only
+		sprintf(user_conffile, "%s/so2-camera/config/so2-camera.conf", programdata);
+	} else if (home) {
+		sprintf(user_conffile, "%s/.config/so2-camera/so2-camera.conf", home);
+	}
 
-	if (pFILE == NULL) {
-		sprintf(errbuff, "opening Configfile: %s failed!", config->cConfigFileName);
+	if ((pFILE = fopen(config->cConfigFileName, "r"))){
+		// source path
+		log_debug("read configfile from source path: %s", config->cConfigFileName);
+	} else if ((pFILE = fopen(user_conffile, "r"))){
+		// user path
+		log_debug("read configfile from home path: %s", user_conffile);
+		config->cConfigFileName = user_conffile;
+	} else {
+		// system path
+		while ((token = strsep(&xdg_configdir, ":"))){
+			sprintf(system_conffile, "%s/so2-camera/so2-camera.conf", token);
+			log_debug("search for config file at %s", system_conffile);
+			if((pFILE = fopen(system_conffile, "r"))){
+				log_debug("read configfile from system path: %s", system_conffile);
+				config->cConfigFileName = system_conffile;
+				break;
+			}
+		}
+	}
+
+	if(!pFILE){
+		sprintf(errbuff, "opening config file failed!");
 		log_error(errbuff);
 		return 1;
 	}
@@ -149,7 +201,7 @@ int config_load_configfile(sConfigStruct * config)
 	fclose(pFILE);
 
 	/* not an error but errbuff is used anyway */
-	sprintf(errbuff, "Reading config file was successfull, %d lines were read", linenumber);
+	sprintf(errbuff, "Reading config file was successfull, %d lines were read from %s", linenumber, config->cConfigFileName);
 	log_message(errbuff);
 
 	return 0;
