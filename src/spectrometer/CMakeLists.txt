@@ -44,28 +44,35 @@ endif()
 
 if( ${UNIX} )
 	add_definitions(-DPOSIX)
-else( ${UNIX} )
+else()
 	add_definitions(-DWIN32)
 	add_definitions(-DWIN)
-endif( ${UNIX} )
+endif()
 
-# create lib
-add_custom_target(
-   libseabreeze
-   COMMAND make
-   WORKING_DIRECTORY seabreeze
-)
-include_directories(libseabreeze seabreeze/include)
-add_library( spectrometer spectrometer.h oceanoptics/spectrometer.c  )
-
+# include self
+include_directories( . )
 
 # create executables
 add_executable(spectrometer-cli spectrometer-cli.c)
+
+# create lib
+option(MOCK_SPECTROMETER "MOCK_SPECTROMETER" OFF)
+if(MOCK_SPECTROMETER)
+	MESSAGE( "=====MOCK_SPECTROMETER=======")
+	add_library( spectrometer spectrometer.h mock/spectrometer.c  )
+else( )
+	add_custom_target(
+		libseabreeze
+		COMMAND make
+		WORKING_DIRECTORY seabreeze
+	)
+	include_directories(libseabreeze seabreeze/include)
+	add_library( spectrometer spectrometer.h oceanoptics/spectrometer.c  )
+
+	target_link_libraries(spectrometer-cli ${CMAKE_CURRENT_SOURCE_DIR}/seabreeze/lib/libseabreeze.so)
+	target_link_libraries(spectrometer-cli usb)
+	add_dependencies(spectrometer-cli libseabreeze)
+endif()
+
 target_link_libraries(spectrometer-cli spectrometer)
-target_link_libraries(spectrometer-cli ${CMAKE_CURRENT_SOURCE_DIR}/seabreeze/lib/libseabreeze.so)
-target_link_libraries(spectrometer-cli usb)
-add_dependencies(spectrometer-cli libseabreeze)
-
-
-
 
