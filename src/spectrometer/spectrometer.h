@@ -1,6 +1,11 @@
 #if !defined(spectrometerh)
 #define spectrometerh 1
-int spectrometer_init(void);
-int spectrometer_uninit(void);
-int spectrometer_get(double * wavelengths, double * spectra, int * length);
+
+#include "configurations.h"
+
+int spectrometer_init(sConfigStruct * config);
+int spectrometer_uninit(sConfigStruct * config);
+int spectrometer_get(double * wavelengths, double * spectra, int length);
+int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct * config));
+
 #endif

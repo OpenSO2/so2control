@@ -1,3 +1,4 @@
+#include <stdio.h>
 /* HEADER is N bytes
  * image size is  1344 * 1024 * 16/8
  */

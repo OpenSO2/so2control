@@ -87,6 +87,13 @@ typedef struct {
 
 	/* number of images between */
 	int darkframeintervall;
+
+	double * wavelengths;
+
+	double * lastSpectrum;
+
+
+	int integration_time_micros;
 } sConfigStruct;
 
 /* Camera parameters */
@@ -107,7 +114,7 @@ typedef struct {
 	double dExposureTime;
 
 	/* Pointer to image buffer */
-	short *stBuffer;
+	short * stBuffer;
 
 	/* ~Callback stuff~ */
 
@@ -123,6 +130,7 @@ typedef struct {
 
 	/* flag to indicate that the current image is a dark image */
 	int dark;
+
 } sParameterStruct;
 
  /******************************
