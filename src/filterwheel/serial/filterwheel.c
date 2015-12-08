@@ -1,6 +1,6 @@
 #include <stdio.h>   /* Standard input/output definitions */
 #include "../filterwheel.h"
-#include "common.h"
+#include "timehelpers.h"
 
 #if defined(POSIX)
 #include <string.h>  /* String function definitions */

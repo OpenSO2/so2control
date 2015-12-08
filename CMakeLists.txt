@@ -66,6 +66,7 @@ set(SRCFILES
 	./src/exposureTimeControl.c
 	./src/imageCreation.c
 	./src/kbhit.c
+	./src/timehelpers.c
 	./src/so2-camera.c
 )
 

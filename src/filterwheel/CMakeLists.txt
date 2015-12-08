@@ -56,9 +56,14 @@ option(MOCK_FILTERWHEEL "MOCK_FILTERWHEEL" OFF)
 
 if(MOCK_FILTERWHEEL)
 	message("=====MOCK_FILTERWHEEL=======")
-	add_library(filterwheel ../common.c ./mock/filterwheel.c)
+	add_library(filterwheel ../timehelpers.c ./mock/filterwheel.c)
 else()
-	add_library(filterwheel ../common.c ./serial/filterwheel.c)
+	add_library(filterwheel ../timehelpers.c ./serial/filterwheel.c)
+endif()
+
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(filterwheel ${M_LIB})
 endif()
 
 if( ${UNIX} )

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "filterwheel.h"
-#include "common.h"
+#include "timehelpers.h"
+
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int filterwheel_init(sConfigStruct * config)
 {

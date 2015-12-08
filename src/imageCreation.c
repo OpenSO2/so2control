@@ -1,14 +1,8 @@
-#ifdef WIN
-#include<windows.h>
-#else
-#define _POSIX_C_SOURCE 200809L
-#endif
-
 #include<string.h> /* memset */
 #include<stdlib.h>
 
-#include<time.h>
 #include "common.h"
+#include "timehelpers.h"
 #include "configurations.h"
 #include "imageCreation.h"
 #include "filterwheel.h"
@@ -48,8 +42,7 @@ int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	int i = 0;
-	log_message("Starting acquisition...\n");
-	log_message("Press a key to exit\n");
+	log_message("Starting acquisition. Press a key to exit");
 
 	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
 		if (i % config->darkframeintervall == 0){
@@ -133,67 +126,3 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 	return statusA + statusB;
 }
-
-time_t TimeFromTimeStruct(const timeStruct * pTime)
-{
-	struct tm tm;
-	memset(&tm, 0, sizeof(tm));
-
-	tm.tm_year = pTime->year - 1900;
-	tm.tm_mon = pTime->mon - 1;
-	tm.tm_mday = pTime->day;
-	tm.tm_hour = pTime->hour;
-	tm.tm_min = pTime->min;
-	tm.tm_sec = pTime->sec;
-
-	return mktime(&tm);
-}
-
-#ifdef WIN
-
-/* WINDOWS VERSION */
-int getTime(timeStruct * pTS)
-{
-	SYSTEMTIME time;
-	GetSystemTime(&time);
-	pTS->year = time.wYear;
-	pTS->mon = time.wMonth;
-	pTS->day = time.wDay;
-	pTS->hour = time.wHour;
-	pTS->min = time.wMinute;
-	pTS->sec = time.wSecond;
-	pTS->milli = time.wMilliseconds;
-	return 0;
-}
-
-#else
-
-/* POSIX VERSION */
-int getTime(timeStruct * pTS)
-{
-	time_t seconds;
-	long milliseconds;
-	struct tm *tm;
-	struct timespec spec;
-	int stat;
-
-	stat = clock_gettime(CLOCK_REALTIME, &spec);
-	if (stat != 0) {
-		log_error("clock_gettime failed. (posix) \n");
-		return 1;
-	}
-
-	milliseconds = round(spec.tv_nsec / 1.0e6);
-	seconds = spec.tv_sec;
-	tm = gmtime(&seconds);
-
-	pTS->year = tm->tm_year + 1900;
-	pTS->mon = tm->tm_mon + 1;
-	pTS->day = tm->tm_mday;
-	pTS->hour = tm->tm_hour;
-	pTS->min = tm->tm_min;
-	pTS->sec = tm->tm_sec;
-	pTS->milli = milliseconds;
-	return 0;
-}
-#endif
