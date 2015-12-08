@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
 	noofscans = strtol(argv[2], NULL, 10);
 
 	config.integration_time_micros = strtol(argv[3], NULL, 10) * 1000; //
-noOfMeasurementsLeft = noofscans;
+	noOfMeasurementsLeft = noofscans;
+
 	/* init */
 	status = spectrometer_init(&config);
 	if(status){
@@ -34,40 +35,18 @@ noOfMeasurementsLeft = noofscans;
 		return 1;
 	}
 
-
-    //~ ltime=time(NULL); /* get current cal time */
-    //~ printf("1: %s",asctime( localtime(&ltime) ) );
-	//~ status = spectrometer_get(wavelengths, spectra, length, exposuretime);
-    //~ ltime=time(NULL); /* get current cal time */
-    //~ printf("1: %s",asctime( localtime(&ltime) ) );
-//sleep(10);
-
-    //~ ltime=time(NULL); /* get current cal time */
-    //~ printf("2: %s",asctime( localtime(&ltime) ) );
-//~
-	//~ status = spectrometer_get(wavelengths, spectra, length, exposuretime);
-//~
-    //~ ltime=time(NULL); /* get current cal time */
-    //~ printf("2: %s",asctime( localtime(&ltime) ) );
-//~
-	//~ if(status){
-		//~ printf("getting spectra failed\n");
-		//~ return 1;
-	//~ }
-
-//~ printf("sleep... \n");
-	//~ sleep(3);
-//~ printf("wake \n");
-
-
+	ltime=time(NULL); /* get current cal time */
+	printf("1: %s",asctime( localtime(&ltime) ) );
 
 	spectrometer_trigger(&config, callback);
 
 	while(noOfMeasurementsLeft){
-		printf("sleep...\n");
+		printf("1: sleep...\n");
 		sleep(1);
 	}
-printf("triggered... \n");
+
+	printf("2: %s", asctime( localtime(&ltime) ) );
+
 	return 0;
 }
 
@@ -79,19 +58,18 @@ printf("callback called \n");
 	int status;
 	int i;
 	FILE * pFile;
-	/* get and save/plot */
-	int length = 2048;
-printf("left %i \n", noOfMeasurementsLeft);
+
+	printf("left %i \n", noOfMeasurementsLeft);
 
 	noOfMeasurementsLeft--;
 	if(noOfMeasurementsLeft) {
 		spectrometer_trigger(config, callback);
 	} else {
-		printf("spectrum is %i long\n", length);
+		printf("spectrum is %i long\n", config->spectrum_length);
 		pFile = fopen(filename, "wt");
 		if (pFile){
 			printf("write to %s\n", filename);
-			for(i=0; i < length; i++){
+			for(i=0; i < config->spectrum_length; i++){
 				fprintf(pFile, "%f %f \n", config->lastSpectrum[i], config->wavelengths[i]);
 			}
 		}
@@ -105,5 +83,5 @@ printf("left %i \n", noOfMeasurementsLeft);
 			printf("uninit failed");
 		}
 	}
-
+	printf("done callback\n");
 }

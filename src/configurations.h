@@ -95,6 +95,8 @@ typedef struct {
 
 
 	int integration_time_micros;
+
+	int spectrum_length;
 } sConfigStruct;
 
 /* Camera parameters */

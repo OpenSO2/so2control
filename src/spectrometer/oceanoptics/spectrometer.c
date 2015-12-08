@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "configurations.h"
+#include "timehelpers.h"
 #include "../spectrometer.h"
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #include "libseabreeze/SeaBreeze/include/api/seabreezeapi/SeaBreezeAPI.h"
@@ -33,10 +34,6 @@ struct data_struct{
 	void (*callback)(sConfigStruct * config);
 	sConfigStruct * config;
 };
-
-
-//~ double * wavelengths;
-//~ double * spectra;
 
 /*
  *
@@ -113,10 +110,17 @@ int spectrometer_init(sConfigStruct * config){
 		printf("sbapi_spectrometer_get_formatted_spectrum_length. error_code: %i \n", error_code);
 		return 1;
 	}
+	config->spectrum_length = spectrum_length;
 	printf("spectrum_length is %i\n", spectrum_length);
 
-	//~ wavelengths = (double *)malloc(spectrum_length*sizeof(double));
-	//~ spectra = (double *)malloc(spectrum_length*sizeof(double));
+	config->lastSpectrum = (double *)malloc(spectrum_length * sizeof(double));
+	config->wavelengths = (double *)malloc(spectrum_length * sizeof(double));
+
+	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, config->wavelengths, length);
+	if(error_code != 0){
+		printf("sbapi_spectrometer_get_wavelengths. error_code: %i \n", error_code);
+		return 1;
+	}
 
 	return 0;
 }
@@ -132,48 +136,21 @@ static void * timeout(void * args)
 	void (*callback)(sParameterStruct * config) = ((struct data_struct*) args)->callback;
 	sConfigStruct * config = ((struct data_struct*) args)->config;
 
+	int * error_code = 0;
+	long time;
 
-	printf("spectro thread started\n");
-	int error_code;
-	int length = spectrum_length;
-config->lastSpectrum = (double *)malloc(length * sizeof(double));
-config->wavelengths = (double *)malloc(length * sizeof(double));
-printf("klk: %i\n", length);
-	//~ config->lastSpectrum = spectrum;
-printf("klk: %i\n", length);
-	//~ config->wavelengths = (double *)malloc(length * sizeof(double));
-	/*
-	 *
-	 */
-	printf("measure... integration_time_micros: %i \n", config->integration_time_micros);
-	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, &error_code, config->integration_time_micros);
-	if(error_code != 0){
-		printf("sbapi_spectrometer_set_integration_time_micros. error_code: %i \n", error_code);
-		return 1;
-	}
+	do {
+		time = getTimeStamp();
+		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, error_code, config->lastSpectrum, spectrum_length);
+		if(error_code != 0){
+			printf("sbapi_spectrometer_get_formatted_spectrum. error_code: %i \n", error_code);
+			return 1;
+		}
+		printf("spectrum took %i ms; was supposed to take %i \n", getTimeStamp() - time, config->integration_time_micros/1000);
 
-	sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, config->lastSpectrum, length);
-	if(error_code != 0){
-		printf("sbapi_spectrometer_get_formatted_spectrum. error_code: %i \n", error_code);
-		return 1;
-	}
-printf("147\n");
-
-	/*
-	 *
-	 */
-	//~ double wavelengths[length];
-	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, config->wavelengths, length);
-	if(error_code != 0){
-		printf("sbapi_spectrometer_get_wavelengths. error_code: %i \n", error_code);
-		return 1;
-	}
-
-	printf("spectro thread done\n");
+	} while(getTimeStamp() - time < (config->integration_time_micros/1000)*.95);
 
 	callback(config);
-
-	printf("called\n");
 
 	#ifdef WIN
 	return 0;
@@ -193,9 +170,21 @@ int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct
 	pthread_t thread_id;
 	#endif
 
+	int * error_code = 0;
 	struct data_struct * g_data_struct = (struct data_struct*) calloc(1, sizeof(*g_data_struct));
 	g_data_struct->callback = callback;
 	g_data_struct->config = config;
+
+	/*
+	 *
+	 */
+	printf("set integration_time_micros: %i on device %i, feature %i, error_code %i \n", config->integration_time_micros, deviceID, featureID, error_code);
+	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, error_code, config->integration_time_micros);
+	if(error_code != 0){
+		const char* error = sbapi_get_error_string(error_code);
+		printf("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s \n", error_code, error);
+		return 1;
+	}
 
 	#ifdef WIN
 	CreateThread(NULL, 0, timeout, g_data_struct, 0, NULL);
@@ -210,7 +199,7 @@ int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct
  */
 int spectrometer_uninit(sConfigStruct * config){
 	printf("uninit \n");
-	int error_code;
+	int error_code = 0;
 	sbapi_close_device(deviceID, &error_code);
 
 	return error_code;

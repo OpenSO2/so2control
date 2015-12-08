@@ -58,7 +58,7 @@ add_executable(spectrometer-cli spectrometer-cli.c)
 option(MOCK_SPECTROMETER "MOCK_SPECTROMETER" OFF)
 if(MOCK_SPECTROMETER)
 	MESSAGE( "=====MOCK_SPECTROMETER=======")
-	add_library(spectrometer spectrometer.h mock/getBufferFromFile.c mock/spectrometer.c)
+	add_library(spectrometer ../timehelpers.c spectrometer.h mock/getBufferFromFile.c mock/spectrometer.c)
 else( )
 	add_custom_target(
 		libseabreeze
@@ -66,14 +66,19 @@ else( )
 		WORKING_DIRECTORY oceanoptics/libseabreeze/SeaBreeze
 	)
 	include_directories(libseabreeze oceanoptics/libseabreeze/SeaBreeze/include)
-	add_library(spectrometer spectrometer.h oceanoptics/spectrometer.c)
+	add_library(spectrometer ../timehelpers.c spectrometer.h oceanoptics/spectrometer.c)
 
 	target_link_libraries(spectrometer-cli ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/lib/libseabreeze.so)
 	target_link_libraries(spectrometer-cli usb)
 	target_link_libraries(spectrometer-cli -lpthread)
-	#~ target_link_libraries(${PROJECT_NAME} [...] -lpthread [...]) #obviously without the '[...]' and the correct target name
 	add_dependencies(spectrometer-cli libseabreeze)
 endif()
+
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(spectrometer-cli ${M_LIB})
+endif()
+
 
 target_link_libraries(spectrometer-cli spectrometer)
 

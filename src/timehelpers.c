@@ -22,6 +22,22 @@ int sleepMs(int x)
 	return 0;
 }
 
+int getTimeStamp(){
+	int mills = 0;
+	timeStruct time;
+	getTime(&time);
+
+	mills = time.milli
+		+ time.sec  * 1000
+		+ time.min  * 1000 * 60
+		+ time.hour * 1000 * 60 * 60
+		+ time.day  * 1000 * 60 * 60 * 24
+		+ time.mon  * 1000 * 60 * 60 * 24 * 30
+		+ time.year * 1000 * 60 * 60 * 24 * 365
+	;
+
+	return mills;
+}
 
 time_t TimeFromTimeStruct(const timeStruct * pTime)
 {
