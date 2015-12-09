@@ -49,6 +49,13 @@ int spectrometer_init(sConfigStruct * config){
 
 	sbapi_initialize();
 
+	found_devices = sbapi_probe_devices();
+	if(found_devices == 0){
+		printf("sbapi_probe_devices: %i\n", status);
+		return 1;
+	}
+	printf("found_devices %i \n", found_devices);
+
 	number_of_ids = sbapi_get_number_of_device_ids();
 	long ids[number_of_ids];
 	printf("number_of_ids %i \n", number_of_ids);
