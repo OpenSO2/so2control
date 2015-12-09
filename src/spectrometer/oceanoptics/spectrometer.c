@@ -41,29 +41,18 @@ struct data_struct{
 int spectrometer_init(sConfigStruct * config){
 	int error_code = 0;
 	int number_of_ids;
-	int found_devices;
 	int number_of_device_ids;
 	int number_of_spectrometer_features;
 	int length = 100;
 	int status = 0;
 	char buffer[length];
-	int devices;
 
 	sbapi_initialize();
-
-	/* seabreeze_set_verbose(1); */
-	devices = sbapi_probe_devices();
 
 	number_of_ids = sbapi_get_number_of_device_ids();
 	long ids[number_of_ids];
 	printf("number_of_ids %i \n", number_of_ids);
 
-	found_devices = sbapi_probe_devices();
-	if(found_devices == 0){
-		printf("sbapi_probe_devices: %i\n", status);
-		return 1;
-	}
-	printf("found_devices %i \n", found_devices);
 
 	number_of_device_ids = sbapi_get_device_ids(ids, number_of_ids);
 	if(number_of_device_ids == 0){
@@ -133,20 +122,19 @@ static void * timeout(void * args);
 static void * timeout(void * args)
 #endif
 {
-	void (*callback)(sParameterStruct * config) = ((struct data_struct*) args)->callback;
+	void (*callback)(sConfigStruct * config) = ((struct data_struct*) args)->callback;
 	sConfigStruct * config = ((struct data_struct*) args)->config;
 
-	int * error_code = 0;
+	int error_code = 0;
 	long time;
 
 	do {
 		time = getTimeStamp();
-		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, error_code, config->lastSpectrum, spectrum_length);
+		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, config->lastSpectrum, spectrum_length);
 		if(error_code != 0){
 			printf("sbapi_spectrometer_get_formatted_spectrum. error_code: %i \n", error_code);
-			return 1;
 		}
-		printf("spectrum took %i ms; was supposed to take %i \n", getTimeStamp() - time, config->integration_time_micros/1000);
+		printf("spectrum took %i ms; was supposed to take %i \n", (int)(getTimeStamp() - time), (int)(config->integration_time_micros/1000));
 
 	} while(getTimeStamp() - time < (config->integration_time_micros/1000)*.95);
 
@@ -170,7 +158,7 @@ int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct
 	pthread_t thread_id;
 	#endif
 
-	int * error_code = 0;
+	int error_code = 0;
 	struct data_struct * g_data_struct = (struct data_struct*) calloc(1, sizeof(*g_data_struct));
 	g_data_struct->callback = callback;
 	g_data_struct->config = config;
@@ -178,8 +166,8 @@ int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct
 	/*
 	 *
 	 */
-	printf("set integration_time_micros: %i on device %i, feature %i, error_code %i \n", config->integration_time_micros, deviceID, featureID, error_code);
-	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, error_code, config->integration_time_micros);
+	printf("set integration_time_micros: %i on device %i, feature %i, error_code %i \n", (int)config->integration_time_micros, (int)deviceID, (int)featureID, error_code);
+	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, &error_code, config->integration_time_micros);
 	if(error_code != 0){
 		const char* error = sbapi_get_error_string(error_code);
 		printf("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s \n", error_code, error);
@@ -198,7 +186,6 @@ int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct
  *
  */
 int spectrometer_uninit(sConfigStruct * config){
-	printf("uninit \n");
 	int error_code = 0;
 	sbapi_close_device(deviceID, &error_code);
 

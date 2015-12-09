@@ -1,16 +1,4 @@
-#ifdef WIN
-#include<windows.h>
-#else
-#define _POSIX_C_SOURCE 200809L
-#endif
-
 #include "timehelpers.h"
-
-#if defined(WIN)
-#include<windows.h>		/* Sleep */
-#else
-#include<unistd.h>		/* usleep */
-#endif
 
 int sleepMs(int x)
 {
@@ -22,7 +10,7 @@ int sleepMs(int x)
 	return 0;
 }
 
-int getTimeStamp(){
+int getTimeStamp(void){
 	int mills = 0;
 	timeStruct time;
 	getTime(&time);
