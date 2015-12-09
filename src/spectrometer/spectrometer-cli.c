@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-
 int noOfMeasurementsLeft = 1000;
-sConfigStruct config;
 char * filename;
 
 static void callback(sConfigStruct * config);
@@ -13,20 +11,15 @@ static void callback(sConfigStruct * config);
 int main(int argc, char *argv[])
 {
 	int status = 0;
-	unsigned long exposuretime;
-	int noofscans;
-	int length = 0, i = 0;
-    time_t ltime; /* calendar time */
+	sConfigStruct config;
 	filename = argv[1];
 
 	if (argc != 4) {
 		printf("usage: spectrometer-cli <outputfile> <number of scans> <exposure time in ms>\n");
 		return 1;
 	}
-	noofscans = strtol(argv[2], NULL, 10);
-
-	config.integration_time_micros = strtol(argv[3], NULL, 10) * 1000; //
-	noOfMeasurementsLeft = noofscans;
+	noOfMeasurementsLeft = strtol(argv[2], NULL, 10) + 1;
+	config.integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
 
 	/* init */
 	status = spectrometer_init(&config);
@@ -35,26 +28,18 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	ltime=time(NULL); /* get current cal time */
-	printf("1: %s",asctime( localtime(&ltime) ) );
-
-	spectrometer_trigger(&config, callback);
+	/* start callback loop */
+	callback(&config);
 
 	while(noOfMeasurementsLeft){
-		printf("1: sleep...\n");
-		sleep(1);
+		sleepMs(100);
 	}
-
-	printf("2: %s", asctime( localtime(&ltime) ) );
 
 	return 0;
 }
 
-
-
 static void callback(sConfigStruct * config)
 {
-printf("callback called \n");
 	int status;
 	int i;
 	FILE * pFile;
