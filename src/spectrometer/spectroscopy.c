@@ -18,14 +18,9 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 		return 1;
 	}
 
-	spectrum = malloc(spectro->spectrum_length * sizeof(double));
-	spectro->correction = malloc(spectro->spectrum_length * sizeof(double));
+	spectrum = calloc(spectro->spectrum_length, sizeof(double));
+	spectro->correction = calloc(spectro->spectrum_length, sizeof(double));
 
-	int i;
-	for (i = 0; i < spectro->spectrum_length; i++) {
-		spectro->correction[i] = 0;
-		spectrum[i] = 0;
-	}
 	return 0;
 }
 
