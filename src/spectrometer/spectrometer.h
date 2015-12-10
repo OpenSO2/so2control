@@ -3,9 +3,9 @@
 
 #include "configurations.h"
 
-int spectrometer_init(sConfigStruct * config);
-int spectrometer_uninit(sConfigStruct * config);
+int spectrometer_init(sSpectrometerStruct * config);
+int spectrometer_uninit(sSpectrometerStruct * config);
 int spectrometer_get(double * wavelengths, double * spectra, int length);
-int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct * config));
+int spectrometer_trigger(sSpectrometerStruct * config, void (*callback) (sSpectrometerStruct * config));
 
 #endif

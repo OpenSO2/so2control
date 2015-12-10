@@ -3,8 +3,8 @@
 
 /**********************************************************
  *
- *	Header-File with miscellaneous configuration functions
- *	for Program, Camera and Framegrabber
+ * Header-File with miscellaneous configuration functions
+ * for Program, Camera and Framegrabber
  *
  **********************************************************/
 
@@ -88,16 +88,21 @@ typedef struct {
 
 	/* number of images between */
 	int darkframeintervall;
+} sConfigStruct;
 
+
+/*  */
+typedef struct {
 	double * wavelengths;
 
 	double * lastSpectrum;
 
+	double * correction;
 
 	int integration_time_micros;
 
 	int spectrum_length;
-} sConfigStruct;
+} sSpectrometerStruct;
 
 /* Camera parameters */
 typedef struct {
