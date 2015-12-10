@@ -66,7 +66,7 @@ else( )
 		WORKING_DIRECTORY oceanoptics/libseabreeze/SeaBreeze
 	)
 	include_directories(libseabreeze oceanoptics/libseabreeze/SeaBreeze/include)
-	add_library(spectrometer ../timehelpers.c spectrometer.h oceanoptics/spectrometer.c)
+	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h oceanoptics/spectrometer.c)
 
 	target_link_libraries(spectrometer-cli ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/lib/libseabreeze.so)
 	target_link_libraries(spectrometer-cli usb)

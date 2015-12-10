@@ -43,7 +43,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	int number_of_ids;
 	int number_of_device_ids;
 	int number_of_spectrometer_features;
-	int length = 100;
+	int length = 0;
 	int status = 0;
 	char buffer[length];
 
@@ -111,7 +111,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	spectro->lastSpectrum = (double *)malloc(spectrum_length * sizeof(double));
 	spectro->wavelengths = (double *)malloc(spectrum_length * sizeof(double));
 
-	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, spectro->wavelengths, length);
+	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, spectro->wavelengths, spectro->wavelengths);
 	if(error_code != 0){
 		printf("sbapi_spectrometer_get_wavelengths. error_code: %i \n", error_code);
 		return 1;
