@@ -1,17 +1,16 @@
 #include <stdio.h>
 #include "spectrometer.h"
-#include <stdlib.h>
-#include <time.h>
+#include "spectroscopy.h"
 
 int noOfMeasurementsLeft = 1000;
 char * filename;
 
-static void callback(sConfigStruct * config);
+static void callback(sSpectrometerStruct * config);
 
 int main(int argc, char *argv[])
 {
 	int status = 0;
-	sConfigStruct config;
+	sSpectrometerStruct config;
 	filename = argv[1];
 
 	if (argc != 4) {
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-static void callback(sConfigStruct * config)
+static void callback(sSpectrometerStruct * config)
 {
 	int status;
 	int i;

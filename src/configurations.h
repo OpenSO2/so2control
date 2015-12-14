@@ -97,7 +97,9 @@ typedef struct {
 
 	double * lastSpectrum;
 
-	double * correction;
+	double * electronic_offset;
+
+	double * dark_current;
 
 	int integration_time_micros;
 
