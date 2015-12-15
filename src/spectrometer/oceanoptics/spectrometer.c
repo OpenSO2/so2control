@@ -41,6 +41,7 @@ struct data_struct{
 int spectrometer_init(sSpectrometerStruct * spectro){
 	int error_code = 0;
 	int number_of_ids;
+	int found_devices;
 	int number_of_device_ids;
 	int number_of_spectrometer_features;
 	int length = 0;
@@ -143,6 +144,12 @@ static void * timeout(void * args)
 		//~ printf("spectrum took %i ms; was supposed to take %i \n", (int)(getTimeStamp() - time), (int)(spectro->integration_time_micros/1000));
 
 	} while(getTimeStamp() - time < (spectro->integration_time_micros/1000)*.95);
+
+//~ printf("got values from spec %lu %f %f %f \n",
+	//~ spectro->integration_time_micros,
+	//~ spectro->lastSpectrum[100]/spectro->integration_time_micros,
+	//~ spectro->lastSpectrum[1000]/spectro->integration_time_micros,
+	//~ spectro->lastSpectrum[2012]/spectro->integration_time_micros);
 
 	callback(spectro);
 

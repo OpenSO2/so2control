@@ -31,6 +31,7 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 	FILE * pFile;
 	int dark_current_integration_time_s = 60;
 
+	printf("measure electronic offset \n");
 	// measure electronic offset
 	spectroscopy_meanAndSubstract(10000, 3000, spectro);
 
@@ -38,26 +39,21 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 	for (i = 0; i < spectro->spectrum_length; i++) {
 		spectro->electronic_offset[i] = spectrum[i];
 	}
-	pFile = fopen("electronic-offset.dat", "wt");
-	if (pFile){
-		for(i=0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
-		}
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectrum[i] = 0.;
 	}
 
-	printf("take dark current \n");
+	printf("measure dark current \n");
 	spectroscopy_meanAndSubstract(1, dark_current_integration_time_s * 1000 * 1000, spectro);
 
 	// copy last spectrum into dark_current buffer
 	for (i = 0; i < spectro->spectrum_length; i++) {
 		spectro->dark_current[i] = spectro->lastSpectrum[i];
 	}
-	pFile = fopen("dark-current.dat", "wt");
-	if (pFile){
-		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
-		}
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectrum[i] = 0.;
 	}
+
 	return 0;
 }
 
@@ -67,15 +63,15 @@ static void callback(sSpectrometerStruct * spectro)
 {
 	int status, i;
 	if(noOfMeasurementsLeft == 0) {
-		for (i = 0; i < spectro->spectrum_length; i++) {
-		}
+		//~ for (i = 0; i < spectro->spectrum_length; i++) {
+		//~ }
 
 		done = 0;
 	} else {
 		for (i = 0; i < spectro->spectrum_length; i++) {
 
 			printf("applying electronic offset correction: %f\n", spectro->electronic_offset[i]);
-			spectrum[i] -= spectro->electronic_offset[i]; // substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
+			spectro->lastSpectrum[i] -= spectro->electronic_offset[i]; // substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
 
 			//~ printf("applying dark current correction: %f\n", spectro->dark_current[i] * spectro->integration_time_micros/60000000);
 			spectro->lastSpectrum[i] -= spectro->dark_current[i] * spectro->integration_time_micros/60000000; // substract dark current, scaled by integration time
@@ -108,7 +104,6 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 		spectrum[i] = 0;
 	}
 
-//~ printf("107\n");
 	/* start callback loop */
 	callback(spectro);
 
@@ -125,6 +120,11 @@ int spectroscopy_measure(sSpectrometerStruct * spectro)
 {
 	FILE * pFile;
 	int i;
+
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectrum[i] = 0.;
+		spectro->lastSpectrum[i] = 0.;
+	}
 
 	// measure dark current
 	spectroscopy_meanAndSubstract(10, 300000, spectro);
