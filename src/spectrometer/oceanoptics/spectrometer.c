@@ -55,18 +55,18 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 		printf("sbapi_probe_devices: %i\n", status);
 		return 1;
 	}
-	printf("found_devices %i \n", found_devices);
+	printf("Found %i devices \n", found_devices);
 
 	number_of_ids = sbapi_get_number_of_device_ids();
 	long ids[number_of_ids];
-	printf("number_of_ids %i \n", number_of_ids);
+	printf("Found %i device IDs \n", number_of_ids);
 
 	number_of_device_ids = sbapi_get_device_ids(ids, number_of_ids);
 	if(number_of_device_ids == 0){
 		printf("sbapi_get_device_ids\n");
 		return 1;
 	}
-	printf("device_id[0] %lu of %i \n", ids[0], number_of_ids);
+	printf("ID of first device is %lu of %i device(s) \n", ids[0], number_of_ids);
 	deviceID = ids[0];
 
 
@@ -78,8 +78,8 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 		return 1;
 	}
 
-	sbapi_get_device_type(deviceID, &error_code, buffer, length);
-	printf("device type: %s\n", buffer);
+	//~ sbapi_get_device_type(deviceID, &error_code, buffer, length);
+	//~ printf("device type: %s\n", buffer);
 
 
 	number_of_spectrometer_features = sbapi_get_number_of_spectrometer_features(deviceID, &error_code);
@@ -87,7 +87,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 		printf("sbapi_get_number_of_spectrometer_features. status: %i, error_code: %i \n", status, error_code);
 		return 1;
 	}
-	printf("number_of_spectrometer_features %i \n", number_of_spectrometer_features);
+	printf("Spectrometer has %i features \n", number_of_spectrometer_features);
 
 	long features[number_of_spectrometer_features];
 	sbapi_get_spectrometer_features(deviceID, &error_code, features, number_of_spectrometer_features);
@@ -96,7 +96,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 		return 1;
 	}
 	featureID = features[0];
-	printf("featureID is %lu\n", featureID);
+	printf("ID of first feature is %lu\n", featureID);
 
 	/*
 	 *
@@ -107,7 +107,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 		return 1;
 	}
 	spectro->spectrum_length = spectrum_length;
-	printf("spectrum_length is %i\n", spectrum_length);
+	printf("Spectrometer spectrum length is %i\n", spectrum_length);
 
 	spectro->lastSpectrum = (double *)calloc(spectrum_length, sizeof(double));
 	spectro->wavelengths = (double *)calloc(spectrum_length, sizeof(double));
@@ -144,12 +144,6 @@ static void * timeout(void * args)
 		//~ printf("spectrum took %i ms; was supposed to take %i \n", (int)(getTimeStamp() - time), (int)(spectro->integration_time_micros/1000));
 
 	} while(getTimeStamp() - time < (spectro->integration_time_micros/1000)*.95);
-
-//~ printf("got values from spec %lu %f %f %f \n",
-	//~ spectro->integration_time_micros,
-	//~ spectro->lastSpectrum[100]/spectro->integration_time_micros,
-	//~ spectro->lastSpectrum[1000]/spectro->integration_time_micros,
-	//~ spectro->lastSpectrum[2012]/spectro->integration_time_micros);
 
 	callback(spectro);
 
