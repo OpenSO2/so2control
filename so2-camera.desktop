@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=so2-camera
+Exec=so2-camera
+Terminal=true
+Type=Application
