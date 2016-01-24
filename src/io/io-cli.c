@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 
 	config.dImageCounter = 0;
 	sSO2Parameters.dTriggerPulseWidth = 15;
+	sSO2Parameters.dExposureTime = 0;
 	config.dBufferlength = 1376256;
 	config.dHistMinInterval = 350;
 	config.dHistPercentage = 5;
