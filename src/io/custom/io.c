@@ -277,13 +277,14 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	char *padded_png;
 
 	l = strlen(name) + strlen(content);
-	text = (char *)malloc(l * sizeof(char));
+	text = (char *)calloc(sizeof(char), l + 1);
 	if (text == NULL) {
 		log_error("unable to allocate memory for header text");
 		return 2;
 	}
-	strcpy(text, name);
-	strcat(text, content);
+
+	text = strncpy(text, name, strlen(name));
+	text = strncat(text, content, strlen(content));
 
 	log_debug("strlen of new header %i", l);
 
