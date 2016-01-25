@@ -109,7 +109,6 @@ int main(int argc, char *argv[])
 		 * The error message then has to go directly to the screen
 		 */
 		printf("creating a logfile failed. Program is aborting...\n");
-		stop_program(state);
 		return state;
 	}
 
