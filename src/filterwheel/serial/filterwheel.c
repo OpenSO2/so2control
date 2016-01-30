@@ -9,7 +9,7 @@
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
 
-static int fd;			/* File descriptor for the port */
+static int fd = -1;  /* File descriptor for the port */
 #else
 #include <windows.h>
 static HANDLE hSerial;
@@ -93,9 +93,11 @@ int filterwheel_send(int position)
 int filterwheel_uninit(sConfigStruct * config)
 {
 #if defined(POSIX)
-	return close(fd);
+	if(fd != -1)
+		return close(fd);
 #else
 	return CloseHandle(hSerial);
 #endif
+	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
