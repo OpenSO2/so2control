@@ -30,7 +30,7 @@ static void callback(sParameterStruct * sSO2Parameters)
 static int aquire_darkframe(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	log_message("close filterwheel");
+	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
 	log_message("filterwheel closed");
 	sParameters_A->dark = 1;
@@ -38,7 +38,7 @@ static int aquire_darkframe(sParameterStruct * sParameters_A,
 	aquire(sParameters_A, sParameters_B, config);
 	sParameters_A->dark = 0;
 	sParameters_B->dark = 0;
-	log_message("open filterwheel");
+	log_message("opening filterwheel");
 	filterwheel_send(FILTERWHEEL_OPENED_A);
 	log_message("filterwheel opened");
 	return 0;
@@ -51,7 +51,7 @@ int startAquisition(sParameterStruct * sParameters_A,
 	log_message("Starting acquisition...\n");
 	log_message("Press a key to exit\n");
 
-	for (i=0; !kbhit(); i++) {
+	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == 0); i++) {
 		if (i % config->darkframeintervall == 0){
 			aquire_darkframe(sParameters_A, sParameters_B, config);
 		}
