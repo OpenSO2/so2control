@@ -75,6 +75,9 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 		} else if (strcmp(argv[i], "--configfile") == 0 && argv[i + 1]) {
 			config->cConfigFileName = argv[i + 1];
 			i++;
+		} else if (strcmp(argv[i], "--imagepath") == 0 && argv[i + 1]) {
+			config->cImagePath = argv[i + 1];
+			i++;
 		} else {
 			sprintf(errstr, "unknown command line option \"%s\"", argv[i]);
 			log_error(errstr);
