@@ -1,6 +1,5 @@
 /*
-
- * This implements the file output system, responsible for writing
+ * This file implements the file output system, responsible for writing
  * the gathered data to disk and to process the data into reasonable
  * file formats. This could also do i.e. packaging files into a .tar
  * file.
@@ -42,11 +41,12 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
  * Initialize the IO functionality. Currently, this does nothing, but this could be the place to
  * set up folders and start tar files.
  */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_init(sConfigStruct * config)
 {
-	log_debug("io_init %i", config->processing);
 	return 0;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 /*
  * `io_write`
@@ -96,7 +96,6 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_uninit(sConfigStruct * config)
 {
-	log_message("io_uninit");
 	return 0;
 }
 
