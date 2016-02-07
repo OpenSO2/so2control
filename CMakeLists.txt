@@ -40,6 +40,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 
 	# optimization level
 	add_definitions("-O0")
+	#~ add_definitions("-g")
 endif()
 
 # set env variables
@@ -77,6 +78,7 @@ set(MOCK_CAMERA ON CACHE BOOL "Mock camera")
 if(${MOCK_CAMERA})
 	message("=====MOCK_CAMERA=======")
 	include_directories(./src/camera/mock)
+	file(COPY src/camera/mock/fixtures/ DESTINATION src/camera/mock/fixtures/)
 
 	set(CAMERASRC ./src/camera/mock/camera.c)
 else()
@@ -156,3 +158,11 @@ add_custom_target(coverity
 	COMMAND cov-build --dir cov-int make
 	COMMAND tar czvf so2-camera.tgz cov-int
 )
+
+
+# does the application run
+add_test(so2-camera_runs so2-camera --noofimages 1 --imagepath ./ --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/SO2Config.conf)
+
+if( ${UNIX} )
+	add_test(so2-camera_valgrind valgrind --track-origins=yes --error-exitcode=11 --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp  ./so2-camera --noofimages 1 --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/SO2Config.conf)
+endif()

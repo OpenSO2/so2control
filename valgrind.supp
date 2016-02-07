@@ -1,0 +1,24 @@
+{
+   libgobject1
+   Memcheck:Leak
+   fun:calloc
+   fun:*
+   obj:*/libgobject-*.so*
+}
+{
+   libgobject2
+   Memcheck:Leak
+   fun:*
+   fun:realloc
+   fun:g_realloc
+   fun:*
+   obj:*/libgobject-*.so*
+}
+{
+   libgobject3
+   Memcheck:Leak
+   fun:realloc
+   fun:g_realloc
+   fun:*
+   obj:*/libgobject-*.so*
+}

@@ -3,7 +3,9 @@ set -e
 set -u
 set -x
 sudo apt-get update
-sudo apt-get install cmake libopencv-dev libcv-dev libhighgui-dev pngcheck
-cmake . -DMOCK_LOG=ON -DMOCK_CAMERA=ON
+sudo apt-get install cmake libopencv-dev libcv-dev libhighgui-dev pngcheck valgrind
+mkdir build
+cd build
+cmake .. -DMOCK_LOG=ON -DMOCK_CAMERA=ON -DMOCK_FILTERWHEEL=ON
 make
-env CTEST_OUTPUT_ON_FAILURE=1 make test
+ctest --output-on-failure

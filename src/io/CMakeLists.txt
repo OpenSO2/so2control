@@ -106,6 +106,8 @@ endif()
 # can raw dumps be made
 add_test(IO_runs_raw ./io-cli ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_bot.raw ${CMAKE_CURRENT_SOURCE_DIR}/ raw)
 
+add_test(IO_valgrind valgrind --error-exitcode=33 --suppressions=../../../valgrind.supp ./io-cli ../../../src/io/tests/fixtures/testing_2014_09_22-23_43_55_984_cam_top.raw ./ 1)
+
 # do raw dumps contain all header data
 if( ${UNIX} )
 	if(BASH_PROGRAM)
