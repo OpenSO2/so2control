@@ -3,15 +3,16 @@
 #include<time.h>
 #include "log.h"
 
-static FILE *logfile;
+static FILE *logfile = NULL;
 static char nameLogFile[256];
 static char buffer[512];
 static time_t time_ptr;
 static struct tm logTime;
-static int debug;
+static int debug = 0;
 
-int log_init(void)
+int log_init(sConfigStruct * config)
 {
+	debug = config->debug;
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
 
@@ -52,18 +53,15 @@ int log_init(void)
 	return 0;
 }
 
-int log_set_debug(int dbg)
-{
-	debug = dbg;
-}
-
 int log_message(char *message)
 {
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
 	sprintf(buffer, "%02d:%02d:%02d | INFO  | %s \n", logTime.tm_hour,
 		logTime.tm_min, logTime.tm_sec, message);
-	fputs(buffer, logfile);
+	if(logfile){
+		fputs(buffer, logfile);
+	}
 	printf("%s", buffer);
 	return 0;
 }
@@ -75,9 +73,12 @@ int log_error(char *message)
 	sprintf(buffer, "%02d:%02d:%02d | ERROR | %s \n", logTime.tm_hour,
 		logTime.tm_min, logTime.tm_sec, message);
 	fprintf(stderr, "%s", buffer);
-	fputs(buffer, logfile);
+	if(logfile){
+		fputs(buffer, logfile);
+	}
 	return 0;
 }
+
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int log_debug(char *message, ...)
@@ -93,8 +94,10 @@ int log_debug(char *message, ...)
 		va_end(args);
 
 		printf(format, logTime.tm_hour, logTime.tm_min, logTime.tm_sec, buffer);
-		fprintf(logfile, format, logTime.tm_hour,
-			logTime.tm_min, logTime.tm_sec, buffer);
+		if(logfile){
+			fprintf(logfile, format, logTime.tm_hour,
+				logTime.tm_min, logTime.tm_sec, buffer);
+		}
 	}
 	return 0;
 }
@@ -105,12 +108,14 @@ int log_uninit(void)
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
 
-	fprintf(logfile, "=======================================\n");
-	fprintf(logfile, "Today is the %02d.%02d.%04d %02d:%02d\n",
-		logTime.tm_mday, logTime.tm_mon, logTime.tm_year + 1900,
-		logTime.tm_hour, logTime.tm_min);
-	fprintf(logfile, "The program exited this log file ends here\n \n");
+	if(logfile){
+		fprintf(logfile, "=======================================\n");
+		fprintf(logfile, "Today is the %02d.%02d.%04d %02d:%02d\n",
+			logTime.tm_mday, logTime.tm_mon, logTime.tm_year + 1900,
+			logTime.tm_hour, logTime.tm_min);
+		fprintf(logfile, "The program exited this log file ends here\n \n");
 
-	fclose(logfile);
+		fclose(logfile);
+	}
 	return 0;
 }

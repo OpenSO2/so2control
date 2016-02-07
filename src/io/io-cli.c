@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
 	int status = 1;
 	sParameterStruct sSO2Parameters;
 	sConfigStruct config;
-
-	if (log_init()) {
+	config.debug = 0;
+	if (log_init(&config)) {
 		printf("could not start log file, stop.\n");
 	}
 #ifdef BENCHMARK
@@ -56,6 +56,8 @@ int main(int argc, char *argv[])
 
 	buffer = getBufferFromFile(infile, 64);
 
+	if(!buffer) return 1;
+
 #ifdef BENCHMARK
 	log_debug("reading file took %fms \n",
 		  ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
@@ -63,28 +65,25 @@ int main(int argc, char *argv[])
 
 	parse_filename_to_timeStruct(infile, &time);
 
-	config.dImageCounter = 0;
 	sSO2Parameters.dTriggerPulseWidth = 15;
 	sSO2Parameters.dExposureTime = 0;
+	sSO2Parameters.dDarkCurrent = 0;
+	sSO2Parameters.identifier = 'A';
+	sSO2Parameters.stBuffer = buffer;
+	sSO2Parameters.timestampBefore = &time;
+	sSO2Parameters.dark = 0;
+	sSO2Parameters.dExposureTime = 0.000000;
+
+	config.dImageCounter = 0;
 	config.dBufferlength = 1376256;
 	config.dHistMinInterval = 350;
 	config.dHistPercentage = 5;
 	config.dInterFrameDelay = 10;
-	sSO2Parameters.identifier = 'A';
-	sSO2Parameters.stBuffer = buffer;
-	sSO2Parameters.timestampBefore = &time;
 	config.dFixTime = 0.000000;
-	sSO2Parameters.dark = 0;
-	sSO2Parameters.dExposureTime = 0.000000;
+	config.cFileNamePrefix = "image";
+	config.cConfigFileName = "";
 
-	sprintf(config.cFileNamePrefix, "%s", "image");
-
-#ifdef WIN
-	_snprintf_s(config.cImagePath, MAX_STRING_LENGTH, 250, "%s", outfolder);
-#else
-	snprintf(config.cImagePath, 250, "%s", outfolder);
-#endif
-
+	config.cImagePath = outfolder;
 	config.processing = rawdump;
 
 	io_init(&config);
@@ -97,6 +96,6 @@ int main(int argc, char *argv[])
 	}
 
 	io_uninit(&config);
-
+	free(buffer);
 	return 0;
 }

@@ -101,8 +101,44 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+	/*
+	 * loading configuration is a three step process:
+	 * 1- parsing command line arguments
+	 * 2- parsing config file
+	 * 3- loading default value
+	 */
+
+	/* init the config struct with empty values */
+	config_init_sConfigStruct(&config);
+
+	/*
+	 * process the command line. Values specified on the cli take
+	 * precedence over values defined elsewhere
+	 */
+	state = config_process_cli_arguments(argc, argv, &config);
+	if (state != 0) {
+		log_error("Could not handle command line arguments");
+		stop_program(state);
+	}
+
+	/*
+	 * load values from config values for properties that were not set
+	 * on the command line
+	 */
+	state = config_load_configfile(&config);
+	if (state != 0) {
+		log_error("loading configuration failed");
+		stop_program(state);
+	}
+
+	/*
+	 * load default values for all properties that were not set on the
+	 * cli or in the config file
+	 */
+	config_load_default(&config);
+
 	/* initiate the logfile and start logging */
-	state = log_init();
+	state = log_init(&config);
 	if (state != 0) {
 		/*
 		 * if creating a logfile fails we have to terminate the program.
@@ -112,34 +148,9 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
-	/*
-	 * set default values, read config file and process cli arguments,
-	 * which override settings in the config file
-	 */
-	config.dHistMinInterval = 350;
-	config.dHistPercentage = 5;
-	config.dInterFrameDelay = 10;
-	config.dBufferlength = 1376256;
-	config.debug = 0;
-
-	state = load_config("configurations//SO2Config.conf", &config);
-	if (state != 0) {
-		log_error("loading configuration failed");
-		stop_program(1);
-		return 1;
-	}
-
-	state = process_cli_arguments(argc, argv, &config);
-	if (state != 0) {
-		log_error("Could not handle command line arguments");
-		return state;
-	}
-
-	log_set_debug(config.debug);
-
 	/* Initialise parameter structures */
-	structInit(&sParameters_A, &config, 'a');
-	structInit(&sParameters_B, &config, 'b');
+	config_init_sParameterStruct(&sParameters_A, &config, 'a');
+	config_init_sParameterStruct(&sParameters_B, &config, 'b');
 
 	/* initialize IO */
 	state = io_init(&config);

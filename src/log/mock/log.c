@@ -3,15 +3,12 @@
 #include<time.h>
 #include "log.h"
 
-int log_init(void)
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+int log_init(sConfigStruct * config)
 {
 	return 0;
 }
-
-int log_set_debug(int dbg)
-{
-	return 0;
-}
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 int log_message(char *message)
 {

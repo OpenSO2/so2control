@@ -41,21 +41,21 @@ typedef struct {
 	int dBufferlength;
 
 	/* when controling the exposure time a histogram is made
-	 * from 1 image. the lower part is evaluated for underexposure
-	 * this give the evaluated invervall.
+	 * from 1 image. The lower part is evaluated for underexposure
+	 * this gives the evaluated interval.
 	 */
 	int dHistMinInterval;
 
-	/* when controling the exposure time a histogram is made
-	 * from 1 image. This value gibs the percentage of pixels
-	 * that are aloud to be under or overexposed.
+	/* when controlling the exposure time a histogram is made
+	 * from 1 image. This value is the percentage of pixels
+	 * that are allowed to be under- or overexposed.
 	 */
 	int dHistPercentage;
 
 	/* length of the triggerpulse in [ms] */
 	unsigned long dTriggerPulseWidth;
 
-	/* contains the Exposuretime in [ms] */
+	/* exposure time in [ms] */
 	double dExposureTime;
 
 	/* number of images taken */
@@ -64,14 +64,14 @@ typedef struct {
 	/* delay between two frames in [ms] */
 	int dInterFrameDelay;
 
-	/* contains the name of a Config-file */
-	char cConfigFileName[MAX_STRING_LENGTH];
+	/* contains the config filename */
+	char * cConfigFileName;
 
 	/* contains a prefix for all images */
-	char cFileNamePrefix[MAX_STRING_LENGTH];
+	char * cFileNamePrefix;
 
-	/* path to image diretory */
-	char cImagePath[MAX_STRING_LENGTH];
+	/* path to image directory */
+	char * cImagePath;
 
 	/*
 	 * A switch to set the exposuretime fix to the value given in
@@ -83,7 +83,7 @@ typedef struct {
 	 * serial device used to talk to the filterwheel firmware
 	 * eg. /dev/ttyUSB0
 	 */
-	char filterwheel_device[MAX_STRING_LENGTH];
+	char * filterwheel_device;
 
 	/* number of images between */
 	int darkframeintervall;
@@ -128,7 +128,9 @@ typedef struct {
  /******************************
  *   FUNCTIONS
  ******************************/
-int structInit(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier);
-int process_cli_arguments(int argc, char *argv[], sConfigStruct *config);
-int load_config(char *filename, sConfigStruct * config);
+int config_process_cli_arguments(int argc, char *argv[], sConfigStruct *config);
+int config_load_configfile(sConfigStruct *config);
+void config_load_default(sConfigStruct *config);
+void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier);
+void config_init_sConfigStruct(sConfigStruct *config);
 #endif

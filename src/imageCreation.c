@@ -51,7 +51,7 @@ int startAquisition(sParameterStruct * sParameters_A,
 	log_message("Starting acquisition...\n");
 	log_message("Press a key to exit\n");
 
-	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == 0); i++) {
+	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
 		if (i % config->darkframeintervall == 0){
 			aquire_darkframe(sParameters_A, sParameters_B, config);
 		}
