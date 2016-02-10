@@ -15,6 +15,7 @@ int kbhit(void)
 	struct termios term, oterm;
 	int fd = 0;
 	int c = 0;
+	memset(&oterm, 0, sizeof(oterm));
 	tcgetattr(fd, &oterm);
 	memcpy(&term, &oterm, sizeof(term));
 	term.c_lflag &= !ICANON;

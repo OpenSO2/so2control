@@ -61,6 +61,13 @@ else()
 	add_library(filterwheel ../common.c ./serial/filterwheel.c)
 endif()
 
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(filterwheel ${M_LIB})
+	find_library(RT_LIB rt)
+	target_link_libraries(filterwheel ${RT_LIB})
+endif()
+
 # create executables
-add_executable(filterwheel-cli  filterwheel-cli.c)
+add_executable(filterwheel-cli filterwheel-cli.c)
 target_link_libraries(filterwheel-cli filterwheel)

@@ -22,3 +22,11 @@
    fun:*
    obj:*/libgobject-*.so*
 }
+
+{
+   opencv
+   Memcheck:Cond
+   fun:ippicvGetCpuFeatures
+   fun:ippicvStaticInit
+   obj:*
+}

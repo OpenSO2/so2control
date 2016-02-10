@@ -113,6 +113,9 @@ if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(so2-camera ${M_LIB})
 	target_link_libraries(so2-camera -lpthread)
+
+	find_library(RT_LIB rt)
+	target_link_libraries(so2-camera ${RT_LIB})
 endif()
 
 # log subsystem
