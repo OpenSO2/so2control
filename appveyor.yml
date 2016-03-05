@@ -1,12 +1,18 @@
 install:
-  - cinst OpenCV
-  - set PATH=%PATH%;c:\OpenCV249\opencv\build\x86\vc11\bin
+  - curl -L https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.12/opencv-2.4.12.exe/download -o opencv.exe
+  - opencv.exe -o"C:\opencv" -y
+  - set PATH=%PATH%;c:\opencv\opencv\build\x64\vc12\bin
   - curl -L http://prdownloads.sourceforge.net/png-mng/pngcheck-2.3.0-win32.zip -o pngcheck.zip
   - unzip pngcheck.zip
   - copy pngcheck.exe src\io
-os: unstable
 build_script:
   - git submodule update --init
-  - cmake -DCMAKE_BUILD_TYPE=Release -DMOCK_CAMERA=ON -DMOCK_LOG=ON -DMOCK_FILTERWHEEL=ON -DOpenCV_DIR=c:\OpenCV249\opencv\build .
+  - cmake -G "Visual Studio 11 2012 Win64"
+    -DCMAKE_BUILD_TYPE=Release
+    -DMOCK_CAMERA=ON
+    -DMOCK_LOG=ON
+    -DMOCK_FILTERWHEEL=ON
+    -DOpenCV_DIR=c:\opencv\opencv\build
+    .
   - cmake --build . --config Release
   - ctest --output-on-failure
