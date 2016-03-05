@@ -5,7 +5,7 @@ SO2 Camera control software written in C, licenced under MIT.
 
 | Windows | Linux | QA     |
 | ------- | ----- | ------ |
-| [![Build status on Windows](https://ci.appveyor.com/api/projects/status/wtsnd28pv7ymsabg?svg=true)](https://ci.appveyor.com/project/jjacobsohn/so2-camera) | [![Build Status on Linux](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/status.png)](https://drone.io/bitbucket.org/jjacobsohn/so2-camera/latest)  | [![Coverity Scan Build Status](https://scan.coverity.com/projects/6043/badge.svg)](https://scan.coverity.com/projects/johannjacobsohn-so2-camera) |
+| [![Build status on Windows](https://ci.appveyor.com/api/projects/status/wtsnd28pv7ymsabg?svg=true)](https://ci.appveyor.com/project/jjacobsohn/so2-camera) | [![Build Status on Linux](https://travis-ci.org/johannjacobsohn/so2-camera.svg?branch=master)](https://travis-ci.org/johannjacobsohn/so2-camera)  | [![Coverity Scan Build Status](https://scan.coverity.com/projects/6043/badge.svg)](https://scan.coverity.com/projects/johannjacobsohn-so2-camera) |
 
 ** Collaborators: **
 

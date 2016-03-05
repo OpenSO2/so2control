@@ -1,0 +1,8 @@
+language: c
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install cmake libopencv-dev libcv-dev libhighgui-dev pngcheck valgrind
+script:
+  - cmake . -DMOCK_LOG=ON -DMOCK_CAMERA=ON -DMOCK_FILTERWHEEL=ON
+  - cmake --build .
+  - ctest --output-on-failure
