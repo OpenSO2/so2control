@@ -78,12 +78,14 @@ int camera_init(sParameterStruct * sSO2Parameters)
 
 int camera_abort(sParameterStruct * sSO2Parameters)
 {
+#ifdef POSIX
 	void * res;
 	pthread_cancel(thread_id_a);
 	pthread_cancel(thread_id_b);
 
-    pthread_join(thread_id_a, &res);
-    pthread_join(thread_id_b, &res);
+	pthread_join(thread_id_a, &res);
+	pthread_join(thread_id_b, &res);
+#endif
 	return 0;
 }
 

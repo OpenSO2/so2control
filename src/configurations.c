@@ -146,6 +146,7 @@ int config_load_configfile(sConfigStruct * config)
 		config->cConfigFileName = user_conffile;
 	} else {
 		// system path
+#ifdef POSIX
 		while ((token = strsep(&xdg_configdir, ":"))){
 			sprintf(system_conffile, "%s/so2-camera/so2-camera.conf", token);
 			log_debug("search for config file at %s", system_conffile);
@@ -155,6 +156,7 @@ int config_load_configfile(sConfigStruct * config)
 				break;
 			}
 		}
+#endif
 	}
 
 	if(!pFILE){
