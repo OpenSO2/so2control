@@ -112,7 +112,7 @@ int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParamet
 		g_data_struct_a->sSO2Parameters = sSO2Parameters;
 
 		#ifdef WIN
-		CreateThread(NULL, 0, timeout, &g_data_struct_a, 0, NULL);
+		CreateThread(NULL, 0, &timeout, g_data_struct_a, 0, NULL);
 		#else
 		pthread_create(&thread_id_a, NULL, &timeout, g_data_struct_a);
 		#endif
@@ -120,7 +120,7 @@ int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParamet
 		g_data_struct_b->callback = callback;
 		g_data_struct_b->sSO2Parameters = sSO2Parameters;
 		#ifdef WIN
-		CreateThread(NULL, 0, timeout, &g_data_struct_b, 0, NULL);
+		CreateThread(NULL, 0, &timeout, g_data_struct_b, 0, NULL);
 		#else
 		pthread_create(&thread_id_b, NULL, &timeout, g_data_struct_b);
 		#endif
