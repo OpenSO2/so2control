@@ -11,10 +11,12 @@ This subsystem exposes three methods (see `webcam.h`):
 * ``int webcam_get`` - gets a single webcam image and fills a supplied buffer
 * ``int webcam_uninit`` - does clean up and deinitialize the webcam
 
-Currently, only two "cameras" are supported:
+Currently, only three "cameras" are supported:
 
 * ucam 1 (and probably 2), a small UART camera
+* elpcam, the most powerfull webcam in the world
 * mock, which is not actually a camera, but a stub returning
+
 prerecorded data (useful for testing)
 
 To implement a new webcam driver simply copy the `mock` folder,

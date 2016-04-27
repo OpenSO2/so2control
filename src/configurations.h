@@ -153,6 +153,32 @@ typedef struct {
 
 } sParameterStruct;
 
+
+/* Webcam parameters */
+typedef struct {
+	/* Resolution in x direction */
+	int xRes;
+
+	/* Resolution in y direction */
+	int yRes;
+
+	/* Pointer to image buffer x*y*24 RAW */
+	char *buffer;
+
+	/* Size of Buffer in bytes */
+	int bufferSize;
+
+	/* Timestamp taken *before* the image has been triggered */
+	timeStruct *timestampBefore;
+
+	/* Path to webcamimagefolder */
+	char filePath[256];
+
+	/* prefix for filenames */
+	char filePrefix[256];
+} sWebCamStruct;
+
+
  /******************************
  *   FUNCTIONS
  ******************************/
