@@ -34,6 +34,12 @@ int main(int argc, char *argv[])
 		sleepMs(100);
 	}
 
+	/* uninit */
+	status = spectrometer_uninit(&config);
+	if(status){
+		printf("uninit failed");
+	}
+
 	return 0;
 }
 
@@ -59,12 +65,6 @@ static void callback(sSpectrometerStruct * config)
 		}
 		else{
 			printf("Something wrong writing to File.\n");
-		}
-
-		/* uninit */
-		status = spectrometer_uninit(config);
-		if(status){
-			printf("uninit failed");
 		}
 	}
 	printf("done callback\n");
