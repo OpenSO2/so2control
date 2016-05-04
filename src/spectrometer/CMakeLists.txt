@@ -64,9 +64,9 @@ else( )
 	add_custom_target(
 		libseabreeze
 		COMMAND make
-		WORKING_DIRECTORY oceanoptics/libseabreeze/SeaBreeze
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze
 	)
-	include_directories(libseabreeze oceanoptics/libseabreeze/SeaBreeze/include)
+	include_directories(libseabreeze ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/include)
 	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h oceanoptics/spectrometer.c)
 
 	target_link_libraries(spectrometer-cli usb -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/lib/libseabreeze.so)
@@ -84,3 +84,11 @@ endif()
 target_link_libraries(spectrometer-cli spectrometer)
 target_link_libraries(spectrometry-cli spectrometer)
 
+# add log dependency
+if(NOT TARGET log)
+	add_subdirectory(../log log)
+	include_directories( ../log )
+endif()
+
+target_link_libraries(spectrometer-cli log)
+target_link_libraries(spectrometry-cli log)
