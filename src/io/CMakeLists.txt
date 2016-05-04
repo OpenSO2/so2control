@@ -70,7 +70,6 @@ endif()
 
 # add log dependency (required by libio)
 if(NOT TARGET log)
-	set(MOCK_LOG ON CACHE BOOL "Mock logging")
 	add_subdirectory(../log log)
 	include_directories( ../log )
 endif()

@@ -58,24 +58,12 @@ if(MOCK_SPECTROMETER_SHUTTER STREQUAL "MANUAL")
 	message("=====MANUAL SPECTROMETER SHUTTER=======")
 	add_library(spectrometer-shutter ./manual/spectrometer-shutter.c)
 elseif(MOCK_SPECTROMETER_SHUTTER)
-	message("=====MOCK_SPECTROMETER_SHUTTER=======")
+	message("=====MOCK SPECTROMETER SHUTTER=======")
 	add_library(spectrometer-shutter ./mock/spectrometer-shutter.c)
 else()
 	#~ add_library(spectrometer-shutter ./manual/spectrometer-shutter.c)
 	add_library(spectrometer-shutter ./pololu-maestro/spectrometer-shutter.c)
 endif()
-
-#~ if( ${UNIX} )
-	#~ find_library(M_LIB m)
-	#~ target_link_libraries(filterwheel ${M_LIB})
-#~ endif()
-
-#~ if( ${UNIX} )
-	#~ find_library(M_LIB m)
-	#~ target_link_libraries(filterwheel ${M_LIB})
-	#~ find_library(RT_LIB rt)
-	#~ target_link_libraries(filterwheel ${RT_LIB})
-#~ endif()
 
 # create executables
 add_executable(spectrometer-shutter-cli spectrometer-shutter-cli.c)
@@ -83,7 +71,6 @@ target_link_libraries(spectrometer-shutter-cli spectrometer-shutter)
 
 # add log dependency
 if(NOT TARGET log)
-	set(MOCK_LOG ON CACHE BOOL "Mock logging")
 	add_subdirectory(../log log)
 	include_directories( ../log )
 endif()

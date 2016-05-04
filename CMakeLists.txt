@@ -70,7 +70,7 @@ set(SRCFILES
 	./src/so2-camera.c
 )
 
-set(MOCK_CAMERA ON CACHE BOOL "Mock camera")
+set(MOCK_CAMERA OFF CACHE BOOL "Mock camera")
 if(${MOCK_CAMERA})
 	message("=====MOCK_CAMERA=======")
 	include_directories(./src/camera/mock)
@@ -120,10 +120,6 @@ if( ${UNIX} )
 endif()
 
 # log subsystem
-set(MOCK_LOG ON CACHE BOOL "Mock logging")
-if(MOCK_LOG)
-	message("=====MOCK_LOG=======")
-endif()
 add_subdirectory( src/log )
 target_link_libraries( so2-camera log )
 
