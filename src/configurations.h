@@ -88,6 +88,16 @@ typedef struct {
 
 	/* number of images between */
 	int darkframeintervall;
+
+	/* serial device to talk to for the spectrometer shutter */
+	const char * spectrometer_shutter_device;
+
+	/*
+	 * serial device channel on which the servo is connected (only used
+	 * by the pololu maestro servo controller)
+	 */
+	unsigned char spectrometer_shutter_channel;
+
 } sConfigStruct;
 
 

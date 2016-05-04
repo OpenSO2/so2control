@@ -135,6 +135,10 @@ target_link_libraries( so2-camera io )
 add_subdirectory( src/filterwheel )
 target_link_libraries( so2-camera filterwheel )
 
+# spectrometer-shutter subsystem
+add_subdirectory( src/spectrometer-shutter )
+target_link_libraries( so2-camera spectrometer-shutter )
+
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
