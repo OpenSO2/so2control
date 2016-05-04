@@ -49,11 +49,8 @@ else()
 	add_definitions(-DWIN)
 endif()
 
-# include common and log
-include_directories(
-	..
-	../log
-)
+# include common
+include_directories( .. )
 
 # create lib
 add_library(io ./custom/io.c custom/bufferToImage.c)
@@ -74,8 +71,10 @@ endif()
 # add log dependency (required by libio)
 if(NOT TARGET log)
 	set(MOCK_LOG ON CACHE BOOL "Mock logging")
-	add_subdirectory(../log ./log)
+	add_subdirectory(../log log)
+	include_directories( ../log )
 endif()
+
 target_link_libraries(io-cli log)
 
 if( ${UNIX} )
