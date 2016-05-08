@@ -131,6 +131,10 @@ target_link_libraries( so2-camera io )
 add_subdirectory( src/filterwheel )
 target_link_libraries( so2-camera filterwheel )
 
+# webcam subsystem
+add_subdirectory( src/webcam )
+target_link_libraries( so2-camera webcam )
+
 # spectrometer subsystem
 add_subdirectory( src/spectrometer )
 target_link_libraries( so2-camera spectrometer )
