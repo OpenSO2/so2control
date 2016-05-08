@@ -17,7 +17,7 @@
 #include "timehelpers.h"
 #include "../spectrometer.h"
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#include "libseabreeze/SeaBreeze/include/api/seabreezeapi/SeaBreezeAPI.h"
+#include "api/seabreezeapi/SeaBreezeAPI.h"
 #pragma GCC diagnostic pop
 
 #ifdef WIN

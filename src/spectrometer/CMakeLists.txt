@@ -61,18 +61,10 @@ if(MOCK_SPECTROMETER)
 	MESSAGE( "=====MOCK_SPECTROMETER=======")
 	add_library(spectrometer ../timehelpers.c spectrometer.h mock/getBufferFromFile.c mock/spectrometer.c)
 else( )
-	add_custom_target(
-		libseabreeze
-		COMMAND make
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze
-	)
-	include_directories(libseabreeze ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/include)
 	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h oceanoptics/spectrometer.c)
 
-	target_link_libraries(spectrometer-cli usb -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/lib/libseabreeze.so)
-	target_link_libraries(spectrometry-cli usb -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/oceanoptics/libseabreeze/SeaBreeze/lib/libseabreeze.so)
-	add_dependencies(spectrometer-cli libseabreeze)
-	add_dependencies(spectrometry-cli libseabreeze)
+	target_link_libraries(spectrometer-cli usb pthread seabreeze)
+	target_link_libraries(spectrometry-cli usb pthread seabreeze)
 endif()
 
 if( ${UNIX} )

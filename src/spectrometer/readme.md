@@ -8,14 +8,14 @@ Licence: MIT
 Getting Started
 ---------------
 
-	$ cmake .
+	$ mkdir build && cd build
+	$ cmake ..
 	$ make
 	$ ./spectrometer-cli
 
 Dependencies
 ------------
 
-- [Seabreeze](http://oceanoptics.com/api/seabreeze/)
-
-
+- [Seabreeze](http://oceanoptics.com/api/seabreeze/).
+  Install as described in [https://github.com/ap--/python-seabreeze/]().
 
