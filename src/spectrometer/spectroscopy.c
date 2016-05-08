@@ -5,6 +5,7 @@
  */
 
 #include "spectroscopy.h"
+#include "log.h"
 
 static int noOfMeasurementsLeft = 0;
 static int noOfMeasurements = 0;
@@ -23,6 +24,48 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 	spectro->dark_current = calloc(spectro->spectrum_length, sizeof(double));
 
 	return 0;
+}
+
+int spectroscopy_evaluate_spectrum(sSpectrometerStruct * spectro, double * relative_exposure);
+int spectroscopy_evaluate_spectrum(sSpectrometerStruct * spectro, double * relative_exposure)
+{
+	int roi_lower = 200; // FIXME: move to conf
+	int roi_upper = 300; // FIXME: move to conf
+	double max = 1000; // FIXME: get from spectro
+	int i = 0;
+	int l = spectro->spectrum_length;
+	double * wavelengths = spectro->wavelengths;
+	double * spectrum = spectro->lastSpectrum;
+	double summ;
+	while( l-- ){
+		if(wavelengths[l] > roi_lower && wavelengths[l] < roi_upper){
+			summ += spectrum[l];
+			i++;
+		}
+	}
+	*relative_exposure = summ/i/max; // should be something between 0..1
+	return 1;
+}
+
+// we need to calculate to optimal integration time in the relevant spectrum region
+// a good value would be about 80% of the max value
+int spectroscopy_find_exposure_time(sSpectrometerStruct * spectro);
+int spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
+{
+	//start with some random value
+	int integration_time_micros = 1E9;
+	int correct_exposure_time;
+
+	// get a spectrum
+	// FIXME
+
+	// calculate the exposure in the roi
+	double relative_exposure;
+	spectroscopy_evaluate_spectrum(spectro, &relative_exposure);
+
+	// calculate optimal exposuretime from value
+	// exposure_time / relative_exposure = max_exposure_time / 1 = correct_exposure_time / .8
+	correct_exposure_time =  .8 * integration_time_micros / relative_exposure;
 }
 
 int spectroscopy_calibrate(sSpectrometerStruct * spectro)
@@ -81,6 +124,32 @@ static void callback(sSpectrometerStruct * spectro)
  	}
 }
 
+int spectroscopy_calc_noise(sSpectrometerStruct * spectro)
+{
+	double photon_noise, diff;
+	double spectrum1[spectro->spectrum_length];
+	int i, l;
+
+	l = spectro->spectrum_length;
+
+	// take two measurements in quick succession
+	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
+
+	for(i=0; i<l; i++)
+		spectrum1[i] = spectro->lastSpectrum[i];
+
+	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
+
+	// calc average difference
+	diff = 0;
+	for(i=0; i<l; i++)
+		diff += abs( spectrum1[i] - spectro->lastSpectrum[i] );
+
+	// sigma_I = sigma_D / √2
+	photon_noise = diff / M_SQRT2;
+	log_debug("photon noise is %f", photon_noise);
+}
+
 int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
 {
 	done = 1;
@@ -98,7 +167,7 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 	callback(spectro);
 
 	while(done){
-		sleepMs(1000);
+		sleepMs(100);
 	}
 	printf("✓ Measurement done\n\n");
 
