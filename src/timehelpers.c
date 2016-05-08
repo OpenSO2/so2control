@@ -1,4 +1,5 @@
 #include "timehelpers.h"
+#include "log.h"
 
 int sleepMs(int x)
 {
@@ -72,7 +73,7 @@ int getTime(timeStruct * pTS)
 
 	stat = clock_gettime(CLOCK_REALTIME, &spec);
 	if (stat != 0) {
-		//~ log_error("clock_gettime failed. (posix) \n");
+		log_error("clock_gettime failed. (posix) \n");
 		return 1;
 	}
 

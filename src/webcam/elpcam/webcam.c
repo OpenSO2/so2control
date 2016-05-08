@@ -2,7 +2,7 @@
 #include "highgui.h"
 #include "webcam.h"
 #include "configurations.h"
-#include "common.h"
+#include "timehelpers.h"
 
 static CvCapture* cam;
 
@@ -24,7 +24,8 @@ int webcam_init(sWebCamStruct *camStruct)
 
 int webcam_get(sWebCamStruct *camStruct)
 {
-	int stat=0;
+	IplImage *frame;
+	int stat = 0;
 	stat = getTime(camStruct->timestampBefore);
 	if (stat != 0)
 	{
@@ -32,9 +33,8 @@ int webcam_get(sWebCamStruct *camStruct)
 	}
 
 	/*download image from camera */
-	IplImage *frame = cvQueryFrame(cam);
-	if (frame == 0)
-	{
+	frame = cvQueryFrame(cam);
+	if (frame == 0) {
 		fprintf(stderr,"couldn't get a frame\n");
 		return -1;
 	}
