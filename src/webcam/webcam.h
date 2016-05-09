@@ -3,8 +3,8 @@
 #include "opencv/highgui.h"
 #include "configurations.h"
 
-int webcam_init(sWebCamStruct *camStruct);
-int webcam_get(sWebCamStruct *camStruct);
-int webcam_uninit(sWebCamStruct *camStruct);
+int webcam_init(sConfigStruct * config);
+int webcam_get(sWebCamStruct * camStruct);
+int webcam_uninit(sConfigStruct * config);
 
 #endif /* _WEBCAM_H_ */

@@ -24,6 +24,8 @@ static sParameterStruct sParameters_B;
 
 static sConfigStruct config;
 
+static sWebCamStruct webcam;
+
 static void stop_program(int reason);
 
 /* Stop programs and do general clean up
@@ -44,6 +46,9 @@ static void stop_program(int reason)
 		camera_abort(&sParameters_B);
 		camera_uninit(&sParameters_B);
 	}
+
+	/* uninitialize webcam */
+	webcam_uninit(&config);
 
 	/* uninitialize io */
 	io_uninit(&config);
@@ -178,6 +183,16 @@ int main(int argc, char *argv[])
 	}
 	log_message("filterwheel opened");
 
+	/* initiate webcam */
+	state = webcam_init(&webcam);
+	if (state != 0) {
+		/* this is critical if this function fails no camera handle is returned */
+		log_error("init webcam failed");
+		stop_program(1);
+		return state;
+	}
+	log_message("camera A initialized");
+
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
 	if (state != 0) {
@@ -235,7 +250,7 @@ int main(int argc, char *argv[])
 	 * Starting the acquisition with the exposure parameter set in
 	 * configurations.c and exposureTimeControl.c
 	 */
-	state = startAquisition(&sParameters_A, &sParameters_B, &config);
+	state = startAquisition(&sParameters_A, &sParameters_B, &webcam, &config);
 	log_message("Aquisition stopped");
 	if (state != 0) {
 		log_error("Aquisition failed");

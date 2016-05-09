@@ -21,15 +21,32 @@ static void callback(sParameterStruct * sSO2Parameters)
 	sSO2Parameters->dBufferReadyCount++;
 }
 
-static int aquire_darkframe(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config)
+int startAquisition(sParameterStruct * sParameters_A,
+	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
+{
+	int i = 0;
+	log_message("Starting acquisition. Press a key to exit");
+
+	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
+		if (i % config->darkframeintervall == 0){
+			aquire_darkframe(sParameters_A, sParameters_B, webcam, config);
+		}
+		aquire(sParameters_A, sParameters_B, webcam, config);
+	}
+
+	return 0;
+}
+
+
+int aquire_darkframe(sParameterStruct * sParameters_A,
+	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
 {
 	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
 	log_message("filterwheel closed");
 	sParameters_A->dark = 1;
 	sParameters_B->dark = 1;
-	aquire(sParameters_A, sParameters_B, config);
+	aquire(sParameters_A, sParameters_B, webcam, config);
 	sParameters_A->dark = 0;
 	sParameters_B->dark = 0;
 	log_message("opening filterwheel");
@@ -38,25 +55,9 @@ static int aquire_darkframe(sParameterStruct * sParameters_A,
 	return 0;
 }
 
-int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config)
+int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
 {
-	int i = 0;
-	log_message("Starting acquisition. Press a key to exit");
-
-	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
-		if (i % config->darkframeintervall == 0){
-			aquire_darkframe(sParameters_A, sParameters_B, config);
-		}
-		aquire(sParameters_A, sParameters_B, config);
-	}
-
-	return 0;
-}
-
-int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
-{
-	int statusA = 0, statusB = 0;
+	int statusA = 0, statusB = 0, status = 0;
 
 	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampBefore);
@@ -78,6 +79,9 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		camera_abort(sParameters_B);
 		return 2;
 	}
+
+
+	status = webcam_get(webcam);
 
 	/* Wait for a user defined period between each camera trigger call */
 	sleepMs(config->dInterFrameDelay);
@@ -123,6 +127,13 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 	camera_abort(sParameters_A);
 	camera_abort(sParameters_B);
+
+	/* save webcam image */
+	status = io_writeWebcam(webcam, config);
+	if (status != 0) {
+		log_error("failed to write webcam image");
+		return status;
+	}
 
 	return statusA + statusB;
 }

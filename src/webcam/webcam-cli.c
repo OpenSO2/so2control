@@ -9,6 +9,7 @@ int main(void)
 	char filename[256];
 	FILE *fid;
 	sWebCamStruct camStruct;
+	sConfigStruct config;
 
 	printf("start test programm\n");
 
@@ -16,9 +17,11 @@ int main(void)
 	memset(&camStruct,0,sizeof(sWebCamStruct));
 	sprintf(camStruct.filePath,"./");
 	sprintf(camStruct.filePrefix, "webcam");
+
 	camStruct.timestampBefore = malloc(sizeof(timeStruct));
-	camStruct.xRes = 1280;
-	camStruct.yRes = 720;
+
+	config.webcam_xRes = 1280;
+	config.webcam_yRes = 720;
 
 	/* testing functions */
     stat = webcam_init(&camStruct);

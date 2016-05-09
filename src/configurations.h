@@ -98,6 +98,12 @@ typedef struct {
 	 */
 	unsigned char spectrometer_shutter_channel;
 
+	/* Resolution in x direction */
+	int webcam_xRes;
+
+	/* Resolution in y direction */
+	int webcam_yRes;
+
 } sConfigStruct;
 
 
@@ -156,12 +162,6 @@ typedef struct {
 
 /* Webcam parameters */
 typedef struct {
-	/* Resolution in x direction */
-	int xRes;
-
-	/* Resolution in y direction */
-	int yRes;
-
 	/* Pointer to image buffer x*y*24 RAW */
 	char *buffer;
 

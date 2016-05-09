@@ -197,6 +197,10 @@ int config_load_configfile(sConfigStruct * config)
 			config->processing = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "darkframeintervall") && config->darkframeintervall == -1) {
 			config->darkframeintervall = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "webcam_xRes") && config->darkframeintervall == -1) {
+			config->webcam_xRes = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "webcam_yRes") && config->darkframeintervall == -1) {
+			config->webcam_yRes = atoi(delimeterBuf + 1);
 		}
 	}
 

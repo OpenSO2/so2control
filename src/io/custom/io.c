@@ -4,11 +4,12 @@
  * file formats. This could also do i.e. packaging files into a .tar
  * file.
  *
- * Currently, there are two write modes:
+ * Currently, there are three write modes:
  * - dumb mode, the camera data and all relevent headers are dumped to
  *   files
  * - png mode, the camera data is converted to pngs, and relevant
  *   headers are written to ancillary text chunks
+ * - default: both
  *
  * PNG mode is a lot slower, but produces smaller files which can be
  * easily viewed and used for further processing.
@@ -27,7 +28,7 @@
 #include "make_png_header.c"
 
 /* local prototypes */
-int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype);
+int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype);
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char *iso_date);
 int insertValue(char **png, char *name, float value, int png_length);
@@ -50,7 +51,7 @@ int io_init(sConfigStruct * config)
 
 /*
  * `io_write`
- * Writes a single images stream to disk. Delegates the real work to
+ * Writes the current image buffer to disk. Delegates the real work to
  * `io_writeImage` or `io_writeDump`, depending on the value of processing
  * which was set in `io_init`.
  */
@@ -66,7 +67,7 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	 * e.g.
 	 *  !1 &&  2 = 2
 	 *  !2 &&  1 = 1
-	 *  !1 %% !2 = 3
+	 *  !1 && !2 = 3
 	 */
 	int state = 0;
 	if (config->processing != 1) {
@@ -83,6 +84,35 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 			log_error("failed to write raw dump");
 			return state;
 		}
+	}
+
+	return 0;
+}
+
+int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
+{
+	int state;
+	char filename[512];
+	int filenamelength = 512;
+	FILE * fid;
+
+	timeStruct *time = webcam->timestampBefore;
+
+	state = createFilename(config, filename, filenamelength, time, "webcam", "raw");
+	if (state) {
+		log_error("could not create webcam filename");
+		return state;
+	}
+
+	fid = fopen(filename, "wb");
+
+	state = fwrite(webcam->buffer, sizeof(char), webcam->bufferSize, fid);
+	if (state != webcam->bufferSize) {
+		log_error("failed to save image");
+		log_debug("buffersize stat = %d; fwrite state = %d", webcam->bufferSize, state);
+		return 1;
+	} else {
+		log_debug("IMAGE: %s saved successful", filename);
 	}
 	return 0;
 }
@@ -119,12 +149,18 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	char iso_date[25];
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, config, headerfile, headerfilelength, "txt");
+	char id = sSO2Parameters->identifier;
+	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+
+	/* identify Camera for filename Prefix */
+	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+
+	state = createFilename(config, headerfile, headerfilelength, time, camname,  "txt");
 	if(state){
 		log_error("could not create txt filename");
 	}
 
-	state = createFilename(sSO2Parameters, config, rawfile, rawfilelength, "raw");
+	state = createFilename(config, rawfile, rawfilelength, time, camname, "raw");
 	if (state) {
 		log_error("could not create txt filename");
 	}
@@ -139,7 +175,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		}
 		fclose(imageFile);
 	} else {
-		log_error("not opened raw file");
+		log_error("could not open raw file");
 	}
 
 	/* write a text file containing header information */
@@ -162,7 +198,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 
 		fclose(fp);
 	} else {
-		log_error("not opened text file");
+		log_error("could not open text file");
 	}
 
 	log_message("dumb image written");
@@ -186,11 +222,17 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	stBuffer = sSO2Parameters->stBuffer;
 
 	/* generate filenames */
-	state = createFilename(sSO2Parameters, config, filename, filenamelength, "png");
-	if (state) {
+	char id = sSO2Parameters->identifier;
+	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+
+	/* identify Camera for filename Prefix */
+	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+
+	state = createFilename(config, filename, filenamelength, time, camname,  "png");
+	if(state){
 		log_error("could not create txt filename");
-		return state;
 	}
+
 	log_debug("filename created: %s", filename);
 
 	/* convert the image buffer to an openCV image */
@@ -219,6 +261,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	/* save image to disk */
 	log_debug("open new png file %i", l);
 	fp = fopen(filename, "wb");
+
 	if (fp) {
 		writen_bytes = fwrite(buffer, 1, l, fp);
 		state = writen_bytes == l ? 0 : 1;
@@ -285,8 +328,6 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	text = strncpy(text, name, strlen(name));
 	text = strncat(text, content, strlen(content));
 
-	log_debug("strlen of new header %i", l);
-
 	/*
 	 * the header length is the header content length, plus 12 bytes
 	 * for the chunks signature (see below)
@@ -320,7 +361,6 @@ int insertHeader(char **png, char *name, char *content, int png_length)
 	} else {
 		*png = padded_png;
 	}
-	log_debug("realloced %i", png);
 
 	/*
 	 * Every PNG ends with the sequence 00 00 00 00 I E N D ae 42 60 82,
@@ -378,14 +418,11 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-int createFilename(sParameterStruct * sSO2Parameters, sConfigStruct * config, char * filename, int filenamelength, char * filetype)
+int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype)
 {
 	int state;
-	char id = sSO2Parameters->identifier;
-	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
-	/* identify Camera for filename Prefix */
-	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+	log_debug("? %s %s", config->cImagePath, config->cFileNamePrefix);
 
 	state = sprintf(filename,
 			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",

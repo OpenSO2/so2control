@@ -4,4 +4,5 @@
 
 int io_init(sConfigStruct * config);
 int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config);
+int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config);
 int io_uninit(sConfigStruct * config);
