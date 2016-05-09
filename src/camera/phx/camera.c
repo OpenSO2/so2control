@@ -563,7 +563,6 @@ static int triggerConfig(sParameterStruct * sSO2Parameters)
 
 	etStat eStat = PHX_OK;	/* Status variable */
 	etParamValue eParamValue;
-	ui32 dwTriggerPulseWidthUs = sSO2Parameters->dTriggerPulseWidth;
 	tHandle hCamera = sSO2Parameters->hCamera;
 
 	/* Enable the CCIO port as an output.
@@ -590,10 +589,9 @@ static int triggerConfig(sParameterStruct * sSO2Parameters)
 	}
 
 	/* the trigger pulse width is define in the config file. min: 1 us */
-	eParamValue = (etParamValue) dwTriggerPulseWidthUs;
-	eStat =
-	    PHX_ParameterSet(hCamera, PHX_IO_TIMER_1_PERIOD,
-			     (void *)&eParamValue);
+	eParamValue = (etParamValue) sSO2Parameters->dTriggerPulseWidth;
+	log_debug("setting pulse width to %i", sSO2Parameters->dTriggerPulseWidth);
+	eStat = PHX_ParameterSet(hCamera, PHX_IO_TIMER_1_PERIOD, (void *)&eParamValue);
 	if (PHX_OK != eStat) {
 		log_error("setting the trigger pulse width failed");
 		return eStat;
@@ -681,10 +679,10 @@ static int defaultConfig(sParameterStruct * sSO2Parameters)
 	eStat = PHX_ParameterSet(hCamera, PHX_CAM_SRC_DEPTH, &eParamValue);
 	if (PHX_OK != eStat) {
 		log_error
-		    ("Setting the image depth recieved from camera to 12-bit failed");
+		    ("Setting the image depth received from camera to 12-bit failed");
 		return eStat;
 	} else
-		log_message("Image depth recieved from camera is set to 12-bit");
+		log_message("Image depth received from camera is set to 12-bit");
 
 	/* these two options are commented out because they are set in the PHX config file. Somehow the right resolution only
 	 * works if these options are set in the PHX config file. A goal would be to completely remove this config file but
@@ -804,7 +802,7 @@ static int sendMessage(tHandle hCamera, char *inputBuffer)
 				    PHX_ParameterGet(hCamera,
 						     PHX_COMMS_INCOMING,
 						     &OutputLineBufferLength);
-				/* create a timeout signal if 0.5s are over and no data was recieved */
+				/* create a timeout signal if 0.5s are over and no data was received */
 				if (sleepCycleCounter > (timeout / 10))
 					eStat = PHX_WARNING_TIMEOUT;
 
@@ -812,7 +810,7 @@ static int sendMessage(tHandle hCamera, char *inputBuffer)
 				 && PHX_OK == eStat);
 
 			if (PHX_OK == eStat) {
-				/* if data is recieved, download the data */
+				/* if data is received, download the data */
 				eParamValue =
 				    (etParamValue) OutputLineBufferLength;
 				eStat =
