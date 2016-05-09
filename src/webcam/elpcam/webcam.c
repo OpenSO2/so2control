@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "highgui.h"
 #include "webcam.h"
 #include "configurations.h"
 #include "timehelpers.h"

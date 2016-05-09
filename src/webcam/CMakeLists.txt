@@ -54,7 +54,7 @@ include_directories(. ..)
 # create lib
 option(MOCK_WEBCAM "MOCK_WEBCAM" OFF)
 
-if(MOCK_FILTERWHEEL)
+if(MOCK_WEBCAM)
 	message("=====MOCK_WEBCAM=======")
 	add_library(webcam ../timehelpers.c ./mock/webcam.c)
 else()

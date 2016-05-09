@@ -1,6 +1,6 @@
 #ifndef _WEBCAM_H_
 #define _WEBCAM_H_
-#include "highgui.h"
+#include "opencv/highgui.h"
 #include "configurations.h"
 
 int webcam_init(sWebCamStruct *camStruct);
