@@ -175,15 +175,15 @@ int config_load_configfile(sConfigStruct * config)
 		delimeterBuf = strstr(lineBuf, "=");
 
 		/* search for corresponding strings */
-		if (strstr(lineBuf, "HistogramMinInterval") && config->dHistMinInterval != -1) {
+		if (strstr(lineBuf, "HistogramMinInterval") && config->dHistMinInterval == -1) {
 			config->dHistMinInterval = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "HistogramPercentage") && config->dHistPercentage != -1) {
+		} else if (strstr(lineBuf, "HistogramPercentage") && config->dHistPercentage == -1) {
 			config->dHistPercentage = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "InterFrameDelay") && config->dInterFrameDelay != -1) {
+		} else if (strstr(lineBuf, "InterFrameDelay") && config->dInterFrameDelay == -1) {
 			config->dInterFrameDelay = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "TriggerPulseWidth") && config->dTriggerPulseWidth != 0) {
+		} else if (strstr(lineBuf, "TriggerPulseWidth") && config->dTriggerPulseWidth == 0) {
 			config->dTriggerPulseWidth = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "FixTime") && config->dFixTime != -1) {
+		} else if (strstr(lineBuf, "FixTime") && config->dFixTime == -1) {
 			config->dFixTime = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "ExposureTime") && config->dExposureTime < 0) {
 			config->dExposureTime = atoi(delimeterBuf + 1);
@@ -193,9 +193,9 @@ int config_load_configfile(sConfigStruct * config)
 			config->cImagePath = getString(delimeterBuf);
 		} else if (strstr(lineBuf, "filterwheel_device") && !strlen(config->filterwheel_device)) {
 			config->filterwheel_device = getString(delimeterBuf);
-		} else if (strstr(lineBuf, "processing") && config->processing != -1) {
+		} else if (strstr(lineBuf, "processing") && config->processing == -1) {
 			config->processing = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "darkframeintervall") && config->darkframeintervall != -1) {
+		} else if (strstr(lineBuf, "darkframeintervall") && config->darkframeintervall == -1) {
 			config->darkframeintervall = atoi(delimeterBuf + 1);
 		}
 	}
