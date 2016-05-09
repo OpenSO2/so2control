@@ -101,7 +101,7 @@ endif()
 # executables
 add_executable( so2-camera ${CAMERASRC} ${SRCFILES} )
 
-if(NOT ${mock} STREQUAL "camera")
+if(NOT ${MOCK_CAMERA})
 	# link the libraries to the executable
 	if( ${UNIX} )
 		target_link_libraries(so2-camera phx pfw)
