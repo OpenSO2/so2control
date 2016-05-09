@@ -242,10 +242,8 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * 
 
 	switch (timeSwitch) {
 	case 0:
-		printf
-		    ("starting electronic shutter mode\nExposuretime is set\n");
-		sSO2Parameters->dExposureTime =
-		    0.0000124 + (1055 - 1) * 0.000079275;
+		log_message("starting electronic shutter mode. Exposuretime is set");
+		sSO2Parameters->dExposureTime = 0.0000124 + (1055 - 1) * 0.000079275;
 		log_message("Camera is set to electronic shutter mode.");
 		sprintf(messbuff, "Exposure time = %f ms",
 			sSO2Parameters->dExposureTime);
@@ -263,8 +261,7 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * 
 		break;
 
 	case 3:
-		log_error
-		    ("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
+		log_error("Contrast in image is to high to set an exposure time this is not fatal if this happens more often change values for -HistogramMinInterval- and -HistogramPercentage- in config file");
 		log_message("Camera is set to electronic shutter mode.");
 		sprintf(messbuff, "Exposure time = %f ms",
 			sSO2Parameters->dExposureTime);
@@ -272,9 +269,7 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * 
 		break;
 
 	default:
-		sprintf(errbuff,
-			"unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d",
-			timeSwitch);
+		sprintf(errbuff, "unexpected value for -int timeSwitch- in setExposureTime(...) timeSwitch = %d", timeSwitch);
 		log_error(errbuff);
 		return 1;
 	}

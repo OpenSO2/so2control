@@ -72,7 +72,7 @@ int filterwheel_send(int position)
 	int bytes_to_send = 1;
 	char buffer[80];
 #ifdef POSIX
-	printf("write to filterwheel: %i \n", position);
+	log_debug("write to filterwheel: %i", position);
 	write(fd, &position, bytes_to_send);
 	while(1){
 		read(fd, buffer, 80);
