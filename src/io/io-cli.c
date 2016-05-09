@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	sSO2Parameters.identifier = 'A';
 	sSO2Parameters.stBuffer = buffer;
 	sSO2Parameters.timestampBefore = &time;
+	sSO2Parameters.timestampAfter = &time;
 	sSO2Parameters.dark = 0;
 	sSO2Parameters.dExposureTime = 0.000000;
 

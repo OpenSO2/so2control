@@ -32,6 +32,7 @@ int createFilename(sConfigStruct * config, char * filename, int filenamelength, 
 IplImage *bufferToImage(short *buffer);
 int dateStructToISO8601(timeStruct * time, char *iso_date);
 int insertValue(char **png, char *name, float value, int png_length);
+int insertStringValue(char **png, char *name, char *value, int png_length);
 int insertHeader(char **png, char *name, char *content, int png_length);
 int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
 int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
@@ -195,6 +196,8 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		fprintf(fp, "dFixTime %i\n", config->dFixTime);
 		dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 		fprintf(fp, "timestampBefore %s\n", iso_date);
+		dateStructToISO8601(sSO2Parameters->timestampAfter, iso_date);
+		fprintf(fp, "timestampAfter %s\n", iso_date);
 
 		fclose(fp);
 	} else {
@@ -288,6 +291,11 @@ int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *c
 	char iso_date[25];
 	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
 	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
+	png_length = insertStringValue(png, "timestampBefore",    iso_date, png_length);
+
+	dateStructToISO8601(sSO2Parameters->timestampAfter, iso_date);
+	png_length = insertStringValue(png, "timestampAfter",     iso_date, png_length);
+
 	png_length = insertValue(png, "dBufferlength",      (float)config->dBufferlength,      png_length);
 	png_length = insertValue(png, "dHistMinInterval",   (float)config->dHistMinInterval,   png_length);
 	png_length = insertValue(png, "dHistPercentage",    (float)config->dHistPercentage,    png_length);
@@ -305,6 +313,13 @@ int insertValue(char **png, char *name, float value, int png_length)
 {
 	char text[200];
 	sprintf(text, "%s: %f", name, value);
+	return insertHeader(png, "Comment ", text, png_length);
+}
+
+int insertStringValue(char **png, char *name, char * value, int png_length)
+{
+	char text[200];
+	sprintf(text, "%s: %s", name, value);
 	return insertHeader(png, "Comment ", text, png_length);
 }
 

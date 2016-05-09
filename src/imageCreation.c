@@ -114,6 +114,10 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		return 1;
 	}
 
+	/* get current time with milliseconds precision */
+	getTime(sParameters_A->timestampAfter);
+	getTime(sParameters_B->timestampAfter);
+
 	/* save the captured image */
 	statusA = io_write(sParameters_A, config);
 	statusB = io_write(sParameters_B, config);

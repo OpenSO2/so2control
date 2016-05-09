@@ -27,6 +27,7 @@ void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruc
 	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
+	sSO2Parameters->timestampAfter = malloc(sizeof(timeStruct));
 	sSO2Parameters->dark = 0;
 }
 
