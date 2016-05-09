@@ -48,7 +48,7 @@ else()
 	add_definitions(-DWIN)
 endif()
 
-# include common and log
+# include common
 include_directories(..)
 
 # create lib
@@ -76,3 +76,12 @@ endif()
 # create executables
 add_executable(filterwheel-cli filterwheel-cli.c)
 target_link_libraries(filterwheel-cli filterwheel)
+
+
+# add log dependency
+if(NOT TARGET log)
+	add_subdirectory(../log log)
+	include_directories( ../log )
+endif()
+
+target_link_libraries(filterwheel-cli log)
