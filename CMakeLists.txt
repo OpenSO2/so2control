@@ -51,12 +51,15 @@ else()
 endif()
 
 include_directories(
-	./src
-	./src/camera
-	./src/filterwheel
-	./src/processing
-	./src/log
-	./src/io
+	src
+	src/camera
+	src/filterwheel
+	src/processing
+	src/log
+	src/io
+	src/webcam
+	src/spectrometer
+	src/spectrometer-shutter
 )
 
 set(SRCFILES
@@ -70,45 +73,8 @@ set(SRCFILES
 	./src/so2-camera.c
 )
 
-set(MOCK_CAMERA OFF CACHE BOOL "Mock camera")
-if(${MOCK_CAMERA})
-	message("=====MOCK_CAMERA=======")
-	include_directories(./src/camera/mock)
-	file(COPY src/camera/mock/fixtures/ DESTINATION src/camera/mock/fixtures/)
-
-	set(CAMERASRC ./src/camera/mock/camera.c)
-else()
-	if( ${UNIX} )
-		add_definitions(-D_PHX_LINUX)
-		add_definitions(-D_PHX_POSIX)
-
-		include_directories(/usr/local/active_silicon/phx_sdk-6.23/include)
-		link_directories(/usr/local/active_silicon/phx_sdk-6.23/lib/linux64)
-	else()
-		add_definitions(-D_PHX_WIN32)
-
-		include_directories("C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Include")
-		link_directories("C:\\Program Files\\Active Silicon\\Phoenix\\Win\\SDK6.30\\Lib\\win32")
-	endif()
-
-	add_definitions(-DPHX)
-
-	include_directories(./src/camera/phx)
-
-	set(CAMERASRC ./src/camera/phx/camera.c)
-endif()
-
 # executables
-add_executable( so2-camera ${CAMERASRC} ${SRCFILES} )
-
-if(NOT ${MOCK_CAMERA})
-	# link the libraries to the executable
-	if( ${UNIX} )
-		target_link_libraries(so2-camera phx pfw)
-	else()
-		target_link_libraries(so2-camera phxlw32)
-	endif()
-endif()
+add_executable( so2-camera ${SRCFILES} )
 
 if( ${UNIX} )
 	find_library(M_LIB m)
@@ -122,6 +88,10 @@ endif()
 # log subsystem
 add_subdirectory( src/log )
 target_link_libraries( so2-camera log )
+
+# camera subsystem
+add_subdirectory( src/camera )
+target_link_libraries( so2-camera camera )
 
 # io subsystem
 add_subdirectory( src/io )
