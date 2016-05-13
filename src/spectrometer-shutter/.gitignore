@@ -1,0 +1,6 @@
+libspectrometer-shutter.a
+spectrometer-shutter-cli
+Makefile
+Testing
+CTestTestfile.cmake
+log

@@ -1,0 +1,6 @@
+libcamera.a
+camera-cli
+Makefile
+Testing
+CTestTestfile.cmake
+log

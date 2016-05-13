@@ -1,0 +1,6 @@
+libwebcam.a
+webcam-cli
+Makefile
+Testing
+CTestTestfile.cmake
+log
