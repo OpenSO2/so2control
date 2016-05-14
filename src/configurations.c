@@ -124,29 +124,29 @@ int config_load_configfile(sConfigStruct * config)
 	char *programdata = getenv("PROGRAMDATA");
 	char *xdg_configdir = getenv("XDG_CONFIG_DIRS");
 
-	// source path
+	/* source path */
 	if (!strlen(config->cConfigFileName)){
 		config->cConfigFileName = "./configurations/so2-camera.conf";
 	}
 
-	// home path
-	if(xdg_home_configdir){ // linux only
+	/* home path */
+	if(xdg_home_configdir){ /* linux only */
 		sprintf(user_conffile, "%s/so2-camera/so2-camera.conf", xdg_home_configdir);
-	} else if (programdata) { // windows only
+	} else if (programdata) { /* windows only */
 		sprintf(user_conffile, "%s/so2-camera/config/so2-camera.conf", programdata);
 	} else if (home) {
 		sprintf(user_conffile, "%s/.config/so2-camera/so2-camera.conf", home);
 	}
 
 	if ((pFILE = fopen(config->cConfigFileName, "r"))){
-		// source path
+		/* source path */
 		log_debug("read configfile from source path: %s", config->cConfigFileName);
 	} else if ((pFILE = fopen(user_conffile, "r"))){
-		// user path
+		/* user path */
 		log_debug("read configfile from home path: %s", user_conffile);
 		config->cConfigFileName = user_conffile;
 	} else {
-		// system path
+		/* system path */
 #ifdef POSIX
 		while ((token = strsep(&xdg_configdir, ":"))){
 			sprintf(system_conffile, "%s/so2-camera/so2-camera.conf", token);

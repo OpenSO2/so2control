@@ -64,8 +64,6 @@ endif()
 if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(webcam ${M_LIB})
-	#~ find_library(RT_LIB rt)
-	#~ target_link_libraries(filterwheel ${RT_LIB})
 endif()
 
 # create executables
