@@ -198,10 +198,14 @@ int config_load_configfile(sConfigStruct * config)
 			config->processing = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "darkframeintervall") && config->darkframeintervall == -1) {
 			config->darkframeintervall = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "webcam_xRes") && config->darkframeintervall == -1) {
+		} else if (strstr(lineBuf, "webcam_xRes")) {
 			config->webcam_xRes = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "webcam_yRes") && config->darkframeintervall == -1) {
+		} else if (strstr(lineBuf, "webcam_yRes")) {
 			config->webcam_yRes = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "spectrometer_shutter_device")) {
+			config->spectrometer_shutter_device = getString(delimeterBuf);
+		} else if (strstr(lineBuf, "spectrometer_shutter_channel")) {
+			config->spectrometer_shutter_channel = atoi(delimeterBuf + 1);
 		}
 	}
 

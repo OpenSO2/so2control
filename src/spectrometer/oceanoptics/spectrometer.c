@@ -135,7 +135,10 @@ static void * timeout(void * args)
 		time = getTimeStamp();
 		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, spectro->lastSpectrum, spectrum_length);
 		if(error_code != 0){
-			log_debug("sbapi_spectrometer_get_formatted_spectrum. error_code: %i", error_code);
+			const char* error = sbapi_get_error_string(error_code);
+			log_error("failed to get formatted spectrum");
+			log_debug("sbapi_spectrometer_get_formatted_spectrum. error_code: %i, translates to %s", error_code, error);
+			return 1;
 		}
 		log_debug("spectrum took %i ms; was supposed to take %i", (int)(getTimeStamp() - time), (int)(spectro->integration_time_micros/1000));
 
@@ -188,7 +191,7 @@ int spectrometer_trigger(sSpectrometerStruct * spectro, void (*callback) (sSpect
 /*
  *
  */
-int spectrometer_uninit(sSpectrometerStruct * spectro){
+int spectrometer_uninit(sConfigStruct * config){
 	int error_code = 0;
 	sbapi_close_device(deviceID, &error_code);
 

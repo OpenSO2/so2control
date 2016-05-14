@@ -11,6 +11,10 @@
 #include "filterwheel.h"
 #include "log.h"
 #include "io.h"
+#include "webcam.h"
+#include "spectrometer.h"
+#include "spectroscopy.h"
+#include "spectrometer-shutter.h"
 
 /* explanation of prefixes:
  * d = Integer (int)
@@ -25,6 +29,8 @@ static sParameterStruct sParameters_B;
 static sConfigStruct config;
 
 static sWebCamStruct webcam;
+
+static sSpectrometerStruct spectro;
 
 static void stop_program(int reason);
 
@@ -55,6 +61,12 @@ static void stop_program(int reason)
 
 	/* uninitialize filterwheel */
 	filterwheel_uninit(&config);
+
+	/* uninitialize spectrometer-shutter */
+	spectrometer_shutter_uninit(&config);
+
+	/* uninitialize spectrometer */
+	spectrometer_uninit(&config);
 
 	/* stop logging and return file handle */
 	log_uninit();
@@ -184,14 +196,31 @@ int main(int argc, char *argv[])
 	log_message("filterwheel opened");
 
 	/* initiate webcam */
-	state = webcam_init(&webcam);
+	state = webcam_init(&config);
 	if (state != 0) {
-		/* this is critical if this function fails no camera handle is returned */
 		log_error("init webcam failed");
 		stop_program(1);
 		return state;
 	}
-	log_message("camera A initialized");
+	log_message("webcam initialized");
+
+	/* initiate spectrometer-shutter */
+	state = spectrometer_shutter_init(&config);
+	if (state != 0) {
+		log_error("init spectrometer-shutter failed");
+		stop_program(1);
+		return state;
+	}
+	log_message("spectrometer-shutter initialized");
+
+	/* initiate spectrometer */
+	state = spectroscopy_init(&spectro);
+	if (state != 0) {
+		log_error("init spectroscopy failed");
+		stop_program(1);
+		return state;
+	}
+	log_message("spectroscopy initialized");
 
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
@@ -250,13 +279,13 @@ int main(int argc, char *argv[])
 	 * Starting the acquisition with the exposure parameter set in
 	 * configurations.c and exposureTimeControl.c
 	 */
-	state = startAquisition(&sParameters_A, &sParameters_B, &webcam, &config);
-	log_message("Aquisition stopped");
+	state = startAquisition(&sParameters_A, &sParameters_B, &webcam, &spectro, &config);
 	if (state != 0) {
 		log_error("Aquisition failed");
 		stop_program(1);
 		return 1;
 	}
+	log_message("Aquisition stopped");
 
 	/* we're done! */
 	stop_program(0);

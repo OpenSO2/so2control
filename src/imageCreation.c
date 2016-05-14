@@ -8,8 +8,14 @@
 #include "filterwheel.h"
 #include "log.h"
 #include "camera.h"
+#include "spectrometer-shutter.h"
+#include "spectrometer.h"
+#include "spectroscopy.h"
+#include "webcam.h"
 #include "kbhit.h"
-#include "io/io.h"
+#include "io.h"
+
+int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config);
 
 static void callback(sParameterStruct * sSO2Parameters);
 
@@ -22,40 +28,62 @@ static void callback(sParameterStruct * sSO2Parameters)
 }
 
 int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	int i = 0;
 	log_message("Starting acquisition. Press a key to exit");
 
 	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
 		if (i % config->darkframeintervall == 0){
-			aquire_darkframe(sParameters_A, sParameters_B, webcam, config);
+			aquire_darkframe(sParameters_A, sParameters_B, webcam, spectro, config);
 		}
-		aquire(sParameters_A, sParameters_B, webcam, config);
+		aquire(sParameters_A, sParameters_B, webcam, spectro, config);
 	}
 
 	return 0;
 }
 
-
 int aquire_darkframe(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
 	log_message("filterwheel closed");
 	sParameters_A->dark = 1;
 	sParameters_B->dark = 1;
-	aquire(sParameters_A, sParameters_B, webcam, config);
+	aquire(sParameters_A, sParameters_B, webcam, spectro, config);
 	sParameters_A->dark = 0;
 	sParameters_B->dark = 0;
 	log_message("opening filterwheel");
 	filterwheel_send(FILTERWHEEL_OPENED_A);
 	log_message("filterwheel opened");
+
+
+	spectrometer_shutter_close();
+
+	spectroscopy_calibrate(spectro);
+
+	FILE * pFile;
+	int i;
+	pFile = fopen("dark-current.dat", "wt");
+	if (pFile){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
+		}
+	}
+	pFile = fopen("electronic-offset.dat", "wt");
+	if (pFile){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
+		}
+	}
+
+	spectrometer_shutter_open();
+
 	return 0;
 }
 
-int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sConfigStruct * config)
+int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	int statusA = 0, statusB = 0, status = 0;
 
@@ -79,6 +107,10 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		camera_abort(sParameters_B);
 		return 2;
 	}
+
+
+
+	spectroscopy_measure(spectro);
 
 
 	status = webcam_get(webcam);
