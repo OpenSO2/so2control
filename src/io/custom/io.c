@@ -19,6 +19,9 @@
  */
 #include<stdio.h>
 #include<time.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<unistd.h>
 #include<string.h>
 #include<opencv/cv.h>
 #include<opencv/highgui.h>
@@ -43,12 +46,28 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
  * Initialize the IO functionality. Currently, this does nothing, but this could be the place to
  * set up folders and start tar files.
  */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_init(sConfigStruct * config)
 {
+	static time_t time_ptr;
+	static struct tm now;
+	time(&time_ptr);
+	now = *gmtime(&time_ptr);
+
+	struct stat st = {0};
+	if (stat(config->cImagePath, &st) == -1) {
+		mkdir(config->cImagePath, 0700);
+	}
+
+	sprintf(config->cImagePath, "%s/%04d-%02d-%02d_%02d_%02d/",
+		config->cImagePath, now.tm_year + 1900, now.tm_mon,
+		now.tm_mday, now.tm_hour, now.tm_min);
+
+	if (stat(config->cImagePath, &st) == -1) {
+		mkdir(config->cImagePath, 0700);
+	}
+
 	return 0;
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
 /*
  * `io_write`
