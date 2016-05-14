@@ -28,6 +28,6 @@ typedef struct {
 int sleepMs(int x);
 int getTime(timeStruct * pTS);
 time_t TimeFromTimeStruct(const timeStruct * pTime);
-int getTimeStamp(void);
+long getTimeStamp(void);
 
 #endif

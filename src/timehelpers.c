@@ -11,8 +11,8 @@ int sleepMs(int x)
 	return 0;
 }
 
-int getTimeStamp(void){
-	int mills = 0;
+long getTimeStamp(void){
+	long mills = 0;
 	timeStruct time;
 	getTime(&time);
 
@@ -21,10 +21,9 @@ int getTimeStamp(void){
 		+ time.min  * 1000 * 60
 		+ time.hour * 1000 * 60 * 60
 		+ time.day  * 1000 * 60 * 60 * 24
-		+ time.mon  * 1000 * 60 * 60 * 24 * 30
-		+ time.year * 1000 * 60 * 60 * 24 * 365
+		//~ + time.mon  * 1000 * 60 * 60 * 24 * 30
+		//~ + time.year * 1000 * 60 * 60 * 24 * 365
 	;
-
 	return mills;
 }
 
