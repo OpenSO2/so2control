@@ -1,6 +1,9 @@
 #include<stdio.h>
 #include<stdarg.h>
 #include<time.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<unistd.h>
 #include "log.h"
 
 static FILE *logfile = NULL;
@@ -12,9 +15,15 @@ static int debug = 0;
 
 int log_init(sConfigStruct * config)
 {
+	struct stat st = {0};
 	debug = config->debug;
 	time(&time_ptr);
 	logTime = *gmtime(&time_ptr);
+
+	/* check if log folder exists and create if not */
+	if (stat("logs/", &st) == -1) {
+		mkdir("logs", 0700);
+	}
 
 	sprintf(nameLogFile, "logs/log_%04d_%02d_%02d_%02d_%02d.txt",
 		logTime.tm_year + 1900, logTime.tm_mon,

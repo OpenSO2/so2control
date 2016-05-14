@@ -50,7 +50,7 @@ else()
 endif()
 
 # include self
-include_directories( . )
+include_directories( . .. )
 
 # create lib
 option(MOCK_LOG "MOCK_LOG" OFF)
