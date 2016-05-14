@@ -61,8 +61,12 @@ elseif(MOCK_SPECTROMETER_SHUTTER)
 	message("=====MOCK SPECTROMETER SHUTTER=======")
 	add_library(spectrometer-shutter ./mock/spectrometer-shutter.c)
 else()
-	#~ add_library(spectrometer-shutter ./manual/spectrometer-shutter.c)
-	add_library(spectrometer-shutter ./pololu-maestro/spectrometer-shutter.c)
+	add_library(spectrometer-shutter ../timehelpers.c ./pololu-maestro/spectrometer-shutter.c)
+endif()
+
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(spectrometer-shutter ${M_LIB})
 endif()
 
 # create executables

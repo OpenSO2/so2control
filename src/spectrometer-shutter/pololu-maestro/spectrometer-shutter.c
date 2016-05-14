@@ -1,5 +1,6 @@
 #include "spectrometer-shutter.h"
 #include "log.h"
+#include "timehelpers.h"
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -66,12 +67,18 @@ int spectrometer_shutter_init(sConfigStruct * config)
 
 int spectrometer_shutter_open(void)
 {
-	return maestroSetTarget(SPECTROMETER_SHUTTER_OPEN);
+	int state = maestroSetTarget(SPECTROMETER_SHUTTER_OPEN);
+	/* FIXME */
+	sleepMs(100);
+	return state;
 }
 
 int spectrometer_shutter_close(void)
 {
-	return maestroSetTarget(SPECTROMETER_SHUTTER_CLOSED);
+	int state = maestroSetTarget(SPECTROMETER_SHUTTER_CLOSED);
+	/* FIXME */
+	sleepMs(100);
+	return state;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"

@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 	}
 
 	#if defined(POSIX)
-		//~ config.spectrometer_shutter_device = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02PNA1-if00-port0";
 		config.spectrometer_shutter_device = "/dev/serial/by-id/usb-Pololu_Corporation_Pololu_Micro_Maestro_6-Servo_Controller_00135615-if00";
 	#else
 		config.spectrometer_shutter_device = "\\\\.\\COM22";
