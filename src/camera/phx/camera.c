@@ -820,9 +820,7 @@ static int sendMessage(tHandle hCamera, char *inputBuffer)
 					    (inputLineBuffer,
 					     outputLineBuffer) != 0) {
 						/* if cameras answer equals input string, exit successfull */
-						printf
-						    ("DEBUG: send message: %s was successful\n",
-						     inputLineBuffer);
+						log_debug("send message: %s was successful", inputLineBuffer);
 						return 0;	/* here return of SUCCESS */
 					} else {
 						log_error("String send and string receive were not equal.");
