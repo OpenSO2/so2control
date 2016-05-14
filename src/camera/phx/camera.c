@@ -57,7 +57,7 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	int channel = sSO2Parameters->identifier == 'a' ? PHX_CHANNEL_A : PHX_CHANNEL_B;
 	/* Load the framegrabber with the phoenix configuration file. The function sets the necessary camera handles */
 	status = PHX_CameraConfigLoad(&sSO2Parameters->hCamera,
-		"src/camera/phx/c8484.pcf",
+		CAMERA_PCF_FILE,
 		(etCamConfigLoad) PHX_BOARD_AUTO | PHX_DIGITAL
 		| channel | PHX_NO_RECONFIGURE | 1,
 		&PHX_ErrHandlerDefault);

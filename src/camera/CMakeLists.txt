@@ -76,9 +76,17 @@ else()
 
 	add_definitions(-DPHX)
 
-	add_library(camera ../timehelpers.c ./phx/camera.c)
+	add_definitions(-DCAMERA_PCF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/phx/c8484.pcf")
+
+	add_library(camera ../configurations.c ../timehelpers.c ../kbhit.c ../exposureTimeControl.c ./phx/camera.c)
 
 endif()
+
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(camera ${M_LIB})
+endif()
+
 
 if(NOT ${MOCK_CAMERA})
 	# link the libraries to the executable
@@ -90,8 +98,17 @@ if(NOT ${MOCK_CAMERA})
 endif()
 
 # create executables
-#~ add_executable(camera-cli camera-cli.c)
-#~ target_link_libraries(camera-cli camera)
+add_executable(camera-cli camera-cli.c)
+target_link_libraries(camera-cli camera)
+
+
+find_package( OpenCV REQUIRED )
+if( OpenCV_FOUND )
+	message("OpenCV_FOUND found")
+	include_directories( ${OpenCV_INCLUDE_DIRS} )
+	target_link_libraries( camera-cli ${OpenCV_LIBS} )
+endif()
+
 
 # add log dependency
 if(NOT TARGET log)
@@ -99,4 +116,4 @@ if(NOT TARGET log)
 	include_directories( ../log )
 endif()
 
-#~ target_link_libraries(camera-cli log)
+target_link_libraries(camera-cli log)
