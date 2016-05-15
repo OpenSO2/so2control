@@ -1,8 +1,8 @@
 SO2 Camera: Camera subsystem
 ============================
 
-This implements the actual camera/framegrabber interface and will
-mostly be a framegrabber SDK wrapper to allow for the undelying SDK
+This implements the actual camera/framegrabber interface and
+mostly is a framegrabber SDK wrapper to allow for the underlying SDK
 to be changed. This can also be used to mock the hardware functions
 for unit/integration testing.
 
@@ -22,5 +22,5 @@ Currently, two implementations are included:
 - `phx` - supports Active Silicon framegrabbers using the sdk
 - `mock` - mocks the camera subsystem for development and testing
 
-To add support for other framegrabbers/SDKs, this file will have to be
-reimplemented.
+To add support for other framegrabbers/SDKs, copy mock/camera.c and
+implement the functions therein.

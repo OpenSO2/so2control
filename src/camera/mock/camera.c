@@ -140,11 +140,11 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	if (sSO2Parameters->identifier == 'a') {
 		bufferSet = bufferSetA;
 		bufferSetA = 1;
-		filename = sSO2Parameters->dark ? "src/camera/mock/fixtures/top_dark.raw" : "src/camera/mock/fixtures/top.raw";
+		filename = sSO2Parameters->dark ? CAMERA_MOCK_A_RAW_DARK : CAMERA_MOCK_A_RAW;
 	} else {
 		bufferSet = bufferSetB;
 		bufferSetB = 1;
-		filename = sSO2Parameters->dark ? "src/camera/mock/fixtures/bot_dark.raw" : "src/camera/mock/fixtures/bot.raw";
+		filename = sSO2Parameters->dark ? CAMERA_MOCK_B_RAW_DARK : CAMERA_MOCK_B_RAW;
 	}
 
 	if (bufferSet == 1)

@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
 	IplImage* img;
 	static sParameterStruct sSO2Parameters;
 
-
 	if (argc < 2) {
 		printf("usage: %s <a|b>\n", argv[0]);
 		return 1;
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
 
 	stat = camera_get(&sSO2Parameters);
 	if (stat) {
-		printf("failed to get image from webcam\n");
+		printf("failed to get image from camera\n");
 		return -1;
 	}
 
