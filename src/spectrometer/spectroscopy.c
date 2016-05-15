@@ -3,8 +3,8 @@
  *
  *
  */
-
 #include "spectroscopy.h"
+#include "spectrometer.h"
 #include "log.h"
 
 static int noOfMeasurementsLeft = 0;
@@ -26,8 +26,13 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 	return 0;
 }
 
-int spectroscopy_evaluate_spectrum(sSpectrometerStruct * spectro, double * relative_exposure);
-int spectroscopy_evaluate_spectrum(sSpectrometerStruct * spectro, double * relative_exposure)
+/*
+ * calculate the relative exposure of the spectrum in the desired region of interest.
+ * for SO2 measurements, the roi is between 200 and 300nm.
+ * A good exposure is at about 80%.
+ */
+int spectroscopy_calc_exposure(sSpectrometerStruct * spectro, double * relative_exposure);
+int spectroscopy_calc_exposure(sSpectrometerStruct * spectro, double * relative_exposure)
 {
 	int roi_lower = 200; // FIXME: move to conf
 	int roi_upper = 300; // FIXME: move to conf
@@ -35,16 +40,15 @@ int spectroscopy_evaluate_spectrum(sSpectrometerStruct * spectro, double * relat
 	int i = 0;
 	int l = spectro->spectrum_length;
 	double * wavelengths = spectro->wavelengths;
-	double * spectrum = spectro->lastSpectrum;
 	double summ;
 	while( l-- ){
 		if(wavelengths[l] > roi_lower && wavelengths[l] < roi_upper){
-			summ += spectrum[l];
+			summ += spectro->lastSpectrum[l];
 			i++;
 		}
 	}
 	*relative_exposure = summ/i/max; // should be something between 0..1
-	return 1;
+	return 0;
 }
 
 // we need to calculate to optimal integration time in the relevant spectrum region
@@ -61,17 +65,18 @@ int spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
 
 	// calculate the exposure in the roi
 	double relative_exposure;
-	spectroscopy_evaluate_spectrum(spectro, &relative_exposure);
+	spectroscopy_calc_exposure(spectro, &relative_exposure);
 
 	// calculate optimal exposuretime from value
 	// exposure_time / relative_exposure = max_exposure_time / 1 = correct_exposure_time / .8
 	correct_exposure_time =  .8 * integration_time_micros / relative_exposure;
+
+	return correct_exposure_time;
 }
 
 int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 {
-	int i = 0;
-	FILE * pFile;
+	int i;
 	int dark_current_integration_time_s = 60;
 
 	printf("… Measuring electronic offset \n");
@@ -104,7 +109,7 @@ static int done = 1;
 
 static void callback(sSpectrometerStruct * spectro)
 {
-	int status, i;
+	int i;
 	if(noOfMeasurementsLeft == 0) {
 		done = 0;
 	} else {
@@ -148,13 +153,14 @@ int spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	// sigma_I = sigma_D / √2
 	photon_noise = diff / M_SQRT2;
 	log_debug("photon noise is %f", photon_noise);
+
+	return photon_noise;
 }
 
 int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
 {
-	done = 1;
-	int status = 0;
 	int i;
+	done = 1;
 	spectro->integration_time_micros = integration_time_micros;
 	noOfMeasurements = number_of_spectra;
 	noOfMeasurementsLeft = noOfMeasurements;
@@ -194,15 +200,11 @@ int spectroscopy_measure(sSpectrometerStruct * spectro)
 			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectrum[i]);
 		}
 	}
-
-}
-
-int spectroscopy_run(sSpectrometerStruct * spectro)
-{
-
+	return 0;
 }
 
 int spectroscopy_uninit(sSpectrometerStruct * spectro)
 {
 	free(spectrum);
+	return 0;
 }

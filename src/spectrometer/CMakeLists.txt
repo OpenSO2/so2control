@@ -59,7 +59,12 @@ add_executable(spectrometry-cli spectrometry-cli.c)
 option(MOCK_SPECTROMETER "MOCK_SPECTROMETER" OFF)
 if(MOCK_SPECTROMETER)
 	MESSAGE( "=====MOCK_SPECTROMETER=======")
-	add_library(spectrometer ../timehelpers.c spectrometer.h mock/getBufferFromFile.c mock/spectrometer.c)
+	file(COPY mock/fixtures/ DESTINATION mock/fixtures/)
+	add_definitions(-DSPECTROMETER_MOCK_WAVELENGTHS="${CMAKE_CURRENT_SOURCE_DIR}/mock/fixtures/wavelengths.dat")
+	add_definitions(-DSPECTROMETER_MOCK_SPECTRUM="${CMAKE_CURRENT_SOURCE_DIR}/mock/fixtures/spectrum.dat")
+
+	file(COPY mock/fixtures/ DESTINATION mock/fixtures/)
+	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h mock/spectrometer.c)
 else( )
 	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h oceanoptics/spectrometer.c)
 

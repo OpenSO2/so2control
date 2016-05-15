@@ -9,8 +9,9 @@ static void callback(sSpectrometerStruct * config);
 
 int main(int argc, char *argv[])
 {
+	sSpectrometerStruct spectro;
+	sConfigStruct config;
 	int status = 0;
-	sSpectrometerStruct config;
 	filename = argv[1];
 
 	if (argc != 4) {
@@ -18,17 +19,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	noOfMeasurementsLeft = strtol(argv[2], NULL, 10) + 1;
-	config.integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
+	spectro.integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
 
 	/* init */
-	status = spectrometer_init(&config);
+	status = spectrometer_init(&spectro);
 	if(status){
 		printf("init spectrometer failed\n");
 		return 1;
 	}
 
 	/* start callback loop */
-	callback(&config);
+	callback(&spectro);
 
 	while(noOfMeasurementsLeft){
 		sleepMs(100);
@@ -43,9 +44,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-static void callback(sSpectrometerStruct * config)
+static void callback(sSpectrometerStruct * spectro)
 {
-	int status;
 	int i;
 	FILE * pFile;
 
@@ -53,14 +53,14 @@ static void callback(sSpectrometerStruct * config)
 
 	noOfMeasurementsLeft--;
 	if(noOfMeasurementsLeft) {
-		spectrometer_trigger(config, callback);
+		spectrometer_trigger(spectro, callback);
 	} else {
-		printf("spectrum is %i long\n", config->spectrum_length);
+		printf("spectrum is %i long\n", spectro->spectrum_length);
 		pFile = fopen(filename, "wt");
 		if (pFile){
 			printf("write to %s\n", filename);
-			for(i=0; i < config->spectrum_length; i++){
-				fprintf(pFile, "%f %f \n", config->lastSpectrum[i], config->wavelengths[i]);
+			for(i = 0; i < spectro->spectrum_length; i++){
+				fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->lastSpectrum[i]);
 			}
 		}
 		else{

@@ -1,29 +1,69 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include "../spectrometer.h"
-
-#include<string.h>
-#include<stdio.h>
-#include<stdlib.h>
+#include "spectrometer.h"
+#include "log.h"
 #include "configurations.h"
-#include "getBufferFromFile.c"
 
-int spectrometer_init(sConfigStruct * config)
+static double * wavelengths = NULL;
+static double * spectrum = NULL;
+
+int spectrometer_init(sSpectrometerStruct * spectro)
 {
-	config->wavelengths = getBufferFromFile("wavelengths.dat", 0);
+	int i;
+	int number_of_lines = 0;
+	char line[512];
+
+	FILE *f = fopen(SPECTROMETER_MOCK_WAVELENGTHS, "r");
+	if (!f) {
+		log_error("failed to open file");
+		return 1;
+	}
+
+	while (fgets(line, 512, f) != NULL) {
+		number_of_lines++;
+	}
+
+	wavelengths = calloc(number_of_lines, sizeof(double));
+	spectrum = calloc(number_of_lines, sizeof(double));
+
+	spectro->spectrum_length = number_of_lines;
+
+	/* rewind file */
+	fseek(f, 0, SEEK_SET);
+
+	i = 0;
+	while (fgets(line, 512, f) != NULL) {
+		wavelengths[i++] = atol(line);
+	}
+
+	fclose(f);
+
+	f = fopen(SPECTROMETER_MOCK_SPECTRUM, "r");
+	if (!f) {
+		log_error("failed to open file");
+		return 1;
+	}
+
+	i = 0;
+	while (fgets(line, 512, f) != NULL) {
+		spectrum[i++] = atol(line);
+	}
+
+	fclose(f);
+
 	return 0;
 }
-int spectrometer_get(double * wavelengths, double * spectra, int length)
-{
-	return 0;
-}
+
 int spectrometer_uninit(sConfigStruct * config)
 {
+	free(wavelengths);
+	free(spectrum);
 	return 0;
 }
-int spectrometer_trigger(sConfigStruct * config, void (*callback) (sConfigStruct * config))
+
+int spectrometer_trigger(sSpectrometerStruct * spectro, void (*callback) (sSpectrometerStruct * spectro))
 {
-	config->lastSpectrum = getBufferFromFile("spectrum.dat", 0);
-	callback(config);
+	spectro->lastSpectrum = spectrum;
+	spectro->wavelengths = wavelengths;
+	callback(spectro);
 	return 0;
 }

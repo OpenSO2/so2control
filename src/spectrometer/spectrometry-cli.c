@@ -4,11 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-	sSpectrometerStruct spectro;
-	spectroscopy_init(&spectro);
-
 	FILE * pFile;
 	int i;
+	sSpectrometerStruct spectro;
+	spectroscopy_init(&spectro);
 
 	printf("\n➔ Please cover the spectrometer lens");
 	getchar();
