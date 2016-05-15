@@ -56,6 +56,8 @@ option(MOCK_WEBCAM "MOCK_WEBCAM" OFF)
 
 if(MOCK_WEBCAM)
 	message("=====MOCK_WEBCAM=======")
+	file(COPY mock/fixtures/ DESTINATION mock/fixtures/)
+	add_definitions(-DWEBCAM_MOCK_RAW="${CMAKE_CURRENT_SOURCE_DIR}/mock/fixtures/mock.raw")
 	add_library(webcam ../timehelpers.c ./mock/webcam.c)
 else()
 	add_library(webcam ../timehelpers.c ./elpcam/webcam.c)

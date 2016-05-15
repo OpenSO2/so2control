@@ -1,5 +1,6 @@
 #include "webcam.h"
 #include "configurations.h"
+#include <opencv/highgui.h>
 #include <stdio.h>
 #include <string.h>
 
