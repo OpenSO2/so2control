@@ -76,14 +76,15 @@ int filterwheel_send(int position)
 	log_debug("write to filterwheel: %i", position);
 	write(fd, &position, bytes_to_send);
 	for (i=0;;i++){
+		sleepMs(100);
 		read(fd, buffer, 80);
 
 		if (strstr(buffer, "done") != NULL) {
 			return 0;
 			log_debug("waited %i cycles per 100ms for filterwheel", i);
 		}
-		sleepMs(100);
 	}
+	sleepMs(2000);
 	return 0;
 #else
 	/* Send specified text (remaining command line arguments) */
