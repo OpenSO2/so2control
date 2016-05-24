@@ -68,16 +68,16 @@ if( ${UNIX} )
 	target_link_libraries(webcam ${M_LIB})
 endif()
 
-# create executables
-add_executable(webcam-cli webcam-cli.c)
-target_link_libraries(webcam-cli webcam)
-
 find_package( OpenCV REQUIRED )
 if( OpenCV_FOUND )
 	message("OpenCV_FOUND found")
 	include_directories( ${OpenCV_INCLUDE_DIRS} )
-	target_link_libraries( webcam-cli ${OpenCV_LIBS} )
+	target_link_libraries(webcam ${OpenCV_LIBS})
 endif()
+
+# create executables
+add_executable(webcam-cli webcam-cli.c)
+target_link_libraries(webcam-cli webcam )
 
 # add log dependency
 if(NOT TARGET log)

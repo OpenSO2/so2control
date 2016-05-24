@@ -4,7 +4,7 @@
 
 static CvCapture* cam;
 
-int webcam_init(sConfigStruct * config)
+int webcam_init(sConfigStruct * config, sWebCamStruct * camStruct)
 {
 	/* open camera */
 	cam = cvCaptureFromCAM(CV_CAP_ANY);
@@ -18,6 +18,9 @@ int webcam_init(sConfigStruct * config)
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, config->webcam_xRes);
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, config->webcam_yRes);
 
+	camStruct->timestampBefore = malloc(sizeof(timeStruct));
+	camStruct->timestampBefore = malloc(sizeof(timeStruct));
+
 	return 0;
 }
 
@@ -25,7 +28,6 @@ int webcam_get(sWebCamStruct * camStruct)
 {
 	IplImage *frame;
 	int stat = 0;
-	camStruct->timestampBefore = malloc(sizeof(timeStruct));
 
 	stat = getTime(camStruct->timestampBefore);
 	if (!stat) {

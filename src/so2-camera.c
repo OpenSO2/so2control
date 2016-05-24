@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 	log_message("filterwheel opened");
 
 	/* initiate webcam */
-	state = webcam_init(&config);
+	state = webcam_init(&config, &webcam);
 	if (state != 0) {
 		log_error("init webcam failed");
 		stop_program(1);
