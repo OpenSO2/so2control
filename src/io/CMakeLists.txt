@@ -55,18 +55,24 @@ include_directories( .. )
 # create lib
 add_library(io ./custom/io.c custom/bufferToImage.c)
 
-# create executables
-add_executable(io-cli io-cli.c)
-target_link_libraries(io-cli io)
-
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake)
 
 find_package( OpenCV REQUIRED )
 if(OpenCV_FOUND)
 	include_directories( ${OpenCV_INCLUDE_DIRS} )
-	target_link_libraries( io-cli ${OpenCV_LIBS} )
 endif()
+
+# create executables
+add_executable(io-cli io-cli.c)
+target_link_libraries(io-cli io ${OpenCV_LIBS})
+
+add_executable(webcam-raw2png webcam-raw2png.c)
+target_link_libraries(webcam-raw2png ${OpenCV_LIBS})
+
+add_executable(camera-raw2png camera-raw2png.c)
+target_link_libraries(camera-raw2png ${OpenCV_LIBS})
+
 
 # add log dependency (required by libio)
 if(NOT TARGET log)
