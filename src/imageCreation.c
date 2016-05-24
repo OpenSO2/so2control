@@ -59,13 +59,13 @@ int aquire_darkframe(sParameterStruct * sParameters_A,
 	log_message("filterwheel opened");
 
 
-	spectrometer_shutter_close();
+//	spectrometer_shutter_close();
 
-	spectroscopy_calibrate(spectro);
+//	spectroscopy_calibrate(spectro);
 
-	io_spectrum_save_calib(spectro, config);
+//	io_spectrum_save_calib(spectro, config);
 
-	spectrometer_shutter_open();
+//	spectrometer_shutter_open();
 
 	return 0;
 }
@@ -104,9 +104,10 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	 * will have to be changed to something smarter.
 	 */
 
-	getTime(spectro->timestampBefore);
-	spectroscopy_measure(spectro);
-	getTime(spectro->timestampAfter);
+
+//	getTime(spectro->timestampBefore);
+//	spectroscopy_measure(spectro);
+//	getTime(spectro->timestampAfter);
 
 	status = io_spectrum_save(spectro, config);
 	if (status != 0) {

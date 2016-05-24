@@ -158,6 +158,7 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 
 int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
+return 0;
 	FILE * pFile;
 	int i;
 	pFile = fopen("dark-current.dat", "wt");
@@ -176,6 +177,7 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 
 int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
+return 0;
 	FILE * f;
 	int i;
 	char iso_date[25];

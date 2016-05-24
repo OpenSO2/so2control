@@ -214,12 +214,12 @@ int main(int argc, char *argv[])
 	log_message("spectrometer-shutter initialized");
 
 	/* initiate spectrometer */
-	state = spectroscopy_init(&spectro);
-	if (state != 0) {
-		log_error("init spectroscopy failed");
-		stop_program(1);
-		return state;
-	}
+//	state = spectroscopy_init(&spectro);
+//	if (state != 0) {
+//		log_error("init spectroscopy failed");
+//		stop_program(1);
+//		return state;
+//	}
 	log_message("spectroscopy initialized");
 
 	/* initiate camera */
