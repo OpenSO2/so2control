@@ -69,16 +69,18 @@ int filterwheel_init(sConfigStruct * config)
 /* position: o c */
 int filterwheel_send(int position)
 {
+	int i;
 	int bytes_to_send = 1;
 	char buffer[80];
 #ifdef POSIX
 	log_debug("write to filterwheel: %i", position);
 	write(fd, &position, bytes_to_send);
-	while(1){
+	for (i=0;;i++){
 		read(fd, buffer, 80);
 
 		if (strstr(buffer, "done") != NULL) {
 			return 0;
+			log_debug("waited %i cycles per 100ms for filterwheel", i);
 		}
 		sleepMs(100);
 	}
