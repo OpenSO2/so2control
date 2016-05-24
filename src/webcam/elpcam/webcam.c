@@ -4,7 +4,7 @@
 
 static CvCapture* cam;
 
-int webcam_init(sConfigStruct * config, sWebCamStruct * camStruct)
+int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 {
 	/* open camera */
 	cam = cvCaptureFromCAM(CV_CAP_ANY);
@@ -18,8 +18,8 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * camStruct)
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, config->webcam_xRes);
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, config->webcam_yRes);
 
-	camStruct->timestampBefore = malloc(sizeof(timeStruct));
-	camStruct->timestampBefore = malloc(sizeof(timeStruct));
+	webcam->timestampBefore = malloc(sizeof(timeStruct));
+	webcam->timestampAfter = malloc(sizeof(timeStruct));
 
 	return 0;
 }
@@ -30,14 +30,21 @@ int webcam_get(sWebCamStruct * camStruct)
 	int stat = 0;
 
 	stat = getTime(camStruct->timestampBefore);
-	if (!stat) {
+	if (stat) {
+		printf("couldn't get the time before\n");
 		return -1;
 	}
 
 	/*download image from camera */
 	frame = cvQueryFrame(cam);
 	if (!frame) {
-		log_error("couldn't get a frame");
+		printf("couldn't get a frame");
+		return -2;
+	}
+
+	stat = getTime(camStruct->timestampAfter);
+	if (stat) {
+		printf("couldn't get the time after \n");
 		return -1;
 	}
 
