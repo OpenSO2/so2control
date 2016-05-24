@@ -202,10 +202,10 @@ void loop()
 
 	if (setting != oldsetting) {
 
-    if(oldsetting > setting){
-        calibrate();
-        statusDeg = 0;
-    }
+		if(oldsetting > setting){
+			calibrate();
+			statusDeg = 0;
+		}
 		oldsetting = setting;
 
 		// blink new setting on led
