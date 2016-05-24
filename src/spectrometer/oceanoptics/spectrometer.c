@@ -29,7 +29,6 @@
 
 static long deviceID;
 static long featureID;
-static int spectrum_length;
 struct data_struct{
 	void (*callback)(sSpectrometerStruct * spectro);
 	sSpectrometerStruct * spectro;
@@ -97,22 +96,23 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	/*
 	 *
 	 */
-	spectrum_length = sbapi_spectrometer_get_formatted_spectrum_length(deviceID, featureID, &error_code);
+	spectro->spectrum_length = sbapi_spectrometer_get_formatted_spectrum_length(deviceID, featureID, &error_code);
 	if(error_code != 0){
 		log_debug("sbapi_spectrometer_get_formatted_spectrum_length. error_code: %i", error_code);
 		return 1;
 	}
-	spectro->spectrum_length = spectrum_length;
-	log_debug("Spectrometer spectrum length is %i", spectrum_length);
+	log_debug("Spectrometer spectrum length is %i", spectro->spectrum_length);
 
-	spectro->lastSpectrum = (double *)calloc(spectrum_length, sizeof(double));
-	spectro->wavelengths = (double *)calloc(spectrum_length, sizeof(double));
+	spectro->lastSpectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
+	spectro->wavelengths = (double *)calloc(spectro->spectrum_length, sizeof(double));
 
 	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, spectro->wavelengths, spectro->wavelengths);
 	if(error_code != 0){
 		log_debug("sbapi_spectrometer_get_wavelengths. error_code: %i", error_code);
 		return 1;
 	}
+
+	spectro->max = 4096;
 
 	return 0;
 }
@@ -133,7 +133,7 @@ static void * timeout(void * args)
 
 	do {
 		time = getTimeStamp();
-		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, spectro->lastSpectrum, spectrum_length);
+		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, spectro->lastSpectrum, spectro->spectrum_length);
 		if(error_code != 0){
 			const char* error = sbapi_get_error_string(error_code);
 			log_error("failed to get formatted spectrum");

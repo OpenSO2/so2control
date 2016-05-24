@@ -33,5 +33,12 @@ int main(int argc, char *argv[])
 	printf("✓ Spectrometer lens opened.\n\n");
 	spectroscopy_measure(&spectro);
 
+
+	double noise = spectroscopy_calc_noise(&spectro);
+	double exposure = spectroscopy_calc_exposure(&spectro);
+	double exposure_opt = spectroscopy_find_exposure_time(&spectro);
+
+	printf("exposure was %f, an optimal exposure time would be %f. Noise was %f", exposure, exposure_opt, noise);
+
 	return 0;
 }

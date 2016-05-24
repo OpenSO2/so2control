@@ -116,12 +116,9 @@ target_link_libraries( so2-camera spectrometer-shutter )
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-find_package( OpenCV REQUIRED )
-if( OpenCV_FOUND )
-	message("OpenCV_FOUND found")
-	include_directories( ${OpenCV_INCLUDE_DIRS} )
-	target_link_libraries( so2-camera ${OpenCV_LIBS} )
-endif()
+# spectrometer executables
+add_executable( spectro src/spectro.c src/configurations.c )
+target_link_libraries( spectro spectrometer log spectrometer-shutter)
 
 
 ########################################################################

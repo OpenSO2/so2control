@@ -117,9 +117,15 @@ typedef struct {
 
 	double * dark_current;
 
+	double max;
+
 	int integration_time_micros;
 
 	int spectrum_length;
+
+	timeStruct *timestampBefore;
+
+	timeStruct *timestampAfter;
 } sSpectrometerStruct;
 
 /* Camera parameters */
@@ -174,11 +180,8 @@ typedef struct {
 	/* Timestamp taken *before* the image has been triggered */
 	timeStruct *timestampBefore;
 
-	/* Path to webcamimagefolder */
-	char filePath[256];
-
-	/* prefix for filenames */
-	char filePrefix[256];
+	/* Timestamp taken *after* the image has been received */
+	timeStruct *timestampAfter;
 } sWebCamStruct;
 
 

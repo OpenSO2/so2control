@@ -63,20 +63,7 @@ int aquire_darkframe(sParameterStruct * sParameters_A,
 
 	spectroscopy_calibrate(spectro);
 
-	FILE * pFile;
-	int i;
-	pFile = fopen("dark-current.dat", "wt");
-	if (pFile){
-		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
-		}
-	}
-	pFile = fopen("electronic-offset.dat", "wt");
-	if (pFile){
-		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
-		}
-	}
+	io_spectrum_save_calib(spectro, config);
 
 	spectrometer_shutter_open();
 
@@ -109,11 +96,34 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	}
 
 
+	/*
+	 * Take webcam image and spectrometer measurement after the SO2
+	 * images have been triggered. The assumption here is that the
+	 * spectrum and webcam image take less time than we have to wait for
+	 * the UV camera. This, however, might be wrong, and this algorithm
+	 * will have to be changed to something smarter.
+	 */
 
+	getTime(spectro->timestampBefore);
 	spectroscopy_measure(spectro);
+	getTime(spectro->timestampAfter);
 
+	status = io_spectrum_save(spectro, config);
+	if (status != 0) {
+		log_error("failed to write spectrum");
+		return status;
+	}
 
+	getTime(webcam->timestampBefore);
 	status = webcam_get(webcam);
+	getTime(webcam->timestampAfter);
+
+	/* save webcam image */
+	status = io_writeWebcam(webcam, config);
+	if (status != 0) {
+		log_error("failed to write webcam image");
+		return status;
+	}
 
 	/* Wait for a user defined period between each camera trigger call */
 	sleepMs(config->dInterFrameDelay);
@@ -163,13 +173,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 	camera_abort(sParameters_A);
 	camera_abort(sParameters_B);
-
-	/* save webcam image */
-	status = io_writeWebcam(webcam, config);
-	if (status != 0) {
-		log_error("failed to write webcam image");
-		return status;
-	}
 
 	return statusA + statusB;
 }

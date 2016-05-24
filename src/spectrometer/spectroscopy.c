@@ -27,16 +27,13 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 }
 
 /*
- * calculate the relative exposure of the spectrum in the desired region of interest.
- * for SO2 measurements, the roi is between 200 and 300nm.
- * A good exposure is at about 80%.
+ * Calculate the absolute exposure of the spectrum in the desired region of interest.
+ * For SO2 measurements, the roi is between 200 and 300nm.
  */
-int spectroscopy_calc_exposure(sSpectrometerStruct * spectro, double * relative_exposure);
-int spectroscopy_calc_exposure(sSpectrometerStruct * spectro, double * relative_exposure)
+double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 {
-	int roi_lower = 200; // FIXME: move to conf
-	int roi_upper = 300; // FIXME: move to conf
-	double max = 1000; // FIXME: get from spectro
+	int roi_lower = 250; // FIXME: move to conf
+	int roi_upper = 350; // FIXME: move to conf
 	int i = 0;
 	int l = spectro->spectrum_length;
 	double * wavelengths = spectro->wavelengths;
@@ -47,31 +44,37 @@ int spectroscopy_calc_exposure(sSpectrometerStruct * spectro, double * relative_
 			i++;
 		}
 	}
-	*relative_exposure = summ/i/max; // should be something between 0..1
-	return 0;
+	return summ/i; // should be something between 0..max
 }
 
-// we need to calculate to optimal integration time in the relevant spectrum region
-// a good value would be about 80% of the max value
-int spectroscopy_find_exposure_time(sSpectrometerStruct * spectro);
-int spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
+/*
+ * We need to calculate to optimal integration time in the relevant spectrum region
+ * The saturation T of a detector pixel P is defined as:
+ *           C(P)
+ * T(P) = ----------
+ *         N · Cmax
+ * C = counts in pixel
+ * N = number of scans = 1
+ * C_max = 4096 for the USB2000+
+ *
+ * above 80% the sensitivity drops of, so a good saturation is at about .7, thus:
+ * T_opt = C_opt/Cmax = .7
+ *
+ * if t is the exposure time, since T ~ t
+ *
+ * T_opt     t_opt
+ * -----  =  -----
+ * T_arb     t_arb
+ *
+ * Thus:
+ *           .7 · t_arb
+ * t_opt =   ----------   = .7 · t_arb · Cmax / C_arb
+ *              T_arb
+ *
+*/
+double spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
 {
-	//start with some random value
-	int integration_time_micros = 1E9;
-	int correct_exposure_time;
-
-	// get a spectrum
-	// FIXME
-
-	// calculate the exposure in the roi
-	double relative_exposure;
-	spectroscopy_calc_exposure(spectro, &relative_exposure);
-
-	// calculate optimal exposuretime from value
-	// exposure_time / relative_exposure = max_exposure_time / 1 = correct_exposure_time / .8
-	correct_exposure_time =  .8 * integration_time_micros / relative_exposure;
-
-	return correct_exposure_time;
+	return .7 * spectro->integration_time_micros  * spectro->max /  spectroscopy_calc_exposure(spectro);
 }
 
 int spectroscopy_calibrate(sSpectrometerStruct * spectro)
@@ -129,7 +132,7 @@ static void callback(sSpectrometerStruct * spectro)
  	}
 }
 
-int spectroscopy_calc_noise(sSpectrometerStruct * spectro)
+double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 {
 	double photon_noise, diff;
 	double spectrum1[spectro->spectrum_length];
@@ -145,6 +148,7 @@ int spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
 
+	// calc std deviation
 	// calc average difference
 	diff = 0;
 	for(i=0; i<l; i++)
@@ -180,26 +184,13 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 	return 0;
 }
 
+/*
+ * take a measurement and save in spectro.lastSpectrum
+ *
+ */
 int spectroscopy_measure(sSpectrometerStruct * spectro)
 {
-	FILE * pFile;
-	int i;
-
-	for (i = 0; i < spectro->spectrum_length; i++) {
-		spectrum[i] = 0.;
-		spectro->lastSpectrum[i] = 0.;
-	}
-
-	// measure dark current
-	spectroscopy_meanAndSubstract(100, 300000, spectro);
-
-	pFile = fopen("measurement.dat", "wt");
-	if (pFile){
-		//~ printf("write to %s\n", "electronic-offset.dat");
-		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectrum[i]);
-		}
-	}
+	spectroscopy_meanAndSubstract(1, spectro->integration_time_micros, spectro);
 	return 0;
 }
 

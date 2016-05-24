@@ -113,20 +113,19 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 {
 	int state;
 	char filename[512];
+	char iso_date[25];
 	int filenamelength = 512;
-	FILE * fid;
+	FILE * f;
 
-	timeStruct *time = webcam->timestampBefore;
-
-	state = createFilename(config, filename, filenamelength, time, "webcam", "raw");
+	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "raw");
 	if (state) {
 		log_error("could not create webcam filename");
 		return state;
 	}
 
-	fid = fopen(filename, "wb");
+	f = fopen(filename, "wb");
 
-	state = fwrite(webcam->buffer, sizeof(char), webcam->bufferSize, fid);
+	state = fwrite(webcam->buffer, sizeof(char), webcam->bufferSize, f);
 	if (state != webcam->bufferSize) {
 		log_error("failed to save image");
 		log_debug("buffersize stat = %d; fwrite state = %d", webcam->bufferSize, state);
@@ -134,8 +133,83 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 	} else {
 		log_debug("IMAGE: %s saved successful", filename);
 	}
+
+	fclose(f);
+
+	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam_meta", "txt");
+	if (state) {
+		log_error("could not create webcam filename");
+		return state;
+	}
+
+	f = fopen(filename, "wt");
+	if (f){
+		fprintf(f, "bufferSize %i\n", webcam->bufferSize);
+		dateStructToISO8601(webcam->timestampBefore, iso_date);
+		fprintf(f, "timestampBefore %s\n", iso_date);
+		dateStructToISO8601(webcam->timestampAfter, iso_date);
+		fprintf(f, "timestampAfter %s\n", iso_date);
+	}
+	fclose(f);
+
+
 	return 0;
 }
+
+int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
+{
+	FILE * pFile;
+	int i;
+	pFile = fopen("dark-current.dat", "wt");
+	if (pFile){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
+		}
+	}
+	pFile = fopen("electronic-offset.dat", "wt");
+	if (pFile){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
+		}
+	}
+}
+
+int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
+{
+	FILE * f;
+	int i;
+	char iso_date[25];
+	char filename[512];
+	int filenamelength = 512;
+
+	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum", "dat");
+
+	/* save spectrum */
+	f = fopen(filename, "wt");
+	if (f){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
+		}
+	}
+	fclose(f);
+
+	/* save meta */
+	createFilename(config, filename, filenamelength, time, "spectrum_meta", "txt");
+	f = fopen(filename, "wt");
+	if (f){
+		fprintf(f, "max %f\n", spectro->max);
+		fprintf(f, "integration_time_micros %i\n", spectro->integration_time_micros);
+		fprintf(f, "spectrum_length %i\n", spectro->spectrum_length);
+		dateStructToISO8601(spectro->timestampBefore, iso_date);
+		fprintf(f, "timestampBefore %s\n", iso_date);
+		dateStructToISO8601(spectro->timestampAfter, iso_date);
+		fprintf(f, "timestampAfter %s\n", iso_date);
+	}
+	fclose(f);
+}
+
+
+
 
 /*
  * io_uninit
@@ -271,7 +345,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	l = png->rows * png->cols;
 	cvReleaseImage(&img);
 
-	// pry the actual buffer pointer from png
+	/* pry the actual buffer pointer from png */
 	buffer = (char *)malloc(l);
 	memcpy(buffer, png->data.s, l);
 	cvReleaseMat(&png);
@@ -454,15 +528,11 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 
 int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype)
 {
-	int state;
-
-	log_debug("? %s %s", config->cImagePath, config->cFileNamePrefix);
-
-	state = sprintf(filename,
-			"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
-			config->cImagePath, config->cFileNamePrefix,
-			time->year, time->mon, time->day, time->hour, time->min,
-			time->sec, time->milli, camname, filetype);
+	int state = sprintf(filename,
+		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
+		config->cImagePath, config->cFileNamePrefix,
+		time->year, time->mon, time->day, time->hour, time->min,
+		time->sec, time->milli, camname, filetype);
 
 	if (state > filenamelength) {
 		log_error("The filename I was ask to generate is longer then allowed.");

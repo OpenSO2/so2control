@@ -26,6 +26,7 @@ int spectrometer_init(sSpectrometerStruct * spectro)
 	spectrum = calloc(number_of_lines, sizeof(double));
 
 	spectro->spectrum_length = number_of_lines;
+	spectro->max = 4096;
 
 	/* rewind file */
 	fseek(f, 0, SEEK_SET);
