@@ -2,11 +2,13 @@
 #include "spectrometer.h"
 #include "spectroscopy.h"
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	FILE * pFile;
 	int i;
 	sSpectrometerStruct spectro;
+	double noise, exposure, exposure_opt;
+
 	spectroscopy_init(&spectro);
 
 	printf("\n➔ Please cover the spectrometer lens");
@@ -34,9 +36,9 @@ int main(int argc, char *argv[])
 	spectroscopy_measure(&spectro);
 
 
-	double noise = spectroscopy_calc_noise(&spectro);
-	double exposure = spectroscopy_calc_exposure(&spectro);
-	double exposure_opt = spectroscopy_find_exposure_time(&spectro);
+	noise = spectroscopy_calc_noise(&spectro);
+	exposure = spectroscopy_calc_exposure(&spectro);
+	exposure_opt = spectroscopy_find_exposure_time(&spectro);
 
 	printf("exposure was %f, an optimal exposure time would be %f. Noise was %f \n", exposure, exposure_opt, noise);
 

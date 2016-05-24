@@ -50,10 +50,10 @@ int io_init(sConfigStruct * config)
 {
 	static time_t time_ptr;
 	static struct tm now;
+	struct stat st = {0};
 	time(&time_ptr);
 	now = *gmtime(&time_ptr);
 
-	struct stat st = {0};
 	if (stat(config->cImagePath, &st) == -1) {
 		mkdir(config->cImagePath, 0700);
 	}
@@ -114,8 +114,8 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 	int state;
 	char filename[512];
 	char iso_date[25];
-	int filenamelength = 512;
 	FILE * f;
+	int filenamelength = 512;
 
 	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "raw");
 	if (state) {
@@ -151,7 +151,6 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 		fprintf(f, "timestampAfter %s\n", iso_date);
 	}
 	fclose(f);
-
 
 	return 0;
 }
@@ -196,7 +195,7 @@ return 0;
 	fclose(f);
 
 	/* save meta */
-	createFilename(config, filename, filenamelength, time, "spectrum_meta", "txt");
+	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum_meta", "txt");
 	f = fopen(filename, "wt");
 	if (f){
 		fprintf(f, "max %f\n", spectro->max);
@@ -209,8 +208,6 @@ return 0;
 	}
 	fclose(f);
 }
-
-
 
 
 /*
@@ -316,15 +313,16 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	int filenamelength = 512;
 	int state;
 	char *buffer;
+	char *camname;
+	timeStruct *time;
+	char id = sSO2Parameters->identifier;
 
 	stBuffer = sSO2Parameters->stBuffer;
 
-	/* generate filenames */
-	char id = sSO2Parameters->identifier;
-	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+	time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
-	/* identify Camera for filename Prefix */
-	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+	/* identify camera for filename prefix */
+	camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
 
 	state = createFilename(config, filename, filenamelength, time, camname,  "png");
 	if(state){
