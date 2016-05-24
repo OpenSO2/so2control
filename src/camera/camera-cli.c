@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* set exposure time to a very high value */
-	sSO2Parameters.dExposureTime = 1000000;
+	sSO2Parameters.dExposureTime = 10000;
 	camera_setExposure(&sSO2Parameters, &config);
 
 	/* trigger image and wait for result */
