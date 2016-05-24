@@ -14,6 +14,7 @@
 #include "webcam.h"
 #include "kbhit.h"
 #include "io.h"
+#include "exposureTimeControl.h"
 
 int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config);
 
@@ -30,12 +31,28 @@ static void callback(sParameterStruct * sSO2Parameters)
 int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-	int i = 0;
+	int i = 0, state = 0;
 	log_message("Starting acquisition. Press a key to exit");
 
 	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
 		if (i % config->darkframeintervall == 0){
 			aquire_darkframe(sParameters_A, sParameters_B, webcam, spectro, config);
+		}
+		if (i % 1000 == 0){
+			/* set exposure */
+			state = setExposureTime(sParameters_A, config);
+			if (state != 0) {
+				log_error("setExposureTime for cam B failed");
+				return 1;
+			}
+			log_message("exposure time for cam A set");
+
+			state = setExposureTime(sParameters_B, config);
+			if (state != 0) {
+				log_error("setExposureTime for cam B failed");
+				return 1;
+			}
+			log_message("exposure time for cam B set");
 		}
 		aquire(sParameters_A, sParameters_B, webcam, spectro, config);
 	}
