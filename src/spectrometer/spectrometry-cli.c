@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	double exposure = spectroscopy_calc_exposure(&spectro);
 	double exposure_opt = spectroscopy_find_exposure_time(&spectro);
 
-	printf("exposure was %f, an optimal exposure time would be %f. Noise was %f", exposure, exposure_opt, noise);
+	printf("exposure was %f, an optimal exposure time would be %f. Noise was %f \n", exposure, exposure_opt, noise);
 
 	return 0;
 }

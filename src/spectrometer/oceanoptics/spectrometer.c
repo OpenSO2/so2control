@@ -114,6 +114,9 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 
 	spectro->max = 4096;
 
+	spectro->timestampBefore = malloc(sizeof(timeStruct));
+	spectro->timestampAfter = malloc(sizeof(timeStruct));
+
 	return 0;
 }
 
