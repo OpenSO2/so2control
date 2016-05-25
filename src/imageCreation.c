@@ -12,7 +12,6 @@
 #include "spectrometer.h"
 #include "spectroscopy.h"
 #include "webcam.h"
-#include "kbhit.h"
 #include "io.h"
 #include "exposureTimeControl.h"
 
@@ -32,9 +31,9 @@ int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	int i = 0, state = 0;
-	log_message("Starting acquisition. Press a key to exit");
+	log_message("Starting acquisition");
 
-	for (i = 0; !kbhit() && (i < config->noofimages || config->noofimages == -1); i++) {
+	for (i = 0; i < config->noofimages || config->noofimages == -1; i++) {
 		if (i % config->darkframeintervall == 0){
 			aquire_darkframe(sParameters_A, sParameters_B, webcam, spectro, config);
 		}
@@ -154,7 +153,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	while (
 		   !(sParameters_A->fBufferReady && sParameters_B->fBufferReady)
 		&& !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow)
-		&& !kbhit()
 	){
 		sleepMs(10);
 	}

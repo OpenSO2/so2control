@@ -12,7 +12,6 @@
 #include"configurations.h"
 #include"log.h"
 #include"camera.h"
-#include"kbhit.h"
 #include"exposureTimeControl.h"
 
 #define _PHX_LINE_SIZE 256
@@ -312,7 +311,7 @@ static int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffe
 			 * Keep calling the sleep function to avoid burning CPU cycles
 			 */
 			while (!sSO2Parameters->fBufferReady
-			       && !sSO2Parameters->fFifoOverFlow && !kbhit()) {
+			       && !sSO2Parameters->fFifoOverFlow) {
 				_PHX_SleepMs(10);
 			}
 
