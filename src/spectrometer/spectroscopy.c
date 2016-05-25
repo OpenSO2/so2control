@@ -23,6 +23,9 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 	spectro->electronic_offset = calloc(spectro->spectrum_length, sizeof(double));
 	spectro->dark_current = calloc(spectro->spectrum_length, sizeof(double));
 
+	/* set 1s as initial integration time */
+	spectro->integration_time_micros = 1000 * 1000;
+
 	return 0;
 }
 

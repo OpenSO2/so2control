@@ -61,6 +61,8 @@ int main(void)
 		exposure = spectroscopy_calc_exposure(&spectro);
 		exposure_opt = spectroscopy_find_exposure_time(&spectro);
 
+		spectro.integration_time_micros = exposure_opt;
+
 		printf("exposure was %f, an optimal exposure time would be %f. Noise was %f", exposure, exposure_opt, noise);
 
 		save(filename, spectro.spectrum_length, spectro.wavelengths, spectro.lastSpectrum);
