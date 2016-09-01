@@ -97,12 +97,13 @@ if(NOT ${MOCK_CAMERA})
 	else()
 		target_link_libraries(camera phxlw32)
 	endif()
+elseif( ${UNIX} )
+	target_link_libraries(camera pthread)
 endif()
 
 # create executables
 add_executable(camera-cli camera-cli.c)
 target_link_libraries(camera-cli camera)
-
 
 find_package( OpenCV REQUIRED )
 if( OpenCV_FOUND )
