@@ -5,6 +5,6 @@
 
 int webcam_init(sConfigStruct * config, sWebCamStruct * webcam);
 int webcam_get(sWebCamStruct * webcam);
-int webcam_uninit(sConfigStruct * config);
+int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam);
 
 #endif /* _WEBCAM_H_ */

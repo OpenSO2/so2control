@@ -56,7 +56,7 @@ int webcam_get(sWebCamStruct * camStruct)
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-int webcam_uninit(sConfigStruct * config)
+int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 {
 	cvReleaseCapture(&cam);
 	return 0;

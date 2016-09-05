@@ -7,7 +7,7 @@
 static char *buffer;
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-int webcam_init(sConfigStruct * config)
+int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 {
 	int stat = 0;
 	int fsize = 0;
@@ -37,20 +37,27 @@ int webcam_init(sConfigStruct * config)
 		return -1;
 	}
 	fclose(fid);
+
+	webcam->timestampBefore = malloc(sizeof(timeStruct));
+	webcam->timestampAfter = malloc(sizeof(timeStruct));
+
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
-int webcam_get(sWebCamStruct *camStruct)
+int webcam_get(sWebCamStruct * webcam)
 {
-	camStruct->buffer = buffer;
+	webcam->buffer = buffer;
+	sleep(.1);
 	return 0;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-int webcam_uninit(sConfigStruct * config)
+int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 {
 	free(buffer);
+	free(webcam->timestampBefore);
+	free(webcam->timestampAfter);
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"

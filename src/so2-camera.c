@@ -15,6 +15,7 @@
 #include "spectrometer.h"
 #include "spectroscopy.h"
 #include "spectrometer-shutter.h"
+#include "threads.h"
 
 /* explanation of prefixes:
  * d = Integer (int)
@@ -53,8 +54,11 @@ static void stop_program(int reason)
 		camera_uninit(&sParameters_B);
 	}
 
+	/* stop webcam */
+	threads_webcam_stop();
+
 	/* uninitialize webcam */
-	webcam_uninit(&config);
+	webcam_uninit(&config, &webcam);
 
 	/* uninitialize io */
 	io_uninit(&config);
@@ -89,6 +93,7 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 	return 0;
 }
 #endif
+
 
 int main(int argc, char *argv[])
 {
@@ -204,6 +209,9 @@ int main(int argc, char *argv[])
 	}
 	log_message("webcam initialized");
 
+	/* start taking webcam images */
+	threads_webcam_start(&config, &webcam);
+
 	/* initiate spectrometer-shutter */
 	state = spectrometer_shutter_init(&config);
 	if (state != 0) {
@@ -279,7 +287,7 @@ int main(int argc, char *argv[])
 	 * Starting the acquisition with the exposure parameter set in
 	 * configurations.c and exposureTimeControl.c
 	 */
-	state = startAquisition(&sParameters_A, &sParameters_B, &webcam, &spectro, &config);
+	state = startAquisition(&sParameters_A, &sParameters_B, &spectro, &config);
 	if (state != 0) {
 		log_error("Aquisition failed");
 		stop_program(1);

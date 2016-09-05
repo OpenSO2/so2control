@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	int stat = 0;
 	char * filename;
 	FILE * fid;
-	sWebCamStruct camStruct;
+	sWebCamStruct webcam;
 	sConfigStruct config;
 	IplImage * img;
 	int generate_png = 1;
@@ -24,21 +24,19 @@ int main(int argc, char *argv[])
 	filename = argv[1];
 
 	/* Setup Webcam Structure */
-	memset(&camStruct, 0, sizeof(sWebCamStruct));
-
-	camStruct.timestampBefore = malloc(sizeof(timeStruct));
+	memset(&webcam, 0, sizeof(sWebCamStruct));
 
 	config.webcam_xRes = 1280;
 	config.webcam_yRes = 720;
 
 	/* testing functions */
-	stat = webcam_init(&config, &camStruct);
+	stat = webcam_init(&config, &webcam);
 	if (stat) {
 		printf("failed to init webcam\n");
 		return -1;
 	}
 
-	stat = webcam_get(&camStruct);
+	stat = webcam_get(&webcam);
 	if (stat) {
 		printf("failed to get image from webcam\n");
 		return -1;
@@ -46,15 +44,15 @@ int main(int argc, char *argv[])
 
 	if(generate_png){
 		img = cvCreateImageHeader(cvSize(config.webcam_xRes, config.webcam_yRes), IPL_DEPTH_8U, 3);
-		cvSetData(img, camStruct.buffer, img->widthStep);
+		cvSetData(img, webcam.buffer, img->widthStep);
 
 		cvSaveImage(filename, img, NULL);
 	} else {
 		fid = fopen(filename, "wb");
-		stat = fwrite(camStruct.buffer, sizeof(char), camStruct.bufferSize,fid);
-		if (stat != camStruct.bufferSize) {
+		stat = fwrite(webcam.buffer, sizeof(char), webcam.bufferSize,fid);
+		if (stat != webcam.bufferSize) {
 			printf("failed to save image\n");
-			printf("buffersize stat = %d\n", camStruct.bufferSize);
+			printf("buffersize stat = %d\n", webcam.bufferSize);
 			printf("fwrite stat = %d\n", stat);
 		} else {
 			printf("IMAGE: %s saved successful\n", filename);
@@ -63,7 +61,7 @@ int main(int argc, char *argv[])
 		fclose(fid);
 	}
 
-	stat = webcam_uninit(&config);
+	stat = webcam_uninit(&config, &webcam);
 	printf("end test programm\n");
 
 	return 0;

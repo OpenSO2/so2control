@@ -11,11 +11,10 @@
 #include "spectrometer-shutter.h"
 #include "spectrometer.h"
 #include "spectroscopy.h"
-#include "webcam.h"
 #include "io.h"
 #include "exposureTimeControl.h"
 
-int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config);
+int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config);
 
 static void callback(sParameterStruct * sSO2Parameters);
 
@@ -28,14 +27,14 @@ static void callback(sParameterStruct * sSO2Parameters)
 }
 
 int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	int i = 0, state = 0;
 	log_message("Starting acquisition");
 
 	for (i = 0; i < config->noofimages || config->noofimages == -1; i++) {
 		if (i % config->darkframeintervall == 0){
-			aquire_darkframe(sParameters_A, sParameters_B, webcam, spectro, config);
+			aquire_darkframe(sParameters_A, sParameters_B, spectro, config);
 		}
 		if (i % 1000 == 0){
 			/* set exposure */
@@ -53,21 +52,21 @@ int startAquisition(sParameterStruct * sParameters_A,
 			}
 			log_message("exposure time for cam B set");
 		}
-		aquire(sParameters_A, sParameters_B, webcam, spectro, config);
+		aquire(sParameters_A, sParameters_B, spectro, config);
 	}
 
 	return 0;
 }
 
 int aquire_darkframe(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
 	log_message("filterwheel closed");
 	sParameters_A->dark = 1;
 	sParameters_B->dark = 1;
-	aquire(sParameters_A, sParameters_B, webcam, spectro, config);
+	aquire(sParameters_A, sParameters_B, spectro, config);
 	sParameters_A->dark = 0;
 	sParameters_B->dark = 0;
 	log_message("opening filterwheel");
@@ -86,7 +85,7 @@ int aquire_darkframe(sParameterStruct * sParameters_A,
 	return 0;
 }
 
-int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sWebCamStruct * webcam, sSpectrometerStruct * spectro, sConfigStruct * config)
+int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	int statusA = 0, statusB = 0, status = 0;
 
@@ -113,9 +112,9 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 
 
 	/*
-	 * Take webcam image and spectrometer measurement after the SO2
+	 * Take spectrometer measurement after the SO2
 	 * images have been triggered. The assumption here is that the
-	 * spectrum and webcam image take less time than we have to wait for
+	 * spectrum take less time than we have to wait for
 	 * the UV camera. This, however, might be wrong, and this algorithm
 	 * will have to be changed to something smarter.
 	 */
@@ -128,17 +127,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	status = io_spectrum_save(spectro, config);
 	if (status != 0) {
 		log_error("failed to write spectrum");
-		return status;
-	}
-
-	getTime(webcam->timestampBefore);
-	status = webcam_get(webcam);
-	getTime(webcam->timestampAfter);
-
-	/* save webcam image */
-	status = io_writeWebcam(webcam, config);
-	if (status != 0) {
-		log_error("failed to write webcam image");
 		return status;
 	}
 
