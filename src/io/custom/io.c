@@ -48,22 +48,46 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
  */
 int io_init(sConfigStruct * config)
 {
+	#define SUBFOLDER_STR_LEN 18
+	int status;
 	static time_t time_ptr;
 	static struct tm now;
 	struct stat st = {0};
+	char * subfolder = (char *)malloc(SUBFOLDER_STR_LEN + 1);
 	time(&time_ptr);
 	now = *gmtime(&time_ptr);
 
-	if (stat(config->cImagePath, &st) == -1) {
-		mkdir(config->cImagePath, 0700);
+
+	// check for and remove trailing "/" to avoid ugly "//" in imagePath
+	if(config->cImagePath[(strlen(config->cImagePath)-1)] == '/'){
+		config->cImagePath[(strlen(config->cImagePath)-1)] = '\0';
 	}
 
-	sprintf(config->cImagePath, "%s/%04d-%02d-%02d_%02d_%02d/",
-		config->cImagePath, now.tm_year + 1900, now.tm_mon,
-		now.tm_mday, now.tm_hour, now.tm_min);
+	// eg. /2016-08-08_12_12/
+	//     123456789012345678
+	sprintf(subfolder, "/%04d-%02d-%02d_%02d_%02d/",
+		now.tm_year + 1900,
+		now.tm_mon,
+		now.tm_mday,
+		now.tm_hour,
+		now.tm_min);
 
+	config->cImagePath = (char *) realloc(config->cImagePath, strlen(config->cImagePath) + strlen(subfolder) + 1);
+
+	strcat(config->cImagePath, subfolder);
+
+	free(subfolder);
+
+	// create targetfolder if not exist
 	if (stat(config->cImagePath, &st) == -1) {
-		mkdir(config->cImagePath, 0700);
+		status = mkdir(config->cImagePath, 0700);
+
+		if(status != 0){
+			log_error("output folder does not exist and could be created");
+			log_debug("output folder was: %s", config->cImagePath);
+			log_debug("create parent folder to fix this issue");
+			return 1;
+		}
 	}
 
 	return 0;
@@ -124,6 +148,11 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	f = fopen(filename, "wb");
+	if(!f){
+		log_error("Failed to open file to save webcam image");
+		log_debug("Filename was %s", filename);
+		return 1;
+	}
 
 	state = fwrite(webcam->buffer, sizeof(char), webcam->bufferSize, f);
 	if (state != webcam->bufferSize) {
