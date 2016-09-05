@@ -35,8 +35,8 @@ struct data_struct *g_data_struct_b;
 #ifdef WIN
 HANDLE thread;
 #else
-pthread_t thread_id_a;
-pthread_t thread_id_b;
+pthread_t thread_id_a = 0;
+pthread_t thread_id_b = 0;
 #endif
 
 #ifdef WIN
@@ -66,10 +66,8 @@ int camera_init(sParameterStruct * sSO2Parameters)
 	bufferSetA = 0;
 	bufferSetB = 0;
 	if (sSO2Parameters->identifier == 'a'){
-		log_message("malloc a");
 		g_data_struct_a = (struct data_struct*) calloc(1, sizeof(*g_data_struct_a));
 	} else {
-		log_message("malloc b");
 		g_data_struct_b = (struct data_struct*) calloc(1, sizeof(*g_data_struct_b));
 	}
 
@@ -80,11 +78,17 @@ int camera_abort(sParameterStruct * sSO2Parameters)
 {
 #ifdef POSIX
 	void * res;
-	pthread_cancel(thread_id_a);
-	pthread_cancel(thread_id_b);
 
-	pthread_join(thread_id_a, &res);
-	pthread_join(thread_id_b, &res);
+	if( thread_id_a ){
+		pthread_cancel(thread_id_a);
+		pthread_join(thread_id_a, &res);
+	}
+
+	if ( thread_id_b ){
+		pthread_cancel(thread_id_b);
+		pthread_join(thread_id_b, &res);
+	}
+
 #endif
 	return 0;
 }
@@ -93,10 +97,8 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 {
 
 	if (sSO2Parameters->identifier == 'a'){
-		log_message("free a");
 		free(g_data_struct_a);
 	} else {
-		log_message("free b");
 		free(g_data_struct_b);
 	}
 	return 0;
