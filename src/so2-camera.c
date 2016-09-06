@@ -222,13 +222,24 @@ int main(int argc, char *argv[])
 	log_message("spectrometer-shutter initialized");
 
 	/* initiate spectrometer */
-//	state = spectroscopy_init(&spectro);
-//	if (state != 0) {
-//		log_error("init spectroscopy failed");
-//		stop_program(1);
-//		return state;
-//	}
+	state = spectrometer_init(&spectro);
+	if (state != 0) {
+		log_error("init spectrometer failed");
+		stop_program(1);
+		return state;
+	}
+	log_message("spectrometer initialized");
+
+	state = spectroscopy_init(&spectro);
+	if (state != 0) {
+		log_error("init spectroscopy failed");
+		stop_program(1);
+		return state;
+	}
 	log_message("spectroscopy initialized");
+
+	/* start taking spectra */
+	threads_spectroscopy_start(&config, &spectro);
 
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
@@ -287,7 +298,7 @@ int main(int argc, char *argv[])
 	 * Starting the acquisition with the exposure parameter set in
 	 * configurations.c and exposureTimeControl.c
 	 */
-	state = startAquisition(&sParameters_A, &sParameters_B, &spectro, &config);
+	state = startAquisition(&sParameters_A, &sParameters_B, &config);
 	if (state != 0) {
 		log_error("Aquisition failed");
 		stop_program(1);

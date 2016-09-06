@@ -4,18 +4,19 @@
 #include "webcam.h"
 #include "log.h"
 #include "io.h"
+#include "spectroscopy.h"
 
-pthread_t id = 0;
+pthread_t webcam_threadid = 0;
 
 struct webcam_struct{
 	sConfigStruct * config;
 	sWebCamStruct * webcam;
 };
 
-struct webcam_struct *webcam_s;
+struct webcam_struct * webcam_s;
 
 
-void *threads_webcam_run(void *args);
+void * threads_webcam_run(void * args);
 
 
 int threads_webcam_start(sConfigStruct * config, sWebCamStruct * webcam)
@@ -25,17 +26,16 @@ int threads_webcam_start(sConfigStruct * config, sWebCamStruct * webcam)
 	webcam_s->webcam = webcam;
 	webcam_s->config = config;
 
-	pthread_create(&id, NULL, &threads_webcam_run, webcam_s);
+	pthread_create(&webcam_threadid, NULL, &threads_webcam_run, webcam_s);
 
 	return 0;
 }
 
-
-void * threads_webcam_run(void *args)
+void * threads_webcam_run(void * args)
 {
 	int status;
-	sWebCamStruct *webcam = ((struct webcam_struct*) args)->webcam;
-	sConfigStruct *config = ((struct webcam_struct*) args)->config;
+	sWebCamStruct * webcam = ((struct webcam_struct*) args)->webcam;
+	sConfigStruct * config = ((struct webcam_struct*) args)->config;
 
 	while( 1 ){
 		getTime(webcam->timestampBefore);
@@ -49,16 +49,89 @@ void * threads_webcam_run(void *args)
 		}
 		sleep(3);
 	}
-}
 
+	#ifdef WIN
+	return 0;
+	#else
+	pthread_exit((void *) 0);
+	#endif
+}
 
 int threads_webcam_stop(void)
 {
 	void * res;
 
-	if(!id){
-		pthread_cancel(id);
-		pthread_join(id, &res);
+	if(webcam_threadid){
+		pthread_cancel(webcam_threadid);
+		pthread_join(webcam_threadid, &res);
 	}
+	return 0;
+}
+
+
+/*====================================================================*/
+/* SPECTROMETER THREAD */
+
+pthread_t spectroscopy_threadid = 0;
+
+struct spectroscopy_struct{
+	sSpectrometerStruct * spectro;
+	sConfigStruct * config;
+};
+struct spectroscopy_struct * spectroscopy_s;
+
+
+void * threads_spectroscopy_run(void * args);
+void * threads_spectroscopy_run(void * args)
+{
+	int status;
+	sSpectrometerStruct * spectro = ((struct spectroscopy_struct*) args)->spectro;
+	sConfigStruct * config = ((struct spectroscopy_struct*) args)->config;
+
+	while( 1 ){
+		getTime(spectro->timestampBefore);
+		status = spectroscopy_measure(spectro);
+		getTime(spectro->timestampAfter);
+
+		/* save spectrum */
+		status = io_spectrum_save(spectro, config);
+		if (status != 0) {
+			log_error("failed to write webcam image");
+		}
+		sleep(3);
+	}
+
+	#ifdef WIN
+	return 0;
+	#else
+	pthread_exit((void *) 0);
+	#endif
+}
+
+
+
+int threads_spectroscopy_start(sConfigStruct * config, sSpectrometerStruct * spectro)
+{
+
+	spectroscopy_s = (struct spectroscopy_struct*) calloc(1, sizeof(*spectroscopy_s));
+
+	spectroscopy_s->spectro = spectro;
+	spectroscopy_s->config = config;
+
+	pthread_create(&spectroscopy_threadid, NULL, &threads_spectroscopy_run, spectroscopy_s);
+
+	return 0;
+	return 0;
+}
+
+int threads_spectroscopy_stop(void)
+{
+	void * res;
+
+	if(!spectroscopy_threadid){
+		pthread_cancel(spectroscopy_threadid);
+		pthread_join(spectroscopy_threadid, &res);
+	}
+
 	return 0;
 }

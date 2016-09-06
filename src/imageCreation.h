@@ -6,7 +6,7 @@
  *   FUNCTIONS
  ******************************/
 int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config);
+	sParameterStruct * sParameters_B, sConfigStruct * config);
 int aquire(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config);
+	sParameterStruct * sParameters_B, sConfigStruct * config);
 #endif

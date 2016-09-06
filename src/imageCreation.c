@@ -8,13 +8,10 @@
 #include "filterwheel.h"
 #include "log.h"
 #include "camera.h"
-#include "spectrometer-shutter.h"
-#include "spectrometer.h"
-#include "spectroscopy.h"
 #include "io.h"
 #include "exposureTimeControl.h"
 
-int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config);
+int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config);
 
 static void callback(sParameterStruct * sSO2Parameters);
 
@@ -27,14 +24,14 @@ static void callback(sParameterStruct * sSO2Parameters)
 }
 
 int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	int i = 0, state = 0;
 	log_message("Starting acquisition");
 
 	for (i = 0; i < config->noofimages || config->noofimages == -1; i++) {
 		if (i % config->darkframeintervall == 0){
-			aquire_darkframe(sParameters_A, sParameters_B, spectro, config);
+			aquire_darkframe(sParameters_A, sParameters_B, config);
 		}
 		if (i % 1000 == 0){
 			/* set exposure */
@@ -52,40 +49,30 @@ int startAquisition(sParameterStruct * sParameters_A,
 			}
 			log_message("exposure time for cam B set");
 		}
-		aquire(sParameters_A, sParameters_B, spectro, config);
+		aquire(sParameters_A, sParameters_B, config);
 	}
 
 	return 0;
 }
 
 int aquire_darkframe(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
+	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
 	log_message("filterwheel closed");
 	sParameters_A->dark = 1;
 	sParameters_B->dark = 1;
-	aquire(sParameters_A, sParameters_B, spectro, config);
+	aquire(sParameters_A, sParameters_B, config);
 	sParameters_A->dark = 0;
 	sParameters_B->dark = 0;
 	log_message("opening filterwheel");
 	filterwheel_send(FILTERWHEEL_OPENED_A);
 	log_message("filterwheel opened");
-
-
-//	spectrometer_shutter_close();
-
-//	spectroscopy_calibrate(spectro);
-
-//	io_spectrum_save_calib(spectro, config);
-
-//	spectrometer_shutter_open();
-
 	return 0;
 }
 
-int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sSpectrometerStruct * spectro, sConfigStruct * config)
+int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	int statusA = 0, statusB = 0, status = 0;
 
@@ -108,26 +95,6 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 		camera_abort(sParameters_A);
 		camera_abort(sParameters_B);
 		return 2;
-	}
-
-
-	/*
-	 * Take spectrometer measurement after the SO2
-	 * images have been triggered. The assumption here is that the
-	 * spectrum take less time than we have to wait for
-	 * the UV camera. This, however, might be wrong, and this algorithm
-	 * will have to be changed to something smarter.
-	 */
-
-
-//	getTime(spectro->timestampBefore);
-//	spectroscopy_measure(spectro);
-//	getTime(spectro->timestampAfter);
-
-	status = io_spectrum_save(spectro, config);
-	if (status != 0) {
-		log_error("failed to write spectrum");
-		return status;
 	}
 
 	/* Wait for a user defined period between each camera trigger call */

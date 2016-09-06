@@ -68,7 +68,7 @@ if(MOCK_SPECTROMETER)
 else( )
 	add_library(spectrometer ../timehelpers.c spectroscopy.c spectrometer.h oceanoptics/spectrometer.c)
 
-	target_link_libraries(spectrometer usb pthread seabreeze)
+	target_link_libraries(spectrometer usb seabreeze)
 endif()
 
 if( ${UNIX} )

@@ -2,13 +2,13 @@
 #include "spectrometer.h"
 #include "spectroscopy.h"
 
-int noOfMeasurementsLeft = 1000;
-char * filename;
-
-static void callback(sSpectrometerStruct * config);
-
 int main(int argc, char *argv[])
 {
+	int noOfMeasurementsLeft = 1;
+	int integration_time_micros = 1;
+	char * filename;
+	int i;
+	FILE * pFile;
 	sSpectrometerStruct spectro;
 	sConfigStruct config;
 	int status = 0;
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	noOfMeasurementsLeft = strtol(argv[2], NULL, 10) + 1;
-	spectro.integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
+	integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
 
 	/* init */
 	status = spectrometer_init(&spectro);
@@ -28,11 +28,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* start callback loop */
-	callback(&spectro);
+	spectroscopy_meanAndSubstract(noOfMeasurementsLeft, integration_time_micros, &spectro);
 
-	while(noOfMeasurementsLeft){
-		sleepMs(100);
+	printf("spectrum is %i long\n", spectro.spectrum_length);
+	pFile = fopen(filename, "wt");
+	if (pFile){
+		printf("write to %s\n", filename);
+		for(i = 0; i < spectro.spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.lastSpectrum[i]);
+		}
+	} else{
+		printf("Something wrong writing to File.\n");
 	}
 
 	/* uninit */
@@ -42,30 +48,4 @@ int main(int argc, char *argv[])
 	}
 
 	return 0;
-}
-
-static void callback(sSpectrometerStruct * spectro)
-{
-	int i;
-	FILE * pFile;
-
-	printf("left %i \n", noOfMeasurementsLeft);
-
-	noOfMeasurementsLeft--;
-	if(noOfMeasurementsLeft) {
-		spectrometer_trigger(spectro, callback);
-	} else {
-		printf("spectrum is %i long\n", spectro->spectrum_length);
-		pFile = fopen(filename, "wt");
-		if (pFile){
-			printf("write to %s\n", filename);
-			for(i = 0; i < spectro->spectrum_length; i++){
-				fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->lastSpectrum[i]);
-			}
-		}
-		else{
-			printf("Something wrong writing to File.\n");
-		}
-	}
-	printf("done callback\n");
 }

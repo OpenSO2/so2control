@@ -51,6 +51,9 @@ int spectrometer_init(sSpectrometerStruct * spectro)
 
 	fclose(f);
 
+	spectro->timestampBefore = malloc(sizeof(timeStruct));
+	spectro->timestampAfter = malloc(sizeof(timeStruct));
+
 	return 0;
 }
 
@@ -64,11 +67,11 @@ int spectrometer_uninit(sConfigStruct * config)
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-int spectrometer_trigger(sSpectrometerStruct * spectro, void (*callback) (sSpectrometerStruct * spectro))
+int spectrometer_get(sSpectrometerStruct * spectro)
 {
 	spectro->lastSpectrum = spectrum;
 	spectro->wavelengths = wavelengths;
-	callback(spectro);
+
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"

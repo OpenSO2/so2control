@@ -23,17 +23,11 @@
 #ifdef WIN
 #include <windows.h>
 #else
-#include <pthread.h>
 #include <unistd.h>
 #endif
 
 static long deviceID;
 static long featureID;
-struct data_struct{
-	void (*callback)(sSpectrometerStruct * spectro);
-	sSpectrometerStruct * spectro;
-};
-
 /*
  *
  */
@@ -120,19 +114,23 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	return 0;
 }
 
-
-#ifdef WIN
-DWORD WINAPI timeout(void * args)
-#else
-static void * timeout(void * args);
-static void * timeout(void * args)
-#endif
+/*
+ *
+ */
+int spectrometer_get(sSpectrometerStruct * spectro)
 {
-	void (*callback)(sSpectrometerStruct * spectro) = ((struct data_struct*) args)->callback;
-	sSpectrometerStruct * spectro = ((struct data_struct*) args)->spectro;
-
 	int error_code = 0;
 	long time;
+
+	log_debug("set integration_time_micros: %i on device %i, feature %i, error_code %i", (int)spectro->integration_time_micros, (int)deviceID, (int)featureID, error_code);
+	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, &error_code, spectro->integration_time_micros);
+	if(error_code != 0){
+		const char* error = sbapi_get_error_string(error_code);
+		log_debug("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s", error_code, error);
+		return 1;
+	}
+
+	//FIXME: Explain
 
 	do {
 		time = getTimeStamp();
@@ -147,53 +145,9 @@ static void * timeout(void * args)
 
 	} while(getTimeStamp() - time < (spectro->integration_time_micros/1000)*.95);
 
-	callback(spectro);
-
-	#ifdef WIN
-	return 0;
-	#else
-	pthread_exit((void *) 0);
-	#endif
-}
-
-/*That strongly depends on the circumstances
- *
- */
-int spectrometer_trigger(sSpectrometerStruct * spectro, void (*callback) (sSpectrometerStruct * spectro))
-{
-	#ifdef WIN
-	HANDLE thread;
-	#else
-	pthread_t thread_id;
-	#endif
-
-	int error_code = 0;
-	struct data_struct * g_data_struct = (struct data_struct*) calloc(1, sizeof(*g_data_struct));
-	g_data_struct->callback = callback;
-	g_data_struct->spectro = spectro;
-
-	/*
-	 *
-	 */
-	log_debug("set integration_time_micros: %i on device %i, feature %i, error_code %i", (int)spectro->integration_time_micros, (int)deviceID, (int)featureID, error_code);
-	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, &error_code, spectro->integration_time_micros);
-	if(error_code != 0){
-		const char* error = sbapi_get_error_string(error_code);
-		log_debug("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s", error_code, error);
-		return 1;
-	}
-
-	#ifdef WIN
-	CreateThread(NULL, 0, timeout, g_data_struct, 0, NULL);
-	#else
-	pthread_create(&thread_id, NULL, timeout, (void *) g_data_struct);
-	#endif
-
 	return 0;
 }
-/*
- *
- */
+
 int spectrometer_uninit(sConfigStruct * config){
 	int error_code = 0;
 	sbapi_close_device(deviceID, &error_code);

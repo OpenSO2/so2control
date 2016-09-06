@@ -83,9 +83,7 @@ int io_init(sConfigStruct * config)
 		status = mkdir(config->cImagePath, 0700);
 
 		if(status != 0){
-			log_error("output folder does not exist and could be created");
-			log_debug("output folder was: %s", config->cImagePath);
-			log_debug("create parent folder to fix this issue");
+			log_error("output folder (%s) does not exist and could not be created; create parent folder to fix this issue", config->cImagePath);
 			return 1;
 		}
 	}
@@ -186,7 +184,6 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 
 int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-return 0;
 	FILE * pFile;
 	int i;
 	pFile = fopen("dark-current.dat", "wt");
@@ -201,11 +198,12 @@ return 0;
 			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
 		}
 	}
+
+	return 0;
 }
 
 int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-return 0;
 	FILE * f;
 	int i;
 	char iso_date[25];
@@ -236,6 +234,8 @@ return 0;
 		fprintf(f, "timestampAfter %s\n", iso_date);
 	}
 	fclose(f);
+
+	return 0;
 }
 
 
