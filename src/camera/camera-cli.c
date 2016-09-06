@@ -7,7 +7,7 @@
 static void callback(sParameterStruct * sSO2Parameters);
 static void callback(sParameterStruct * sSO2Parameters)
 {
-	sSO2Parameters->fBufferReady = TRUE;
+	sSO2Parameters->fBufferReady = (1==1);
 }
 
 int main(int argc, char *argv[])

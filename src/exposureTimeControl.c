@@ -12,7 +12,7 @@
 void cb(sParameterStruct * sSO2Parameters);
 void cb(sParameterStruct * sSO2Parameters)
 {
-	sSO2Parameters->fBufferReady = TRUE;
+	sSO2Parameters->fBufferReady = (1==1);
 
 	/* Increment the Display Buffer Ready Count */
 	sSO2Parameters->dBufferReadyCount++;
@@ -35,7 +35,7 @@ int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		while (!sSO2Parameters->fBufferReady)
 			sleepMs(10);
 
-		sSO2Parameters->fBufferReady = FALSE;
+		sSO2Parameters->fBufferReady = !(1==1);
 
 		status = camera_get(sSO2Parameters);
 		if (status != 0) {

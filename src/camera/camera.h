@@ -21,7 +21,6 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
-#include "common.h"
 #include "configurations.h"
 
 /**

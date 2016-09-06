@@ -25,7 +25,6 @@
 #include<string.h>
 #include<opencv/cv.h>
 #include<opencv/highgui.h>
-#include "common.h"
 #include "configurations.h"
 #include "../io.h"
 #include "make_png_header.c"

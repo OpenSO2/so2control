@@ -1,7 +1,6 @@
 #include<string.h> /* memset */
 #include<stdlib.h>
 
-#include "common.h"
 #include "timehelpers.h"
 #include "configurations.h"
 #include "imageCreation.h"
@@ -17,7 +16,7 @@ static void callback(sParameterStruct * sSO2Parameters);
 
 static void callback(sParameterStruct * sSO2Parameters)
 {
-	sSO2Parameters->fBufferReady = TRUE;
+	sSO2Parameters->fBufferReady = (1==1);
 
 	/* Increment the Display Buffer Ready Count */
 	sSO2Parameters->dBufferReadyCount++;
@@ -113,8 +112,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	}
 
 	/* Reset the buffer ready flags to false for next cycle */
-	sParameters_A->fBufferReady = FALSE;
-	sParameters_B->fBufferReady = FALSE;
+	sParameters_A->fBufferReady = !(1==1);
+	sParameters_B->fBufferReady = !(1==1);
 
 	/* download the captured image */
 	statusA = camera_get(sParameters_A);

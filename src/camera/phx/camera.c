@@ -37,7 +37,7 @@ static void internalCallback(tHandle hCamera, int dwInterruptMask, sParameterStr
 
 	/* Fifo Overflow */
 	if (PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask) {
-		sSO2Parameters->fFifoOverFlow = TRUE;
+		sSO2Parameters->fFifoOverFlow = (1==1);
 	}
 
 	/* Handle the Buffer Ready event */
@@ -280,7 +280,7 @@ int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * 
  */
 
 static void bufferready(sParameterStruct * sSO2Parameters){
-	sSO2Parameters->fBufferReady = TRUE;
+	sSO2Parameters->fBufferReady = (1==1);
 }
 
 static int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffer)
@@ -316,7 +316,7 @@ static int getOneBuffer(sParameterStruct * sSO2Parameters, stImageBuff * stBuffe
 			}
 
 			/* if BufferReady flag is set, reset it for next image */
-			sSO2Parameters->fBufferReady = FALSE;
+			sSO2Parameters->fBufferReady = !(1==1);
 
 			/* download the buffer and place it in 'stBuffer' */
 			eStat = PHX_Acquire(hCamera, PHX_BUFFER_GET, stBuffer);

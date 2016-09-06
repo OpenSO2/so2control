@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGINT, &sa, &osa);
 	sigaction(SIGTERM, &sa, &osa);
 #else
-	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE)) {
+	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, (1==1))) {
 		log_error("Control handler could not be installed, Ctrl+C won't work");
 	}
 #endif
