@@ -38,6 +38,7 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	}
 	fclose(fid);
 
+	webcam->bufferSize = fsize;
 	webcam->timestampBefore = malloc(sizeof(timeStruct));
 	webcam->timestampAfter = malloc(sizeof(timeStruct));
 
