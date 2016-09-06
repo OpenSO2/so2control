@@ -18,7 +18,6 @@ int main(void)
 
 	pFile = fopen("dark-current.dat", "wt");
 	if (pFile){
-		//~ printf("write to %s\n", "electronic-offset.dat");
 		for(i = 0; i < spectro.spectrum_length; i++){
 			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.dark_current[i]);
 		}

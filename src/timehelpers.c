@@ -21,8 +21,8 @@ long getTimeStamp(void){
 		+ time.min  * 1000 * 60
 		+ time.hour * 1000 * 60 * 60
 		+ time.day  * 1000 * 60 * 60 * 24
-		//~ + time.mon  * 1000 * 60 * 60 * 24 * 30
-		//~ + time.year * 1000 * 60 * 60 * 24 * 365
+		+ time.mon  * 1000 * 60 * 60 * 24 * 30
+		+ time.year * 1000 * 60 * 60 * 24 * 365
 	;
 	return mills;
 }

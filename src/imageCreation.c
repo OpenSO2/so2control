@@ -73,7 +73,7 @@ int aquire_darkframe(sParameterStruct * sParameters_A,
 
 int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
-	int statusA = 0, statusB = 0, status = 0;
+	int statusA = 0, statusB = 0;
 
 	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampBefore);

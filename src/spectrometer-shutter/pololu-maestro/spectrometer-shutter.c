@@ -17,9 +17,11 @@
 static int fd = -1;
 static int channel = -1;
 
-// Sets the target of a Maestro channel.
-// See the "Serial Servo Commands" section of the user's guide.
-// The units of 'target' are quarter-microseconds.
+/*
+ * Sets the target of a Maestro channel.
+ * See the "Serial Servo Commands" section of the user's guide.
+ * The units of 'target' are quarter-microseconds.
+ */
 int maestroSetTarget(unsigned short target);
 int maestroSetTarget(unsigned short target)
 {

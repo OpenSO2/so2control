@@ -16,6 +16,7 @@
 #include "configurations.h"
 #include "timehelpers.h"
 #include "../spectrometer.h"
+#include "log.h"
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #include "api/seabreezeapi/SeaBreezeAPI.h"
 #pragma GCC diagnostic pop
@@ -37,9 +38,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	int found_devices;
 	int number_of_device_ids;
 	int number_of_spectrometer_features;
-	int length = 0;
 	int status = 0;
-	char buffer[length];
 
 	sbapi_initialize();
 
@@ -148,9 +147,11 @@ int spectrometer_get(sSpectrometerStruct * spectro)
 	return 0;
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectrometer_uninit(sConfigStruct * config){
 	int error_code = 0;
 	sbapi_close_device(deviceID, &error_code);
 
 	return error_code;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"

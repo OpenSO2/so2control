@@ -644,9 +644,7 @@ static int defaultConfig(sParameterStruct * sSO2Parameters)
 	}
 
 	eParamValue = PHX_COMMS_FLOW_NONE;
-	eStat =
-	    PHX_ParameterSet(hCamera,
-			     (etParam) (PHX_COMMS_FLOW | PHX_CACHE_FLUSH),
+	eStat = PHX_ParameterSet(hCamera, (etParam) (PHX_COMMS_FLOW | PHX_CACHE_FLUSH),
 			     &eParamValue);
 
 	if (PHX_OK != eStat) {
@@ -781,8 +779,7 @@ static int sendMessage(tHandle hCamera, char *inputBuffer)
 		/* Transmit the serial data to the camera */
 		InputLineBufferLength = strlen(inputLineBuffer);
 		eParamValue = (etParamValue) InputLineBufferLength;
-		eStat =
-		    PHX_CommsTransmit(hCamera, (ui8 *) inputLineBuffer,
+		eStat = PHX_CommsTransmit(hCamera, (ui8 *) inputLineBuffer,
 				      (ui32 *) & eParamValue, timeout);
 		if (PHX_OK == eStat) {
 			/* if transmitting was successful program waits for incoming messages
@@ -792,32 +789,22 @@ static int sendMessage(tHandle hCamera, char *inputBuffer)
 				_PHX_SleepMs(timeout / 50);
 				sleepCycleCounter++;
 				/* Check how many characters are waiting to be read */
-				eStat =
-				    PHX_ParameterGet(hCamera,
-						     PHX_COMMS_INCOMING,
+				eStat = PHX_ParameterGet(hCamera, PHX_COMMS_INCOMING,
 						     &OutputLineBufferLength);
 				/* create a timeout signal if 0.5s are over and no data was received */
 				if (sleepCycleCounter > (timeout / 10))
 					eStat = PHX_WARNING_TIMEOUT;
 
-			} while (0 == OutputLineBufferLength
-				 && PHX_OK == eStat);
+			} while (0 == OutputLineBufferLength && PHX_OK == eStat);
 
 			if (PHX_OK == eStat) {
 				/* if data is received, download the data */
-				eParamValue =
-				    (etParamValue) OutputLineBufferLength;
-				eStat =
-				    PHX_CommsReceive(hCamera,
-						     (ui8 *) outputLineBuffer,
-						     (ui32 *) & eParamValue,
-						     timeout);
-				sprintf(outputLineBuffer, "%s\r",
-					outputLineBuffer);
+				eParamValue = (etParamValue) OutputLineBufferLength;
+				eStat = PHX_CommsReceive(hCamera, (ui8 *) outputLineBuffer,
+						     (ui32 *) & eParamValue, timeout);
+				sprintf(outputLineBuffer, "%s\r", outputLineBuffer);
 				if (PHX_OK == eStat) {
-					if (strcmp
-					    (inputLineBuffer,
-					     outputLineBuffer) != 0) {
+					if (strcmp(inputLineBuffer, outputLineBuffer) != 0) {
 						/* if cameras answer equals input string, exit successfull */
 						log_debug("send message: %s was successful", inputLineBuffer);
 						return 0;	/* here return of SUCCESS */
