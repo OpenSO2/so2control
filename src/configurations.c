@@ -114,7 +114,6 @@ int config_load_configfile(sConfigStruct * config)
 	char lineBuf[MAXBUF]; /* buffer that holds the current line of the config file */
 	char *delimeterBuf;   /* buffer that holds the line after a specified delimeter */
 	int linenumber = 0;
-	char errbuff[MAXBUF]; /* a buffer to construct a proper error message */
 
 	char user_conffile[256] = "";
 	char system_conffile[256] = "";
@@ -161,8 +160,7 @@ int config_load_configfile(sConfigStruct * config)
 	}
 
 	if(!pFILE){
-		sprintf(errbuff, "opening config file failed!");
-		log_error(errbuff);
+		log_error("opening config file failed!");
 		return 1;
 	}
 
@@ -211,9 +209,7 @@ int config_load_configfile(sConfigStruct * config)
 
 	fclose(pFILE);
 
-	/* not an error but errbuff is used anyway */
-	sprintf(errbuff, "Reading config file was successfull, %d lines were read from %s", linenumber, config->cConfigFileName);
-	log_message(errbuff);
+	log_message("Reading config file was successfull, %d lines were read from %s", linenumber, config->cConfigFileName);
 
 	return 0;
 }

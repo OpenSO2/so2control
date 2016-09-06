@@ -1,129 +1,124 @@
 #include<stdio.h>
 #include<stdarg.h>
 #include<time.h>
-#include<sys/types.h>
 #include<sys/stat.h>
-#include<unistd.h>
 #include "log.h"
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+#define LOG_BUFFER_SIZE 512
+
+static sConfigStruct * conf = NULL;
 static FILE *logfile = NULL;
-static char nameLogFile[256];
-static char buffer[512];
-static time_t time_ptr;
-static struct tm logTime;
-static int debug = 0;
+
+int logg(char * type, char *message, va_list args);
 
 int log_init(sConfigStruct * config)
 {
+	static time_t time_ptr;
+	static struct tm t;
+	static char nameLogFile[LOG_BUFFER_SIZE];
 	struct stat st = {0};
-	debug = config->debug;
+	conf = config;
 	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
+	t = *gmtime(&time_ptr);
 
 	/* check if log folder exists and create if not */
 	if (stat("logs/", &st) == -1) {
 		mkdir("logs", 0700);
 	}
 
-	sprintf(nameLogFile, "logs/log_%04d_%02d_%02d_%02d_%02d.txt",
-		logTime.tm_year + 1900, logTime.tm_mon,
-		logTime.tm_mday, logTime.tm_hour, logTime.tm_min);
+	snprintf(nameLogFile, LOG_BUFFER_SIZE, "logs/log_%04d_%02d_%02d_%02d_%02d.txt",
+		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min);
 
 	logfile = fopen(nameLogFile, "a");
 	if (NULL == logfile) {
 		return 1;
 	}
-	fprintf(logfile, "Logfile for SO2-Camera Control Software\n");
-	fprintf(logfile, "Today is the %02d.%02d.%04d %02d:%02d\n",
-		logTime.tm_mday, logTime.tm_mon,
-		logTime.tm_year + 1900, logTime.tm_hour, logTime.tm_min);
-	fprintf(logfile, "=======================================\n");
-	fprintf(logfile, "%02d:%02d:%02d | INFO  | Program started \n",
-		logTime.tm_hour, logTime.tm_min, logTime.tm_sec);
 
-	printf("*******************************************\n");
-	printf("*                                         *\n");
-	printf("*       SO2-Camera Control Software       *\n");
-	printf("*                                         *\n");
-	printf("*******************************************\n");
-	printf("*                                         *\n");
-	printf("* A control program for SO2 measuring     *\n");
-	printf("* camera based on two Hamamatsu           *\n");
-	printf("* C8484-16 CCD Cameras.                   *\n");
-	printf("*                                         *\n");
-	printf("* written by Johann Jacobson              *\n");
-	printf("* and Morten Harms                        *\n");
-	printf("*                                         *\n");
-	printf("* johann.jacobson(at)zmaw.de              *\n");
-	printf("* morten.harms(at)zmaw.de                 *\n");
-	printf("*                                         *\n");
-	printf("*******************************************\n");
+	log_message("*******************************************");
+	log_message("*                                         *");
+	log_message("*       SO2-Camera Control Software       *");
+	log_message("*                                         *");
+	log_message("*******************************************");
+	log_message("*                                         *");
+	log_message("* A control program for SO2 measuring     *");
+	log_message("* camera based on two Hamamatsu           *");
+	log_message("* C8484-16 CCD Cameras.                   *");
+	log_message("*                                         *");
+	log_message("* written by Johann Jacobson              *");
+	log_message("* and Morten Harms                        *");
+	log_message("*                                         *");
+	log_message("* johann.jacobson(at)zmaw.de              *");
+	log_message("* morten.harms(at)zmaw.de                 *");
+	log_message("*                                         *");
+	log_message("*******************************************");
+	log_message("Today is %02d.%02d.%04d %02d:%02d",
+		t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min);
 
 	return 0;
 }
 
-int log_message(char *message)
+int log_message(char *message, ...)
 {
-	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
-	sprintf(buffer, "%02d:%02d:%02d | INFO  | %s \n", logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, message);
-	if(logfile){
-		fputs(buffer, logfile);
-	}
-	printf("%s", buffer);
-	return 0;
+	va_list args;
+	va_start(args, message);
+	return logg("INFO ", message, args);
+	va_end(args);
 }
 
-int log_error(char *message)
+int log_error(char *message, ...)
 {
-	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
-	sprintf(buffer, "%02d:%02d:%02d | ERROR | %s \n", logTime.tm_hour,
-		logTime.tm_min, logTime.tm_sec, message);
-	fprintf(stderr, "%s", buffer);
-	if(logfile){
-		fputs(buffer, logfile);
-	}
-	return 0;
+	va_list args;
+	va_start(args, message);
+	return logg("ERROR", message, args);
+	va_end(args);
 }
 
-
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 int log_debug(char *message, ...)
 {
-	if(debug){
-		va_list args;
-		char *format = "%02d:%02d:%02d | DEBUG | %s\n";
-		time(&time_ptr);
-		logTime = *gmtime(&time_ptr);
+	va_list args;
 
-		va_start(args, message);
-		vsprintf(buffer, message, args);
-		va_end(args);
+	if(conf && conf->debug == 0) return 0;
 
-		printf(format, logTime.tm_hour, logTime.tm_min, logTime.tm_sec, buffer);
-		if(logfile){
-			fprintf(logfile, format, logTime.tm_hour,
-				logTime.tm_min, logTime.tm_sec, buffer);
-		}
+	va_start(args, message);
+	return logg("DEBUG", message, args);
+	va_end(args);
+}
+
+int logg(char * type, char *message, va_list args)
+{
+	static time_t time_ptr;
+	static struct tm t;
+	static char buffer[LOG_BUFFER_SIZE];
+	static char buffer2[LOG_BUFFER_SIZE];
+	time(&time_ptr);
+	t = *gmtime(&time_ptr);
+
+	// resolve placeholders message
+	vsnprintf(buffer, LOG_BUFFER_SIZE, message, args);
+
+	// generate final log string
+	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d | %s | %s\n",
+		t.tm_hour, t.tm_min, t.tm_sec, type, buffer);
+
+	if(strcmp(type, "ERROR"))
+		fprintf(stdout, "%s", buffer2);
+	else
+		fprintf(stderr, ANSI_COLOR_RED "%s" ANSI_COLOR_RESET, buffer2);
+
+	if(logfile){
+		fprintf(logfile, "%s", buffer2);
 	}
+
 	return 0;
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
 int log_uninit(void)
 {
-	time(&time_ptr);
-	logTime = *gmtime(&time_ptr);
-
+	va_list args;
+	logg("EXIT ", "The program exited this log file ends here", args);
 	if(logfile){
-		fprintf(logfile, "=======================================\n");
-		fprintf(logfile, "Today is the %02d.%02d.%04d %02d:%02d\n",
-			logTime.tm_mday, logTime.tm_mon, logTime.tm_year + 1900,
-			logTime.tm_hour, logTime.tm_min);
-		fprintf(logfile, "The program exited this log file ends here\n \n");
-
 		fclose(logfile);
 	}
 	return 0;
