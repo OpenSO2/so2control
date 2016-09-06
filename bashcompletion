@@ -1,0 +1,32 @@
+_so2_camera()
+{
+	local first cur prev opts base
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	opts="--speedy-gonzales --noprocessing --png-only --debug --noofimages --configfile --imagepath"
+
+	case "${prev}" in
+		--noofimages)
+			COMPREPLY=($(compgen -W "1" ${cur}))
+			return 0
+			;;
+		--configfile|--imagepath)
+			# Unescape space
+			cur=${cur//\\ / }
+			# Expand tilder to $HOME
+			[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+			# Show completion if path exist (and escape spaces)
+			compopt -o filenames
+			local files=("${cur}"*)
+			[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+			return 0
+			;;
+	esac
+
+	COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+	return 0
+}
+
+complete -F _so2_camera ./so2-camera
