@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 	IplImage * img;
 	unsigned int length;
 	int read_bytes;
+	int state = 0;
 	int w = 1344;
 	int h = 1024;
 	short *buffer = NULL;
@@ -62,7 +63,11 @@ int main(int argc, char *argv[])
 
 	//~ cvFlip(img, img, -1);
 
-	cvSaveImage(outfile, img, NULL);
+	state = cvSaveImage(outfile, img, NULL);
+	if(!state){
+		printf("failed to save image \n");
+		return 1;
+	}
 
 	return 0;
 }

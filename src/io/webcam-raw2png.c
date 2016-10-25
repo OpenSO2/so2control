@@ -60,7 +60,11 @@ int main(int argc, char *argv[])
 
 	cvFlip(img, img, -1);
 
-	cvSaveImage(outfile, img, NULL);
+	state = cvSaveImage(outfile, img, NULL);
+	if(!state){
+		printf("failed to save image \n");
+		return 1;
+	}
 
 	return 0;
 }
