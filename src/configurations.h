@@ -103,8 +103,7 @@ typedef struct {
 	/* Resolution in y direction */
 	int webcam_yRes;
 
-
-
+	/* port on which a tcp connection can be made */
 	int comm_port;
 
 } sConfigStruct;

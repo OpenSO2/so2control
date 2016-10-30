@@ -1,4 +1,4 @@
-/*
+ /*
  * This file implements the configuration handling facilities.
  * Configuration values are taken from three sources:
  * - from the command line arguments, eg. --noofimages N
@@ -80,6 +80,9 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 		} else if (strcmp(argv[i], "--imagepath") == 0 && argv[i + 1]) {
 			config->cImagePath = (char *)calloc(sizeof(char), strlen(argv[i + 1]) + 1);
 			strcpy(config->cImagePath, argv[i + 1]);
+			i++;
+		} else if (strcmp(argv[i], "--port") == 0 && argv[i + 1]) {
+			config->comm_port = strtol(argv[i + 1], NULL, 10);
 			i++;
 		} else {
 			sprintf(errstr, "unknown command line option \"%s\"", argv[i]);
@@ -206,6 +209,8 @@ int config_load_configfile(sConfigStruct * config)
 			config->spectrometer_shutter_device = getString(delimeterBuf);
 		} else if (strstr(lineBuf, "spectrometer_shutter_channel")) {
 			config->spectrometer_shutter_channel = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "port")) {
+			config->comm_port = atoi(delimeterBuf + 1);
 		}
 	}
 

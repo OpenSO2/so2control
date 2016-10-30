@@ -5,11 +5,15 @@ _so2_camera()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-	opts="--speedy-gonzales --noprocessing --png-only --debug --noofimages --configfile --imagepath"
+	opts="--speedy-gonzales --noprocessing --png-only --debug --noofimages --configfile --imagepath --port"
 
 	case "${prev}" in
 		--noofimages)
 			COMPREPLY=($(compgen -W "1" ${cur}))
+			return 0
+			;;
+		--port)
+			COMPREPLY=($(compgen -W "7003" ${cur}))
 			return 0
 			;;
 		--configfile|--imagepath)

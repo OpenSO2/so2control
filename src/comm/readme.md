@@ -22,4 +22,4 @@ TODO:
 - wait for newest buffer
 - unittest
 - nooutput-option to not save anything to disk
-- make port a cli and config option
+- write warning when no connection can be made (speedy-gonzales)

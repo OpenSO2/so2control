@@ -147,6 +147,8 @@ int comm_init(sConfigStruct * config)
 
 	listen(sockfd, 5);
 
+	log_message("Listening to tcp socket on port %i", config->comm_port);
+
 	// do communication in own process and return to main thread
 	if((pid = fork()) < 0) {
 		log_error("Could not fork process: %s", strerror(errno));
