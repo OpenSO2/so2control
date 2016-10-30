@@ -32,6 +32,7 @@
 /* local prototypes */
 int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype);
 IplImage *bufferToImage(short *buffer);
+IplImage *bufferToImageCam(char *buffer);
 int dateStructToISO8601(timeStruct * time, char *iso_date);
 int insertValue(char **png, char *name, float value, int png_length);
 int insertStringValue(char **png, char *name, char *value, int png_length);
@@ -39,6 +40,8 @@ int insertHeader(char **png, char *name, char *content, int png_length);
 int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
 int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
+int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config);
+int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config);
 
 /*
  * `io_init`
@@ -130,7 +133,123 @@ int io_write(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	return 0;
 }
 
+/*
+ * `io_write`
+ * Writes the current webcam image buffer to disk. Delegates the real work to
+ * `io_writeWebcamImage` or `io_writeWebcamDump`, depending on the value of processing
+ * which was set in `io_init`.
+ */
 int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
+{
+	/*
+	 * processing:
+	 *   1 = dumb
+	 *   2 = png
+	 *   3 = both
+	 * else = both
+	 *
+	 * e.g.
+	 *  !1 &&  2 = 2
+	 *  !2 &&  1 = 1
+	 *  !1 && !2 = 3
+	 */
+	int state = 0;
+	if (config->processing != 1) {
+		state = io_writeWebcamImage(webcam, config);
+		if (state != 0) {
+			log_error("failed to write webcam png");
+			return state;
+		}
+	}
+	if (config->processing != 2) {
+		state = io_writeWebcamDump(webcam, config);
+
+		if (state != 0) {
+			log_error("failed to write raw webcam dump");
+			return state;
+		}
+	}
+
+	return 0;
+}
+
+int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
+{
+	int l;
+	int writen_bytes;
+	FILE * fp;
+	char * buffer;
+	int state;
+	char filename[512];
+	//~ char iso_date[25];
+	FILE * f;
+	int filenamelength = 512;
+	IplImage *img;
+	CvMat *png;
+
+	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "png");
+	if (state) {
+		log_error("could not create webcam filename");
+		return state;
+	}
+
+	f = fopen(filename, "wb");
+	if(!f){
+		log_error("Failed to open file to save webcam image");
+		log_debug("Filename was %s", filename);
+		return 1;
+	}
+
+	/* convert the image buffer to an openCV image */
+	// TODO: check if this has already been done
+	// TODO: check return code
+	img = bufferToImageCam(webcam->buffer);
+
+	/*
+	 * encode image as png to buffer
+	 * playing with the compression is a huge waste of time with no benefit
+	 */
+	png = cvEncodeImage(".png", img, 0);
+
+	l = png->rows * png->cols;
+	cvReleaseImage(&img);
+
+	/* pry the actual buffer pointer from png */
+	buffer = (char *)malloc(l);
+	memcpy(buffer, png->data.s, l);
+	cvReleaseMat(&png);
+
+	/* add headers */
+	log_debug("insert headers %i", l);
+	//~ l = insertHeaders(&buffer, sSO2Parameters, config, l);
+
+	/* save image to disk */
+	log_debug("open new png file %i", l);
+	fp = fopen(filename, "wb");
+
+	if (fp) {
+		writen_bytes = fwrite(buffer, 1, l, fp);
+		state = writen_bytes == l ? 0 : 1;
+		if (state) {
+			log_error("PNG image wasn't written correctly");
+		}
+		fclose(fp);
+	} else {
+		state = 1;
+		log_error("Couldn't open png file");
+	}
+
+	/* cleanup */
+	free(buffer);
+
+	if (!state) {
+		log_message("png image written");
+	}
+
+	return 0;
+}
+
+int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 {
 	int state;
 	char filename[512];
@@ -181,6 +300,7 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 	return 0;
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
 	FILE * pFile;
@@ -200,6 +320,7 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 
 	return 0;
 }
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 {

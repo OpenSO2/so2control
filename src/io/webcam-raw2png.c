@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 	int w = 1280;
 	int h = 720;
 	short *buffer = NULL;
+	int state = -1;
 
 	if (argc != 3) {
 		printf("usage: %s <infile.raw> <outfile.png> \n", argv[0]);

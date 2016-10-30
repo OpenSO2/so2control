@@ -28,3 +28,26 @@ IplImage *bufferToImage(short *buffer)
 
 	return img;
 }
+
+IplImage *bufferToImageCam(char *buffer);
+IplImage *bufferToImageCam(char *buffer)
+{
+	IplImage *img;
+	int BUFFERSIZE = 1280 * 720 * 3;
+	// create new image to hold the loaded data
+	CvSize mSize;
+
+	mSize.height = 720;
+	mSize.width = 1280;
+
+	img = cvCreateImage(mSize, IPL_DEPTH_8U, 3);
+
+	if (!img) {
+		printf("%s", "failed to decode image\n");
+		return img;
+	}
+
+	memcpy(img->imageData, buffer, BUFFERSIZE);
+
+	return img;
+}
