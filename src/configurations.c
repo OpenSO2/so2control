@@ -52,6 +52,7 @@ void config_init_sConfigStruct(sConfigStruct *config){
 	config->cConfigFileName = "";
 	config->darkframeintervall = -1;
 	config->filterwheel_device = "";
+	config->comm_port = 7003;
 }
 
 /*
