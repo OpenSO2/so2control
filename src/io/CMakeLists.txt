@@ -79,8 +79,11 @@ if(NOT TARGET log)
 	add_subdirectory(../log log)
 	include_directories( ../log )
 endif()
+if(NOT TARGET comm)
+	include_directories( ../comm )
+endif()
 
-target_link_libraries(io-cli log)
+target_link_libraries(io-cli log comm)
 
 if( ${UNIX} )
 	find_library(M_LIB m)

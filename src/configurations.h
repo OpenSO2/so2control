@@ -103,6 +103,10 @@ typedef struct {
 	/* Resolution in y direction */
 	int webcam_yRes;
 
+
+
+	int comm_port;
+
 } sConfigStruct;
 
 

@@ -60,6 +60,7 @@ include_directories(
 	src/webcam
 	src/spectrometer
 	src/spectrometer-shutter
+	src/comm
 )
 
 set(SRCFILES
@@ -111,6 +112,10 @@ target_link_libraries( so2-camera spectrometer )
 # spectrometer-shutter subsystem
 add_subdirectory( src/spectrometer-shutter )
 target_link_libraries( so2-camera spectrometer-shutter )
+
+# comm subsystem
+add_subdirectory( src/comm )
+target_link_libraries( so2-camera comm )
 
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)

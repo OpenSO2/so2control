@@ -15,6 +15,7 @@
 #include "spectrometer.h"
 #include "spectroscopy.h"
 #include "spectrometer-shutter.h"
+#include "comm.h"
 #include "threads.h"
 
 /* explanation of prefixes:
@@ -71,6 +72,9 @@ static void stop_program(int reason)
 
 	/* uninitialize spectrometer */
 	spectrometer_uninit(&config);
+
+	/* stop communication and close all connections */
+	comm_uninit(&config);
 
 	/* stop logging and return file handle */
 	log_uninit();
@@ -208,6 +212,14 @@ int main(int argc, char *argv[])
 		return state;
 	}
 	log_message("webcam initialized");
+
+	/* initiate communications */
+	state = comm_init(&config);
+	if (state != 0) {
+		log_error("init comm failed");
+		stop_program(1);
+		return state;
+	}
 
 	/* start taking webcam images */
 	threads_webcam_start(&config, &webcam);
