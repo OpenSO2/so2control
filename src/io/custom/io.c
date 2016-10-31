@@ -60,6 +60,11 @@ int io_init(sConfigStruct * config)
 	time(&time_ptr);
 	now = *gmtime(&time_ptr);
 
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("skip io init");
+		return 0;
+	}
 
 	// check for and remove trailing "/" to avoid ugly "//" in imagePath
 	if(config->cImagePath[(strlen(config->cImagePath)-1)] == '/'){
@@ -188,18 +193,7 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	IplImage *img;
 	CvMat *png;
 
-	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "png");
-	if (state) {
-		log_error("could not create webcam filename");
-		return state;
-	}
 
-	f = fopen(filename, "wb");
-	if(!f){
-		log_error("Failed to open file to save webcam image");
-		log_debug("Filename was %s", filename);
-		return 1;
-	}
 
 	/* convert the image buffer to an openCV image */
 	// TODO: check if this has already been done
@@ -224,6 +218,30 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	log_debug("insert headers %i", l);
 	//~ l = insertHeaders(&buffer, sSO2Parameters, config, l);
 
+
+	comm_set_buffer("cam", buffer, writen_bytes);
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save png webcam image");
+		return 0;
+	}
+
+
+	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "png");
+	if (state) {
+		log_error("could not create webcam filename");
+		return state;
+	}
+
+	f = fopen(filename, "wb");
+	if(!f){
+		log_error("Failed to open file to save webcam image");
+		log_debug("Filename was %s", filename);
+		return 1;
+	}
+
+
 	/* save image to disk */
 	log_debug("open new png file %i", l);
 	fp = fopen(filename, "wb");
@@ -239,8 +257,6 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 		state = 1;
 		log_error("Couldn't open png file");
 	}
-
-	comm_set_buffer("cam", buffer, writen_bytes);
 
 	/* cleanup */
 	free(buffer);
@@ -259,6 +275,12 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 	char iso_date[25];
 	FILE * f;
 	int filenamelength = 512;
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save raw webcam image dump");
+		return 0;
+	}
 
 	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "raw");
 	if (state) {
@@ -333,6 +355,15 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 	char filename[512];
 	int filenamelength = 512;
 
+	// FIXME: dark current?
+	comm_set_buffer("spc", (char*)spectro->dark_current, spectro->spectrum_length*sizeof(char));
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save spectrum");
+		return 0;
+	}
+
 	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum", "dat");
 
 	/* save spectrum */
@@ -343,9 +374,6 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		}
 	}
 	fclose(f);
-
-	// FIXME: dark current?
-	comm_set_buffer("spc", (char*)spectro->dark_current, spectro->spectrum_length*sizeof(char));
 
 	/* save meta */
 	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum_meta", "txt");
@@ -395,10 +423,14 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	int fwriteReturn;
 	int state = 0;
 	char iso_date[25];
-
-	/* generate filenames */
 	char id = sSO2Parameters->identifier;
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save raw image dump");
+		return 0;
+	}
 
 	/* identify Camera for filename Prefix */
 	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
@@ -408,6 +440,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		log_error("could not create txt filename");
 	}
 
+	/* generate filenames */
 	state = createFilename(config, rawfile, rawfilelength, time, camname, "raw");
 	if (state) {
 		log_error("could not create txt filename");
@@ -471,6 +504,12 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	char *camname;
 	timeStruct *time;
 	char id = sSO2Parameters->identifier;
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save png image");
+		return 0;
+	}
 
 	stBuffer = sSO2Parameters->stBuffer;
 
