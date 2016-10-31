@@ -52,7 +52,7 @@ void config_init_sConfigStruct(sConfigStruct *config){
 	config->cConfigFileName = "";
 	config->darkframeintervall = -1;
 	config->filterwheel_device = "";
-	config->comm_port = 7003;
+	config->comm_port = -1;
 }
 
 /*
@@ -209,7 +209,7 @@ int config_load_configfile(sConfigStruct * config)
 			config->spectrometer_shutter_device = getString(delimeterBuf);
 		} else if (strstr(lineBuf, "spectrometer_shutter_channel")) {
 			config->spectrometer_shutter_channel = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "port")) {
+		} else if (strstr(lineBuf, "port") && config->comm_port == -1) {
 			config->comm_port = atoi(delimeterBuf + 1);
 		}
 	}
@@ -231,6 +231,7 @@ void config_load_default(sConfigStruct *config)
 	config->dInterFrameDelay   = config->dInterFrameDelay != -1 ? config->dInterFrameDelay : 10;
 	config->dBufferlength      = config->dBufferlength    != -1 ? config->dBufferlength    : 1376256;
 	config->debug              = config->debug            != -1 ? config->debug            : 0;
+	config->comm_port          = config->comm_port        != -1 ? config->comm_port        : 7003;
 
 	config->filterwheel_device = strlen(config->filterwheel_device) ? config->filterwheel_device : "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02PNA1-if00-port0";
 	config->cImagePath         = strlen(config->cImagePath)         ? config->cImagePath         : "";
