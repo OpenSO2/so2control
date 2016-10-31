@@ -208,16 +208,16 @@ int comm_set_buffer(char * cmd, char * buffer, int size)
 	 * for each type of buffer, reallocate buffer if size has changed
 	 * memcpy buffer and set expire date in ms
 	 */
-	if(strcmp(cmd, "top") == 0){
+	if(strncmp(cmd, "top", 3) == 0){
 		buffers->topSize = size;
 		buffers->topExpiresAt = getTimeStamp() + 100;
-	} else if(strcmp(cmd, "bot") == 0){
+	} else if(strncmp(cmd, "bot", 3) == 0){
 		buffers->botSize = size;
 		buffers->botExpiresAt = getTimeStamp() + 100;
-	} else if(strcmp(cmd, "cam") == 0){
+	} else if(strncmp(cmd, "cam", 3) == 0){
 		buffers->camSize = size;
 		buffers->camExpiresAt = getTimeStamp() + 100;
-	} else if(strcmp(cmd, "spc") == 0){
+	} else if(strncmp(cmd, "spc", 3) == 0){
 		buffers->spcSize = size;
 		buffers->spcExpiresAt = getTimeStamp() + 100;
 	} else {
@@ -279,13 +279,13 @@ int handle_socket(int newsockfd)
 
 		buffers->readLock = 1;
 
-		if(strcmp(cmd, "top") == 0){
+		if(strncmp(cmd, "top", 3) == 0){
 			send_buf(newsockfd, cmd, buffers->topSize);
-		} else if(strcmp(cmd, "bot") == 0){
+		} else if(strncmp(cmd, "bot", 3) == 0){
 			send_buf(newsockfd, cmd, buffers->botSize);
-		} else if(strcmp(cmd, "cam") == 0){
+		} else if(strncmp(cmd, "cam", 3) == 0){
 			send_buf(newsockfd, cmd, buffers->camSize);
-		} else if(strcmp(cmd, "spc") == 0){
+		} else if(strncmp(cmd, "spc", 3) == 0){
 			send_buf(newsockfd, cmd, buffers->spcSize);
 		} else {
 			log_message("I did not understand this command: %s", cmd);

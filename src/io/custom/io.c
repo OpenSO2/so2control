@@ -218,15 +218,13 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	log_debug("insert headers %i", l);
 	//~ l = insertHeaders(&buffer, sSO2Parameters, config, l);
 
-
-	comm_set_buffer("cam", buffer, writen_bytes);
+	comm_set_buffer("cam", buffer, l);
 
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
 		log_debug("do not save png webcam image");
 		return 0;
 	}
-
 
 	state = createFilename(config, filename, filenamelength, webcam->timestampBefore, "webcam", "png");
 	if (state) {
@@ -505,23 +503,12 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	timeStruct *time;
 	char id = sSO2Parameters->identifier;
 
-	if(strcmp(config->cImagePath, "-") == 0){
-		// short circuit
-		log_debug("do not save png image");
-		return 0;
-	}
-
 	stBuffer = sSO2Parameters->stBuffer;
 
 	time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify camera for filename prefix */
 	camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
-
-	state = createFilename(config, filename, filenamelength, time, camname,  "png");
-	if(state){
-		log_error("could not create txt filename");
-	}
 
 	log_debug("filename created: %s", filename);
 
@@ -544,6 +531,19 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	memcpy(buffer, png->data.s, l);
 	cvReleaseMat(&png);
 
+	comm_set_buffer(camname, buffer, l);
+
+	if(strcmp(config->cImagePath, "-") == 0){
+		// short circuit
+		log_debug("do not save png image");
+		return 0;
+	}
+
+	state = createFilename(config, filename, filenamelength, time, camname,  "png");
+	if(state){
+		log_error("could not create txt filename");
+	}
+
 	/* add headers */
 	log_debug("insert headers %i", l);
 	l = insertHeaders(&buffer, sSO2Parameters, config, l);
@@ -563,8 +563,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		state = 1;
 		log_error("Couldn't open png file");
 	}
-
-	comm_set_buffer(camname, buffer, writen_bytes);
 
 	/* cleanup */
 	free(buffer);
