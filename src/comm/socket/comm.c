@@ -1,16 +1,8 @@
 /*
- *
- *
  * This file forks twice:
  * - once to enter into a non-blocking loop to accept() incomming connections
  * - for each connection to handle the request
- *
- * valid buffernames are
- * - top - top camera
- * - bot - bot camera
- * - cam - webcam
- * - spc - spectrum
- *
+ * Childprocesses are killed on sigterm.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,25 +13,27 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/mman.h>
-#include <sys/stat.h> /* For mode constants */
-#include <fcntl.h> /* For O_* constants */
+#include <sys/stat.h>		/* For mode constants */
+#include <fcntl.h>		/* For O_* constants */
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "timehelpers.h"
 #include "comm.h"
 #include "log.h"
 
 int handle_socket(int newsockfd);
-int send_all(int socket, char * ptr, size_t length);
-int send_buf(int newsockfd, char * cmd, int size);
+int send_all(int socket, char *ptr, size_t length);
+int send_buf(int newsockfd, char *cmd, int size);
 int init(int sockfd);
+int recv_all(int socket, char *ptr, size_t length);
 void kill_socket_processes(int reason);
+char *get_buf(char *cmd, int size);
 
-char * get_buf(char * cmd, int size);
-
-pid_t accept_loop_pid;
 pid_t *socket_pids;
 int socket_pids_length = 0;
+int *sockets;
+int sockets_length;
 
 typedef struct {
 	int topSize;
@@ -52,21 +46,36 @@ typedef struct {
 
 static buffersStruct *buffers;
 
-char * buffers_top;
-char * buffers_bot;
-char * buffers_cam;
-char * buffers_spc;
+char *buffers_top;
+char *buffers_bot;
+char *buffers_cam;
+char *buffers_spc;
 
-void kill_socket_processes(int reason){
-	int i;
+void kill_socket_processes(int reason)
+{
+	int i, status;
+	pid_t result;
 	log_debug("there are %i socket processes to kill for reason %i", socket_pids_length, reason);
-	for (i = 0; i < socket_pids_length; i++){
+
+	// close sockets
+	for (i = 0; i < sockets_length; i++) {
+		log_message("close socket %i", sockets[i]);
+		close(sockets[i]);
+	}
+
+	// kill subprocesses
+	for (i = 0; i < socket_pids_length; i++) {
 		log_message("kill socket process with pid %i", socket_pids[i]);
-		kill(socket_pids[i], SIGTERM);
+		result = waitpid(socket_pids[i], &status, WNOHANG);
+		if (result == 0) {
+			kill(socket_pids[i], SIGTERM);
+		} else {
+			log_debug("... nevermind, process is dead already");
+		}
 	}
 }
 
-int send_all(int socket, char * ptr, size_t length)
+int send_all(int socket, char *ptr, size_t length)
 {
 	int i;
 	while (length > 0) {
@@ -74,7 +83,8 @@ int send_all(int socket, char * ptr, size_t length)
 		i = send(socket, ptr, length, 0);
 		log_debug("send accomplished! Return value: %i", (int)i);
 
-		if (i < 1) return -1;
+		if (i < 1)
+			return -1;
 
 		ptr += i;
 		length -= i;
@@ -82,23 +92,23 @@ int send_all(int socket, char * ptr, size_t length)
 	return 0;
 }
 
-int recv_all(int socket, char * ptr, size_t length);
-int recv_all(int socket, char * ptr, size_t length)
+int recv_all(int socket, char *ptr, size_t length)
 {
 	while (length > 0) {
 		int i = recv(socket, ptr, length, 0);
-		if (i < 0) return -1;
+		if (i < 0)
+			return -1;
 		ptr += i;
 		length -= i;
 	}
 	return 0;
 }
 
-char * get_buf(char * cmd, int size)
+char *get_buf(char *cmd, int size)
 {
 	int fd;
 	char file[13];
-	char * base = "/buffers.";
+	char *base = "/buffers.";
 	memset(file, '\0', sizeof(file));
 	strncat(file, base, 9);
 	strncat(file, cmd, 3);
@@ -135,34 +145,31 @@ int comm_init(sConfigStruct * config)
 	buffers->spcSize = 1;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0){
+	if (sockfd < 0) {
 		perror("ERROR opening socket");
 		return -1;
 	}
 
-	bzero((char *) &serv_addr, sizeof(serv_addr));
+	bzero((char *)&serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(config->comm_port);
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+	if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
 #pragma GCC diagnostic warning "-Wstrict-aliasing"
 		log_error("ERROR on binding to port %i, maybe that port is occupied or restricted?", config->comm_port);
 		return -1;
 	}
 
 	listen(sockfd, 5);
-
 	log_message("Listening to tcp socket on port %i", config->comm_port);
 
-	socket_pids = calloc(0, sizeof(pid));
-
 	// do communication in own process and return to main thread
-	if((pid = fork()) < 0) {
+	if ((pid = fork()) < 0) {
 		log_error("Could not fork process: %s", strerror(errno));
 		return -1;
-	} else if(pid == 0) { // child
+	} else if (pid == 0) {	// child
 		// replace signal handler inherited from parent process with my
 		// own, which will clean up the processes that this process will
 		// fork
@@ -174,8 +181,7 @@ int comm_init(sConfigStruct * config)
 
 		init(sockfd);
 		exit(0);
-	} else { // parent
-		accept_loop_pid = pid;
+	} else {		// parent
 		close(sockfd);
 	}
 
@@ -192,9 +198,9 @@ int init(int sockfd)
 	clilen = sizeof(cli_addr);
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-	while( (newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen)) ){
+	while ((newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))) {
 #pragma GCC diagnostic warning "-Wstrict-aliasing"
-		if (newsockfd < 0){
+		if (newsockfd < 0) {
 			log_error("ERROR on accepting connection: %s", strerror(errno));
 			return -1;
 		}
@@ -202,9 +208,9 @@ int init(int sockfd)
 		log_debug("new connection established for socket %i, new socket %i", sockfd, newsockfd);
 
 		// spawn a process for every request
-		if((pid = fork()) < 0) {
+		if ((pid = fork()) < 0) {
 			log_error("Error while forking %s", strerror(errno));
-		} else if(pid == 0) { // child
+		} else if (pid == 0) {	// child
 			// ignore signals in this process to avoid calling the
 			// cleanup (uninit) functions multiple times
 			signal(SIGTERM, SIG_DFL);
@@ -212,23 +218,27 @@ int init(int sockfd)
 
 			handle_socket(newsockfd);
 			exit(0);
-		} else { // parent
+		} else {	// parent
 			// remember all child pid to make sure to kill them later
 			socket_pids_length++;
 			socket_pids = realloc(socket_pids, socket_pids_length * sizeof(pid));
-			socket_pids[0] = pid;
+			socket_pids[socket_pids_length - 1] = pid;
+
+			sockets_length++;
+			sockets = realloc(sockets, sockets_length * sizeof(newsockfd));
+			sockets[sockets_length - 1] = newsockfd;
 		}
 	}
 
 	return 0;
 }
 
-int comm_set_buffer(char * cmd, char * buffer, int size)
+int comm_set_buffer(char *cmd, char *buffer, int size)
 {
-	char * buf;
+	char *buf;
 
 	// wait until all reads are completed
-	while(buffers->readLock){
+	while (buffers->readLock) {
 		log_debug("wait for readlock");
 		sleepMs(10);
 	}
@@ -238,13 +248,13 @@ int comm_set_buffer(char * cmd, char * buffer, int size)
 	buffers->writeLock = 1;
 
 	// set size for each type of buffer
-	if(strncmp(cmd, "top", 3) == 0){
+	if (strncmp(cmd, "top", 3) == 0) {
 		buffers->topSize = size;
-	} else if(strncmp(cmd, "bot", 3) == 0){
+	} else if (strncmp(cmd, "bot", 3) == 0) {
 		buffers->botSize = size;
-	} else if(strncmp(cmd, "cam", 3) == 0){
+	} else if (strncmp(cmd, "cam", 3) == 0) {
 		buffers->camSize = size;
-	} else if(strncmp(cmd, "spc", 3) == 0){
+	} else if (strncmp(cmd, "spc", 3) == 0) {
 		buffers->spcSize = size;
 	} else {
 		fprintf(stderr, "incorrect buffer name\n");
@@ -261,17 +271,17 @@ int comm_set_buffer(char * cmd, char * buffer, int size)
 	return 0;
 }
 
-int send_buf(int newsockfd, char * cmd, int size)
+int send_buf(int newsockfd, char *cmd, int size)
 {
 	int n;
-	char * buf;
+	char *buf;
 
 	log_debug("Sending Picture Size (%i)", size);
 	write(newsockfd, &size, sizeof(size));
 
 	buf = get_buf(cmd, size);
 	n = send_all(newsockfd, buf, size);
-	if (n < 0){
+	if (n < 0) {
 		log_error("ERROR writing to socket");
 		return -1;
 	}
@@ -284,15 +294,18 @@ int handle_socket(int newsockfd)
 	char cmd[3];
 	memset(cmd, '\0', sizeof(cmd));
 
-	while( 1 ){
+	while (1) {
 		n = recv(newsockfd, &size, sizeof(int), 0);
-		if (n < 0){
+		if (n < 0) {
 			log_error("ERROR reading from socket");
 			return -1;
+		} else if (n == 0) {
+			log_message("socket %i was closed by peer", newsockfd);
+			return 0;
 		}
 
 		n = recv(newsockfd, cmd, size, 0);
-		if (n < 0){
+		if (n < 0) {
 			log_error("ERROR reading from socket");
 			return -1;
 		} else if (n == 0) {
@@ -303,20 +316,20 @@ int handle_socket(int newsockfd)
 		log_debug("received command '%s' of length %i", cmd, size);
 
 		// wait until all buffers are written
-		while(buffers->writeLock){
+		while (buffers->writeLock) {
 			log_debug("wait for writelock");
 			sleepMs(10);
 		}
 
 		// set readlock to avoid someone changing the buffer while we are reading it
 		buffers->readLock = 1;
-		if(strncmp(cmd, "top", 3) == 0){
+		if (strncmp(cmd, "top", 3) == 0) {
 			send_buf(newsockfd, cmd, buffers->topSize);
-		} else if(strncmp(cmd, "bot", 3) == 0){
+		} else if (strncmp(cmd, "bot", 3) == 0) {
 			send_buf(newsockfd, cmd, buffers->botSize);
-		} else if(strncmp(cmd, "cam", 3) == 0){
+		} else if (strncmp(cmd, "cam", 3) == 0) {
 			send_buf(newsockfd, cmd, buffers->camSize);
-		} else if(strncmp(cmd, "spc", 3) == 0){
+		} else if (strncmp(cmd, "spc", 3) == 0) {
 			send_buf(newsockfd, cmd, buffers->spcSize);
 		} else {
 			log_message("I did not understand this command: %s", cmd);
@@ -326,23 +339,13 @@ int handle_socket(int newsockfd)
 		buffers->readLock = 0;
 	}
 
-	close(newsockfd);
-
 	return 0;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int comm_uninit(sConfigStruct * config)
 {
-	/* FIXME:
-	 *   cleanup mmap?
-	 *   close sockets?
-	 */
-	if(accept_loop_pid){
-		log_message("kill child \"accept loop\" process with pid %i", accept_loop_pid);
-		kill(accept_loop_pid, SIGTERM);
-	}
-
+	// cleanup mapped memory
 	shm_unlink("/buffers.top");
 	shm_unlink("/buffers.bot");
 	shm_unlink("/buffers.cam");
@@ -352,4 +355,5 @@ int comm_uninit(sConfigStruct * config)
 
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int get_buffer(char * str, char ** buf, int * size);
+int get_buffer(char *str, char **buf, int *size);
 
 int main(int argc, char *argv[])
 {
@@ -12,18 +12,18 @@ int main(int argc, char *argv[])
 	int size = 0;
 	int toggle = 0;
 	int i = 0;
-	char * a;
-	char * buf;
+	char *a;
+	char *buf;
 	char spectrum[2048];
 	char line[512];
-	FILE * fid;
+	FILE *fid;
 
 	if (argc != 2) {
 		printf("usage: %s <port> \n", argv[0]);
 		return 1;
 	}
 
-	buf = (char*) calloc(sizeof(char), 10);
+	buf = (char *)calloc(sizeof(char), 10);
 
 	config.comm_port = atoi(argv[1]);
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
 		a = toggle ? "fixtures/testing_2016_05_25-12_53_44_537_cam_top.raw.png" : "fixtures/testing_2016_05_25-12_53_59_657_cam_top.raw.png";
 		stat = get_buffer(a, &buf, &size);
-		if(stat){
+		if (stat) {
 			printf("could not get buffer for file %s\n", a);
 			goto fail;
 		}
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
 		a = toggle ? "fixtures/testing_2016_05_25-12_53_44_537_cam_bot.raw.png" : "fixtures/testing_2016_05_25-12_53_59_657_cam_bot.raw.png";
 		stat = get_buffer(a, &buf, &size);
-		if(stat){
+		if (stat) {
 			printf("could not get buffer for file %s\n", a);
 			goto fail;
 		}
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
 		a = toggle ? "fixtures/testing_2016_05_25-12_53_44_537_cam_webcam.raw.png" : "fixtures/testing_2016_05_25-12_53_59_658_cam_webcam.raw.png";
 		stat = get_buffer(a, &buf, &size);
-		if(stat){
+		if (stat) {
 			printf("could not get buffer for file %s\n", a);
 			goto fail;
 		}
@@ -77,17 +77,17 @@ int main(int argc, char *argv[])
 		comm_set_buffer("spc", spectrum, 2048);
 	}
 
-fail:
+ fail:
 	free(buf);
 
 	return stat;
 }
 
-int get_buffer(char * str, char ** buf, int * size)
+int get_buffer(char *str, char **buf, int *size)
 {
 	int stat = 0;
 
-	FILE * fid = fopen(str, "r");
+	FILE *fid = fopen(str, "r");
 	if (!fid) {
 		printf("failed to open file\n");
 		return -1;
@@ -99,7 +99,7 @@ int get_buffer(char * str, char ** buf, int * size)
 	rewind(fid);
 
 	/* allocate buffer */
-	*buf = (char*) realloc(*buf, sizeof(char) * (*size));
+	*buf = (char *)realloc(*buf, sizeof(char) * (*size));
 	if (buf == NULL) {
 		perror("error allocating enough memory");
 		return -1;
