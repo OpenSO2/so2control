@@ -1,5 +1,6 @@
 #include "comm.h"
 #include "configurations.h"
+#include "log.h"
 #include <stdio.h>
 #include <string.h>
 
