@@ -131,7 +131,7 @@ int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParamet
 	return 0;
 }
 
-int camera_get(sParameterStruct * sSO2Parameters)
+int camera_get(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters))
 {
 	char *filename;
 	short *stBuffer = NULL;
@@ -161,12 +161,7 @@ int camera_get(sParameterStruct * sSO2Parameters)
 	}
 }
 
-int camera_setExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config)
-{
-	return 0;
-}
-
-int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch)
+int camera_setExposure(sParameterStruct * sSO2Parameters)
 {
 	return 0;
 }

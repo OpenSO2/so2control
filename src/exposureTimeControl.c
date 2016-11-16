@@ -13,46 +13,31 @@ void cb(sParameterStruct * sSO2Parameters);
 void cb(sParameterStruct * sSO2Parameters)
 {
 	sSO2Parameters->fBufferReady = (1==1);
-
-	/* Increment the Display Buffer Ready Count */
-	sSO2Parameters->dBufferReadyCount++;
 }
 
 int setExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int status = 0;		/* status variable */
-	int timeSwitch = 0;	/* Integer switch to switch between exposure modi */
 
 	if (config->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file if so set it. */
 		log_message("Set program to use a fix exposure time.");
-		return camera_setExposure(sSO2Parameters, config);
+		sSO2Parameters->dExposureTime = config->dFixTime;
 	} else {
-		/* Acquire first buffer to decide between FBL or SHT */
-		camera_trigger(sSO2Parameters, cb);
-
-		/* wait for camera aquisition */
-		while (!sSO2Parameters->fBufferReady)
-			sleepMs(10);
-
-		sSO2Parameters->fBufferReady = !(1==1);
-
-		status = camera_get(sSO2Parameters);
+		status = camera_get(sSO2Parameters, 1);
 		if (status != 0) {
 			log_error("could not get buffer for exposure control");
 			return status;
 		}
 
-		/* clean up */
-		camera_abort(sSO2Parameters);
-
 		/* calculate histogram to test for over or under exposition */
-		evalHist(sSO2Parameters, config, &timeSwitch);
+/* evalHist(sSO2Parameters, config, &timeSwitch); */
 
-		camera_setExposureSwitch(sSO2Parameters, config, timeSwitch);
+/* FIXME: do something... */
+		sSO2Parameters->dExposureTime = 1000;
 	}
 
-	return 0;
+	return camera_setExposure(sSO2Parameters);
 }
 
 /*

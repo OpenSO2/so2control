@@ -8,14 +8,11 @@ for unit/integration testing.
 
 The following functions are provided by this file:
 
-- `camera_init` - inits the camera/framegrabber
+- `camera_init` - inits and configures the camera/framegrabber
 - `camera_get` - aquires one image/frame from the camera/framegrabber
-- `camera_config` - configures the cameras
+- `camera_setExposure` -
 - `camera_uninit` - stops (uninits) the camera/framegrabber and does neccesarry clean up
-- `camera_trigger` - triggeres a capture, eg. start a measurement
 - `camera_abort` - aborts a triggered capture
-- `camera_setExposure` - sets camera exposure time to a fixed value
-- `camera_setExposureSwitch` - sets camera exposure time to a relative value
 
 Currently, two implementations are included:
 

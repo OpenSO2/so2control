@@ -221,9 +221,6 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
-	/* start taking webcam images */
-	threads_webcam_start(&config, &webcam);
-
 	/* initiate spectrometer-shutter */
 	state = spectrometer_shutter_init(&config);
 	if (state != 0) {
@@ -272,39 +269,8 @@ int main(int argc, char *argv[])
 	}
 	log_message("camera B initialized");
 
-	/* configure camera */
-	state = camera_config(&sParameters_A);
-	if (state != 0) {
-		log_error("config camera A failed");
-		stop_program(1);
-		return 1;
-	}
-	log_message("camera A configured");
-
-	state = camera_config(&sParameters_B);
-	if (state != 0) {
-		log_error("config camera B failed");
-		stop_program(1);
-		return 1;
-	}
-	log_message("camera B configured");
-
-	/* set exposure */
-	state = setExposureTime(&sParameters_A, &config);
-	if (state != 0) {
-		log_error("setExposureTime for cam B failed");
-		stop_program(1);
-		return 1;
-	}
-	log_message("exposure time for cam A set");
-
-	state = setExposureTime(&sParameters_B, &config);
-	if (state != 0) {
-		log_error("setExposureTime for cam B failed");
-		stop_program(1);
-		return 1;
-	}
-	log_message("exposure time for cam B set");
+	/* start taking webcam images */
+	threads_webcam_start(&config, &webcam);
 
 	/*
 	 * Starting the acquisition with the exposure parameter set in

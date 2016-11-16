@@ -185,8 +185,6 @@ int config_load_configfile(sConfigStruct * config)
 			config->dHistPercentage = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "InterFrameDelay") && config->dInterFrameDelay == -1) {
 			config->dInterFrameDelay = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "TriggerPulseWidth") && config->dTriggerPulseWidth == 0) {
-			config->dTriggerPulseWidth = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "FixTime") && config->dFixTime == -1) {
 			config->dFixTime = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "ExposureTime") && config->dExposureTime < 0) {

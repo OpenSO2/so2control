@@ -34,14 +34,9 @@ int camera_init(sParameterStruct * sSO2Parameters);
 int camera_uninit(sParameterStruct * sSO2Parameters);
 
 /**
- *
- */
-int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters));
-
-/**
  * aquires one image/frame from the camera/framegrabber
  */
-int camera_get(sParameterStruct * sSO2Parameters);
+int camera_get(sParameterStruct * sSO2Parameters, int waiter);
 
 /**
  * abort the current aquisition
@@ -51,12 +46,7 @@ int camera_abort(sParameterStruct * sSO2Parameters);
 /**
  *
  */
-int camera_setExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config);
-
-/**
- *
- */
-int camera_setExposureSwitch(sParameterStruct * sSO2Parameters, sConfigStruct * config, int timeSwitch);
+int camera_setExposure(sParameterStruct * sSO2Parameters);
 
 /**
  *

@@ -4,12 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static void callback(sParameterStruct * sSO2Parameters);
-static void callback(sParameterStruct * sSO2Parameters)
-{
-	sSO2Parameters->fBufferReady = (1==1);
-}
-
 int main(int argc, char *argv[])
 {
 	int stat = 0;
@@ -36,24 +30,13 @@ int main(int argc, char *argv[])
 		printf("failed to init camera\n");
 		return -1;
 	}
-	stat = camera_config(&sSO2Parameters);
-	if (stat) {
-		printf("failed to config camera\n");
-		return -1;
-	}
 
 	/* set exposure time to a very high value */
 	sSO2Parameters.dExposureTime = 10000;
-	camera_setExposure(&sSO2Parameters, &config);
+	camera_setExposure(&sSO2Parameters);
 
 	/* trigger image and wait for result */
-	camera_trigger(&sSO2Parameters, callback);
-
-	while (!sSO2Parameters.fBufferReady){
-		sleepMs(10);
-	}
-
-	stat = camera_get(&sSO2Parameters);
+	stat = camera_get(&sSO2Parameters, 0);
 	if (stat) {
 		printf("failed to get image from camera\n");
 		return -1;

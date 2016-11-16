@@ -12,16 +12,6 @@
 
 int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config);
 
-static void callback(sParameterStruct * sSO2Parameters);
-
-static void callback(sParameterStruct * sSO2Parameters)
-{
-	sSO2Parameters->fBufferReady = (1==1);
-
-	/* Increment the Display Buffer Ready Count */
-	sSO2Parameters->dBufferReadyCount++;
-}
-
 int startAquisition(sParameterStruct * sParameters_A,
 	sParameterStruct * sParameters_B, sConfigStruct * config)
 {
@@ -75,6 +65,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 {
 	int statusA = 0, statusB = 0;
 
+	log_debug("aquire frame");
+
 	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampBefore);
 	getTime(sParameters_B->timestampBefore);
@@ -85,8 +77,8 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	}
 
 	/* Now start our capture, return control immediately back to program */
-	statusA = camera_trigger(sParameters_A, callback);
-	statusB = camera_trigger(sParameters_B, callback);
+	statusA = camera_get(sParameters_A, 0);
+	statusB = camera_get(sParameters_B, 0);
 
 	if (statusA || statusB) {
 		log_error("Starting the acquisition failed.");
@@ -104,27 +96,14 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	 * (b) The BufferReady event occurs indicating that the image is complete
 	 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
 	 * Keep calling the sleep function to avoid burning CPU cycles */
-	while (
-		   !(sParameters_A->fBufferReady && sParameters_B->fBufferReady)
-		&& !(sParameters_A->fFifoOverFlow && sParameters_B->fFifoOverFlow)
-	){
-		sleepMs(10);
+	while (!sParameters_A->fBufferReady || !sParameters_B->fBufferReady){
+		sleepMs(1);
 	}
+	log_debug("both image buffer ready");
 
 	/* Reset the buffer ready flags to false for next cycle */
 	sParameters_A->fBufferReady = !(1==1);
 	sParameters_B->fBufferReady = !(1==1);
-
-	/* download the captured image */
-	statusA = camera_get(sParameters_A);
-	statusB = camera_get(sParameters_B);
-
-	if (statusA || statusB) {
-		log_error("Getting an image failed.");
-		camera_abort(sParameters_A);
-		camera_abort(sParameters_B);
-		return 1;
-	}
 
 	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampAfter);
