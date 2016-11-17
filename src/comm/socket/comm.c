@@ -34,6 +34,7 @@ pid_t *socket_pids;
 int socket_pids_length = 0;
 int *sockets;
 int sockets_length;
+pid_t accept_pid;
 
 typedef struct {
 	int topSize;
@@ -57,18 +58,19 @@ void kill_socket_processes(int reason)
 	pid_t result;
 	log_debug("there are %i socket processes to kill for reason %i", socket_pids_length, reason);
 
-	// close sockets
+	/* close sockets */
 	for (i = 0; i < sockets_length; i++) {
 		log_message("close socket %i", sockets[i]);
 		close(sockets[i]);
 	}
 
-	// kill subprocesses
+	/* kill subprocesses */
 	for (i = 0; i < socket_pids_length; i++) {
 		log_message("kill socket process with pid %i", socket_pids[i]);
 		result = waitpid(socket_pids[i], &status, WNOHANG);
 		if (result == 0) {
 			kill(socket_pids[i], SIGTERM);
+			waitpid(socket_pids[i], NULL, 0);
 		} else {
 			log_debug("... nevermind, process is dead already");
 		}
@@ -120,7 +122,6 @@ char *get_buf(char *cmd, int size)
 
 int comm_init(sConfigStruct * config)
 {
-	pid_t pid;
 	int fd;
 	int sockfd;
 	struct sockaddr_in serv_addr;
@@ -165,14 +166,15 @@ int comm_init(sConfigStruct * config)
 	listen(sockfd, 5);
 	log_message("Listening to tcp socket on port %i", config->comm_port);
 
-	// do communication in own process and return to main thread
-	if ((pid = fork()) < 0) {
+	/* do communication in own process and return to main thread */
+	if ((accept_pid = fork()) < 0) {
 		log_error("Could not fork process: %s", strerror(errno));
 		return -1;
-	} else if (pid == 0) {	// child
-		// replace signal handler inherited from parent process with my
-		// own, which will clean up the processes that this process will
-		// fork
+	} else if (accept_pid == 0) {	/* child */
+		/* replace signal handler inherited from parent process with my
+		 * own, which will clean up the processes that this process will
+		 * fork
+		 */
 		struct sigaction sa, osa;
 		memset(&sa, 0, sizeof(sa));
 		sa.sa_handler = &kill_socket_processes;
@@ -181,7 +183,7 @@ int comm_init(sConfigStruct * config)
 
 		init(sockfd);
 		exit(0);
-	} else {		// parent
+	} else {		/* parent */
 		close(sockfd);
 	}
 
@@ -207,19 +209,20 @@ int init(int sockfd)
 
 		log_debug("new connection established for socket %i, new socket %i", sockfd, newsockfd);
 
-		// spawn a process for every request
+		/* spawn a process for every request */
 		if ((pid = fork()) < 0) {
 			log_error("Error while forking %s", strerror(errno));
-		} else if (pid == 0) {	// child
-			// ignore signals in this process to avoid calling the
-			// cleanup (uninit) functions multiple times
+		} else if (pid == 0) {	/* child */
+			/* ignore signals in this process to avoid calling the
+			 * cleanup (uninit) functions multiple times
+			 */
 			signal(SIGTERM, SIG_DFL);
 			signal(SIGINT, SIG_DFL);
 
 			handle_socket(newsockfd);
 			exit(0);
-		} else {	// parent
-			// remember all child pid to make sure to kill them later
+		} else {	/* parent */
+			/* remember all child pid to make sure to kill them later */
 			socket_pids_length++;
 			socket_pids = realloc(socket_pids, socket_pids_length * sizeof(pid));
 			socket_pids[socket_pids_length - 1] = pid;
@@ -237,17 +240,18 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 {
 	char *buf;
 
-	// wait until all reads are completed
+	/* wait until all reads are completed  */
 	while (buffers->readLock) {
 		log_debug("wait for readlock");
 		sleepMs(10);
 	}
 
-	// set a write Lock to prevent others to read a buffer while we are
-	// updating its content
+	/* set a write Lock to prevent others to read a buffer while we are
+	 * updating its content
+	 */
 	buffers->writeLock = 1;
 
-	// set size for each type of buffer
+	/* set size for each type of buffer */
 	if (strncmp(cmd, "top", 3) == 0) {
 		buffers->topSize = size;
 	} else if (strncmp(cmd, "bot", 3) == 0) {
@@ -265,7 +269,7 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 	buf = get_buf(cmd, size);
 	memcpy(buf, buffer, size);
 
-	// release lock
+	/* release lock */
 	buffers->writeLock = 0;
 
 	return 0;
@@ -315,13 +319,15 @@ int handle_socket(int newsockfd)
 
 		log_debug("received command '%s' of length %i", cmd, size);
 
-		// wait until all buffers are written
+		/* wait until all buffers are written */
 		while (buffers->writeLock) {
 			log_debug("wait for writelock");
 			sleepMs(10);
 		}
 
-		// set readlock to avoid someone changing the buffer while we are reading it
+		/* set readlock to avoid someone changing the buffer while we
+		 * are reading it
+		 */
 		buffers->readLock = 1;
 		if (strncmp(cmd, "top", 3) == 0) {
 			send_buf(newsockfd, cmd, buffers->topSize);
@@ -335,7 +341,7 @@ int handle_socket(int newsockfd)
 			log_message("I did not understand this command: %s", cmd);
 		}
 
-		// clear read lock
+		/* clear read lock */
 		buffers->readLock = 0;
 	}
 
@@ -345,7 +351,10 @@ int handle_socket(int newsockfd)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int comm_uninit(sConfigStruct * config)
 {
-	// cleanup mapped memory
+	kill(accept_pid, SIGTERM);
+	waitpid(accept_pid, NULL, 0);
+
+	/* cleanup mapped memory */
 	shm_unlink("/buffers.top");
 	shm_unlink("/buffers.bot");
 	shm_unlink("/buffers.cam");

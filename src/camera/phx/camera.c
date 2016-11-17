@@ -31,7 +31,7 @@ int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 {
 	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
 
-/*FIXME: Comment*/
+/* FIXME: Comment */
 #pragma GCC diagnostic ignored "-Wpedantic"
 	PHX_Acquire(sSO2Parameters->hCamera, PHX_START, internalCallback);
 #pragma GCC diagnostic warning "-Wpedantic"
@@ -50,53 +50,43 @@ int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 
 int camera_setExposure(sParameterStruct * sSO2Parameters)
 {
-	/* FIXME why cast to int when double? */
-	int exposureTime = sSO2Parameters->dExposureTime;	/* exposure time in parameter structure */
+	double exposureTime = sSO2Parameters->dExposureTime;	/* exposure time in parameter structure */
 	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
 	etStat eStat = PHX_OK;	/* Phoenix status variable */
 	int shutterSpeed = 1;	/* in case something went wrong this value is accepted by both modi */
-	ui8 * message;
-	char tmp[9];
+	char speed[9];
+	ui8 * mode;
 
 	/* before doing anything check if exposure time is within the limits */
-	if (exposureTime < 2.4 || exposureTime > 1004400) {
+	if (exposureTime < 2.4 || exposureTime > 1004400.) {
 		log_error("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
 		return PHX_ERROR_OUT_OF_RANGE;
 	}
 
-	if (exposureTime <= 83560) {
-		/* ===========ELECTRONIC=SHUTTER========== */
-		shutterSpeed = round(((exposureTime - 2.4) / 79.275) + 1);
-		sprintf(tmp, "SHT %d", shutterSpeed);
-
-		/* N normal, S Shutter, F frameblanking */
-		eStat = sendMessage(hCamera, (ui8*)"NMD S");
-		if (PHX_OK != eStat) {
-			log_error("setting camera to electronic shutter mode failed");
-			return eStat;
-		}
+	/* N normal, S Shutter, F frameblanking */
+	if (exposureTime <= 83560.) {
+		/* ELECTRONIC SHUTTER */
 		/* Shutter speed, 1 - 1055 */
-		exposureTime = 2.4 + (shutterSpeed - 1) * 79.275;
-		log_message("Camera uses electronic shutter mode. exposure time is: %d ms", exposureTime);
+		shutterSpeed = round(((exposureTime - 2.4) / 79.275) + 1);
+		sprintf(speed, "SHT %d\r", shutterSpeed);
+		mode = (ui8*)"NMD S\r";
+		log_message("Camera uses electronic shutter mode. Exposure time is: %d ms", exposureTime);
 	} else {
-		/*===========FRAME=BLANKING==========*/
-/*FIXME: is this correct? */
-		shutterSpeed = round(exposureTime / 83700);
-		sprintf(tmp, "FBL %d", shutterSpeed);
-
-		/* N normal, S Shutter, F frameblanking */
-		eStat = sendMessage(hCamera, (ui8*)"NMD F");
-		if (PHX_OK != eStat) {
-			log_error("Setting camera to frameblanking mode failed");
-			return eStat;
-		}
+		/* FRAME BLANKING */
 		/* Shutter speed, 1 - 12 */
-		exposureTime = shutterSpeed * 83700;
-		log_message("Camera uses Frameblanking mode. exposure time is: %d ms", exposureTime);
+		shutterSpeed = round(exposureTime / 83700.); /*FIXME: is this correct? */
+		sprintf(speed, "FBL %d\r", shutterSpeed);
+		mode = (ui8*)"NMD F\r";
+		log_message("Camera uses Frameblanking mode. Exposure time is: %d ms", exposureTime);
 	}
 
-	message = (ui8*)tmp;
-	eStat = sendMessage(hCamera, message);
+	eStat = sendMessage(hCamera, mode);
+	if (PHX_OK != eStat) {
+		log_error("Setting camera mode failed");
+		return eStat;
+	}
+
+	eStat = sendMessage(hCamera, (ui8*)speed);
 	if (PHX_OK != eStat) {
 		log_error("setting shutter to %d failed (exposuretime %d ms)", shutterSpeed, exposureTime);
 		return eStat;
@@ -143,32 +133,32 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 	log_message("setup camera");
 
 	/* initialize default values */
-	eStat = sendMessage(hCamera, (ui8*)"INI");
+	eStat = sendMessage(hCamera, (ui8*)"INI\r");
 	if (PHX_OK != eStat) {
 		log_error("sending INI to camera was unsuccessfull");
 		return eStat;
 	}
 	/* freerunning or external control mode: */
 	/* N freerun mode, E external */
-	eStat = sendMessage(hCamera, (ui8*)"AMD N");
+	eStat = sendMessage(hCamera, (ui8*)"AMD N\r");
 	if (PHX_OK != eStat) {
 		log_error("sending AMD N to camera was unsuccessfull");
 		return eStat;
 	}
 	/* scanning mode: N Normal, S superpixel */
-	eStat = sendMessage(hCamera, (ui8*)"SMD N");
+	eStat = sendMessage(hCamera, (ui8*)"SMD N\r");
 	if (PHX_OK != eStat) {
 		log_error("sending SMD N to camera was unsuccessfull");
 		return eStat;
 	}
 	/* horizontal pixel output: M = 1344 */
-	eStat = sendMessage(hCamera, (ui8*)"SHA M");
+	eStat = sendMessage(hCamera, (ui8*)"SHA M\r");
 	if (PHX_OK != eStat) {
 		log_error("sending SHA M to camera was unsuccessfull");
 		return eStat;
 	}
 	/* contrast gain: high */
-	eStat = sendMessage(hCamera, (ui8*)"CEG H");
+	eStat = sendMessage(hCamera, (ui8*)"CEG H\r");
 	if (PHX_OK != eStat) {
 		log_error("sending CEG H to camera was unsuccessfull");
 		return eStat;
@@ -203,22 +193,23 @@ void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params)
 	}
 }
 
+
 static int sendMessage(tHandle hCamera, ui8 *msg)
 {
-	etStat eStat = PHX_OK;
+	etStat eStat = !PHX_OK;
 	int i;
 	int sleepCycleCounter = 1;
 	int timeout = 500;
-	ui32 recvLength;
 	ui8 recv[256];
-	ui32 msgLength = (ui32)strlen((const char *)msg);
+	ui32 j, recvLength;
+	ui32 msgLength = strlen((const char *)msg);
 
 	/* 3 tries before the sending of of the message is considered failed */
 	for (i = 0; i < 3; i++) {
 		/* Transmit the serial data to the camera */
 		eStat = PHX_CommsTransmit(hCamera, msg, &msgLength, timeout);
 		if (PHX_OK != eStat) {
-			log_error("PHX_CommsTransmit( %s ) failed", msg);
+			log_error("PHX_CommsTransmit() failed");
 			continue; /* short circuit */
 		}
 
@@ -236,25 +227,28 @@ static int sendMessage(tHandle hCamera, ui8 *msg)
 		} while (0 == recvLength && PHX_OK == eStat);
 
 		if (PHX_OK != eStat) {
-			log_error("nothing was received from camera");
+			log_debug("nothing was received from camera");
 			continue; /* short circuit */
 		}
 
 		/* if data is received, download the data */
 		eStat = PHX_CommsReceive(hCamera, recv, &recvLength, timeout);
 		if (PHX_OK != eStat) {
-			log_error("nothing was received from camera");
+			log_debug("nothing was received from camera");
 			continue; /* short circuit */
 		}
 
-		if (strncmp((const char *)msg, (const char *)recv, recvLength) != 0) {
-			/* if cameras answer equals input string, exit successfull */
-			log_debug("send message: %s was successful", msg);
-			return 0;	/* here return of SUCCESS */
-		} else {
-			log_error("String send and string received were not equal.");
+		/* if cameras answer equals input string, exit successfull */
+		if (strncmp((const char *)msg, (const char *)msg, msgLength)) {
+			log_debug("String send and string received were not equal.");
+			continue; /* short circuit */
 		}
+		/* remove carriage return character from string for logging */
+		for(j = 0; j < recvLength; j++) recv[j] = recv[j] == '\r' ? ' ' : recv[j];
+		log_debug("send message: %s was successful", recv);
+		return 0;	/* here return of SUCCESS */
 	}
+
 	log_error("sending message failed 3 times");
-	return eStat;
+	return -1;
 }

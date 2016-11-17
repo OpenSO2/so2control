@@ -70,6 +70,9 @@ static void stop_program(int reason)
 	/* uninitialize spectrometer-shutter */
 	spectrometer_shutter_uninit(&config);
 
+	/* stop spectrometer thread */
+	threads_spectroscopy_stop();
+
 	/* uninitialize spectrometer */
 	spectrometer_uninit(&config);
 
@@ -82,7 +85,7 @@ static void stop_program(int reason)
 	printf("Program stopped. Bye!\n");
 
 	/* now terminate process */
-	exit(reason);
+	_exit(reason);
 }
 
 /*
