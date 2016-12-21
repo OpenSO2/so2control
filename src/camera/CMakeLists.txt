@@ -80,7 +80,7 @@ else()
 
 	add_definitions(-DCAMERA_PCF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/phx/c8484.pcf")
 
-	add_library(camera ../configurations.c ../timehelpers.c ../exposureTimeControl.c ./phx/camera.c)
+	add_library(camera ../configurations.c ../timehelpers.c ./phx/camera.c)
 
 endif()
 

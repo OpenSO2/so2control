@@ -39,27 +39,6 @@ pthread_t thread_id_a = 0;
 pthread_t thread_id_b = 0;
 #endif
 
-#ifdef WIN
-DWORD WINAPI timeout(void *args)
-#else
-static void *timeout(void *args);
-static void *timeout(void *args)
-#endif
-{
-	void (*callback)(sParameterStruct *sSO2Parameters) = ((struct data_struct*) args)->callback;
-
-	sParameterStruct *sSO2Parameters = ((struct data_struct*) args)->sSO2Parameters;
-
-#ifdef WIN
-	Sleep(1);
-#else
-	sleep(1);
-#endif
-
-	callback(sSO2Parameters);
-	return 0;
-}
-
 /* public */
 int camera_init(sParameterStruct * sSO2Parameters)
 {
@@ -104,34 +83,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 	return 0;
 }
 
-/*
- * windows http://stackoverflow.com/questions/1981459/how-to-use-threads-in-c-on-windows
- */
-int camera_trigger(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters))
-{
-	if(sSO2Parameters->identifier == 'a'){
-		g_data_struct_a->callback = callback;
-		g_data_struct_a->sSO2Parameters = sSO2Parameters;
-
-		#ifdef WIN
-		CreateThread(NULL, 0, &timeout, g_data_struct_a, 0, NULL);
-		#else
-		pthread_create(&thread_id_a, NULL, &timeout, g_data_struct_a);
-		#endif
-	} else {
-		g_data_struct_b->callback = callback;
-		g_data_struct_b->sSO2Parameters = sSO2Parameters;
-		#ifdef WIN
-		CreateThread(NULL, 0, &timeout, g_data_struct_b, 0, NULL);
-		#else
-		pthread_create(&thread_id_b, NULL, &timeout, g_data_struct_b);
-		#endif
-	}
-
-	return 0;
-}
-
-int camera_get(sParameterStruct * sSO2Parameters, void (*callback) (sParameterStruct *sSO2Parameters))
+int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 {
 	char *filename;
 	short *stBuffer = NULL;

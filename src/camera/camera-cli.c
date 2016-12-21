@@ -20,8 +20,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	sSO2Parameters.timestampBefore = malloc(sizeof(timeStruct));
-
+	config.dBufferlength = 1376256;
+	config.dFixTime = 0;
+	config.dExposureTime_a = 250000;
+	config.dExposureTime_b = 250000;
 	config_init_sParameterStruct(&sSO2Parameters, &config, (char)argv[1][0]);
 
 	/* testing functions */
@@ -31,12 +33,15 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	/* set exposure time to a very high value */
-	sSO2Parameters.dExposureTime = 10000;
-	camera_setExposure(&sSO2Parameters);
+	/* autoset exposure */
+	stat = camera_autosetExposure(&sSO2Parameters, &config);
+	if (stat) {
+		printf("failed to find exposure\n");
+		return -1;
+	}
 
 	/* trigger image and wait for result */
-	stat = camera_get(&sSO2Parameters, 0);
+	stat = camera_get(&sSO2Parameters, 1);
 	if (stat) {
 		printf("failed to get image from camera\n");
 		return -1;

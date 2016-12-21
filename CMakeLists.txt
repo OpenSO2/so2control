@@ -65,8 +65,6 @@ include_directories(
 
 set(SRCFILES
 	./src/configurations.c
-	./src/darkFrame/custom/darkCurrent.c
-	./src/exposureTimeControl.c
 	./src/imageCreation.c
 	./src/timehelpers.c
 	./src/threads.c

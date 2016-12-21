@@ -7,7 +7,6 @@
 #include "camera.h"
 #include "configurations.h"
 #include "imageCreation.h"
-#include "exposureTimeControl.h"
 #include "filterwheel.h"
 #include "log.h"
 #include "io.h"

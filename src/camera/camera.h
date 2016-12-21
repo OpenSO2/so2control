@@ -26,31 +26,25 @@
 /**
  * inits the camera/framegrabber
  */
-int camera_init(sParameterStruct * sSO2Parameters);
+int camera_init(sParameterStruct *);
 
 /**
  * stops (uninits) the camera/framegrabber and does neccesarry clean up
  */
-int camera_uninit(sParameterStruct * sSO2Parameters);
+int camera_uninit(sParameterStruct *);
 
 /**
  * aquires one image/frame from the camera/framegrabber
  */
-int camera_get(sParameterStruct * sSO2Parameters, int waiter);
+int camera_get(sParameterStruct *, int);
 
 /**
  * abort the current aquisition
  */
-int camera_abort(sParameterStruct * sSO2Parameters);
+int camera_abort(sParameterStruct *);
 
-/**
- *
- */
-int camera_setExposure(sParameterStruct * sSO2Parameters);
-
-/**
- *
- */
-int camera_config(sParameterStruct * sSO2Parameters);
+int camera_setExposure(sParameterStruct *);
+int camera_autosetExposure(sParameterStruct *, sConfigStruct *);
+int camera_config(sParameterStruct *);
 
 #endif

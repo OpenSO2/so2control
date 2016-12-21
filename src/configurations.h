@@ -40,23 +40,9 @@ typedef struct {
 	/* Number of pixels in 1 Image */
 	int dBufferlength;
 
-	/* when controling the exposure time a histogram is made
-	 * from 1 image. The lower part is evaluated for underexposure
-	 * this gives the evaluated interval.
-	 */
-	int dHistMinInterval;
-
-	/* when controlling the exposure time a histogram is made
-	 * from 1 image. This value is the percentage of pixels
-	 * that are allowed to be under- or overexposed.
-	 */
-	int dHistPercentage;
-
-	/* length of the triggerpulse in [ms] */
-	unsigned long dTriggerPulseWidth;
-
-	/* exposure time in [ms] */
-	double dExposureTime;
+	/* exposure time in [us] */
+	double dExposureTime_a;
+	double dExposureTime_b;
 
 	/* number of images taken */
 	int dImageCounter;
@@ -157,7 +143,6 @@ typedef struct {
 
 	/* Event Flags */
 	volatile unsigned long fBufferReady;
-	volatile int dBufferReadyCount;
 
 	/* Control Flags */
 	volatile unsigned long fFifoOverFlow;

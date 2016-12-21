@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 	sSO2Parameters.dTriggerPulseWidth = 15;
 	sSO2Parameters.dExposureTime = 0;
 	sSO2Parameters.dDarkCurrent = 0;
-	sSO2Parameters.identifier = 'A';
+	sSO2Parameters.identifier = 'a';
 	sSO2Parameters.stBuffer = buffer;
 	sSO2Parameters.timestampBefore = &time;
 	sSO2Parameters.timestampAfter = &time;
@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
 
 	config.dImageCounter = 0;
 	config.dBufferlength = 1376256;
-	config.dHistMinInterval = 350;
-	config.dHistPercentage = 5;
 	config.dInterFrameDelay = 10;
 	config.dFixTime = 0.000000;
 	config.cFileNamePrefix = "image";

@@ -23,8 +23,11 @@ char * getString(char * source);
  */
 void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier)
 {
-	sSO2Parameters->dExposureTime = config->dExposureTime;
-	sSO2Parameters->dTriggerPulseWidth = config->dTriggerPulseWidth;
+	if(identifier == 'a') {
+		sSO2Parameters->dExposureTime = config->dExposureTime_a;
+	} else {
+		sSO2Parameters->dExposureTime = config->dExposureTime_b;
+	}
 	sSO2Parameters->identifier = identifier;
 	sSO2Parameters->timestampBefore = malloc(sizeof(timeStruct));
 	sSO2Parameters->timestampAfter = malloc(sizeof(timeStruct));
@@ -40,10 +43,8 @@ void config_init_sConfigStruct(sConfigStruct *config){
 	config->debug = -1;
 	config->noofimages = -1;
 	config->dBufferlength = -1;
-	config->dHistMinInterval = -1;
-	config->dHistPercentage = -1;
-	config->dTriggerPulseWidth = 0;
-	config->dExposureTime = -1;
+	config->dExposureTime_a = -1;
+	config->dExposureTime_b = -1;
 	config->dImageCounter = -1;
 	config->dInterFrameDelay = -1;
 	config->cFileNamePrefix = "";
@@ -179,16 +180,14 @@ int config_load_configfile(sConfigStruct * config)
 		delimeterBuf = strstr(lineBuf, "=");
 
 		/* search for corresponding strings */
-		if (strstr(lineBuf, "HistogramMinInterval") && config->dHistMinInterval == -1) {
-			config->dHistMinInterval = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "HistogramPercentage") && config->dHistPercentage == -1) {
-			config->dHistPercentage = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "InterFrameDelay") && config->dInterFrameDelay == -1) {
+		if (strstr(lineBuf, "InterFrameDelay") && config->dInterFrameDelay == -1) {
 			config->dInterFrameDelay = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "FixTime") && config->dFixTime == -1) {
 			config->dFixTime = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "ExposureTime") && config->dExposureTime < 0) {
-			config->dExposureTime = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "ExposureTime_a") && config->dExposureTime_a < 0) {
+			config->dExposureTime_a = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "ExposureTime_b") && config->dExposureTime_b < 0) {
+			config->dExposureTime_b = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "FileNamePrefix") && !strlen(config->cFileNamePrefix)) {
 			config->cFileNamePrefix = getString(delimeterBuf);
 		} else if (strstr(lineBuf, "ImagePath") && !strlen(config->cImagePath)) {
@@ -224,8 +223,6 @@ int config_load_configfile(sConfigStruct * config)
  */
 void config_load_default(sConfigStruct *config)
 {
-	config->dHistMinInterval   = config->dHistMinInterval != -1 ? config->dHistMinInterval : 350;
-	config->dHistPercentage    = config->dHistPercentage  != -1 ? config->dHistPercentage  : 5;
 	config->dInterFrameDelay   = config->dInterFrameDelay != -1 ? config->dInterFrameDelay : 10;
 	config->dBufferlength      = config->dBufferlength    != -1 ? config->dBufferlength    : 1376256;
 	config->debug              = config->debug            != -1 ? config->debug            : 0;

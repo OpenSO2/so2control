@@ -1,7 +1,15 @@
 /*
- * This file provides support for the Silicon Active Framegrabber via the
- * PHX SDK, which is not part of this program and has to be acquired and installed
- * separately.
+ * This file provides support for the Silicon Active framegrabber and
+ * the Hamamatsu C8484-C16 camera via the PHX SDK, which is not part of
+ * this program and has to be acquired and installed separately.
+ *
+ * The C8484-16C actually supports two modes for exposure:
+ * frame blanking
+ *   exposure time = n * 83.7ms   n = 1..12                =>  83.7 .. 1004.4ms
+ *   n = exposure time / 83700
+ * electronic shutter
+ *   exposure time = 12.4us + (n-1)*79.275us, n = 1..1055  =>  0.0124 .. 83.7268ms
+ *   n = (exposure time - 12.4)/79.275 + 1
  */
 #include<phx_api.h>
 #include<phx_os.h>
@@ -9,6 +17,11 @@
 #include"camera.h"
 
 /* prototypes for private functions */
+int set_mode_speed(tHandle, char, char[9]);
+int calc_mode_speed(double, double*, char *, char[9]);
+
+#include"exposure.c"
+
 void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params);
 static int sendMessage(tHandle hCamera, ui8 *inputBuffer);
 int setup_camera(sParameterStruct * sSO2Parameters);
@@ -29,58 +42,97 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 
 int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 {
-	log_debug("trigger phx cam %c", sSO2Parameters->identifier);
+	sSO2Parameters->fBufferReady = (1==0);
 
-/* FIXME: Comment */
 #pragma GCC diagnostic ignored "-Wpedantic"
 	PHX_Acquire(sSO2Parameters->hCamera, PHX_START, internalCallback);
 #pragma GCC diagnostic warning "-Wpedantic"
 
 	if (waiter) {
 		/* if theres no callback, this function will work synchronously
-		 * and wait for the return of
+		 * and wait for the return of the image buffer
 		 */
 		while (!sSO2Parameters->fBufferReady){
 			sleepMs(1);
 		}
+
+		camera_abort(sSO2Parameters);
 	}
 
 	return 0;
 }
 
+int camera_autosetExposure(sParameterStruct * sSO2Parameters, sConfigStruct * config)
+{
+	int status = 0;
+
+	status = getExposureTime(sSO2Parameters, config);
+	if (status) {
+		log_error("exposure time couldn't be retrieved");
+		return status;
+	}
+
+	status = camera_setExposure(sSO2Parameters);
+	if (status) {
+		log_error("exposure time wasn't set");
+		return status;
+	}
+
+	return status;
+}
+
 int camera_setExposure(sParameterStruct * sSO2Parameters)
 {
-	double exposureTime = sSO2Parameters->dExposureTime;	/* exposure time in parameter structure */
-	tHandle hCamera = sSO2Parameters->hCamera;	/* hardware handle for camera */
-	etStat eStat = PHX_OK;	/* Phoenix status variable */
-	int shutterSpeed = 1;	/* in case something went wrong this value is accepted by both modi */
+	double actualExposureTime;
+	double exposureTime = sSO2Parameters->dExposureTime;
+	etStat eStat = PHX_OK;
 	char speed[9];
-	ui8 * mode;
+	char m;
 
 	/* before doing anything check if exposure time is within the limits */
 	if (exposureTime < 2.4 || exposureTime > 1004400.) {
 		log_error("Exposure time declared in Configfile is out of range: 2.4us < Exposure Time > 1004.4ms");
 		return PHX_ERROR_OUT_OF_RANGE;
 	}
-
-	/* N normal, S Shutter, F frameblanking */
-	if (exposureTime <= 83560.) {
-		/* ELECTRONIC SHUTTER */
-		/* Shutter speed, 1 - 1055 */
-		shutterSpeed = round(((exposureTime - 2.4) / 79.275) + 1);
-		sprintf(speed, "SHT %d\r", shutterSpeed);
-		mode = (ui8*)"NMD S\r";
-		log_message("Camera uses electronic shutter mode. Exposure time is: %d ms", exposureTime);
+	calc_mode_speed(exposureTime, &actualExposureTime, &m, speed);
+	sSO2Parameters->dExposureTime = actualExposureTime; /* update struct to the actual exposure time*/
+	if(m == 'S'){
+		log_message("Camera %c uses electronic shutter. Exposure was set to approx. %f us which calculates to %f", sSO2Parameters->identifier, exposureTime, actualExposureTime);
 	} else {
-		/* FRAME BLANKING */
-		/* Shutter speed, 1 - 12 */
-		shutterSpeed = round(exposureTime / 83700.); /*FIXME: is this correct? */
-		sprintf(speed, "FBL %d\r", shutterSpeed);
-		mode = (ui8*)"NMD F\r";
-		log_message("Camera uses Frameblanking mode. Exposure time is: %d ms", exposureTime);
+		log_message("Camera %c uses frameblanking. Exposure was set to approx. %f us which calculates to %f", sSO2Parameters->identifier, exposureTime, actualExposureTime);
 	}
 
-	eStat = sendMessage(hCamera, mode);
+	eStat = set_mode_speed(sSO2Parameters->hCamera, m, speed);
+	return eStat;
+}
+
+int calc_mode_speed(double exposureTime, double * actualExposureTime, char *m, char speed[9])
+{
+	int n = 1;
+	/* S Shutter, F frameblanking */
+	if (exposureTime <= 83560.) {
+		/* ELECTRONIC SHUTTER, Shutter speed: 1 - 1055 */
+		n = round((exposureTime - 12.4)/79.275 + 1);
+		sprintf(speed, "SHT %d\r", n);
+		*m = 'S';
+		*actualExposureTime = 12.4 + (n-1)*79.275, n;
+	} else {
+		/* FRAME BLANKING, number of frames: 1 - 12 */
+		n = round(exposureTime / 83700.);
+		sprintf(speed, "FBL %d\r", n);
+		*m = 'F';
+		*actualExposureTime = n*83700, n;
+	}
+	return 0;
+}
+
+int set_mode_speed(tHandle hCamera, char m, char speed[9])
+{
+	etStat eStat = PHX_OK;
+	char mode[8];
+	sprintf(mode, "NMD %c\r", m);
+
+	eStat = sendMessage(hCamera, (ui8*)mode);
 	if (PHX_OK != eStat) {
 		log_error("Setting camera mode failed");
 		return eStat;
@@ -88,7 +140,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 
 	eStat = sendMessage(hCamera, (ui8*)speed);
 	if (PHX_OK != eStat) {
-		log_error("setting shutter to %d failed (exposuretime %d ms)", shutterSpeed, exposureTime);
+		log_error("setting shutter to %s failed", speed);
 		return eStat;
 	}
 	return eStat;
@@ -157,7 +209,8 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 		log_error("sending SHA M to camera was unsuccessfull");
 		return eStat;
 	}
-	/* contrast gain: high */
+	/* contrast enhancement gain: low */
+	/* CEG L CONTRAST ENHANCEMENT GAIN  (CEG L: 0dB) (CEG H: 14dB) */
 	eStat = sendMessage(hCamera, (ui8*)"CEG H\r");
 	if (PHX_OK != eStat) {
 		log_error("sending CEG H to camera was unsuccessfull");
@@ -190,9 +243,10 @@ void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params)
 		sSO2Parameters->stBuffer = buffythevampireslayer.pvAddress;
 		sSO2Parameters->hCamera = hCamera;
 		sSO2Parameters->fBufferReady = (1==1);
+	} else {
+		log_error("phx cllback called but frame was not aquired");
 	}
 }
-
 
 static int sendMessage(tHandle hCamera, ui8 *msg)
 {

@@ -461,8 +461,6 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	fp = fopen(headerfile, "ab");
 	if (fp != NULL) {
 		fprintf(fp, "dBufferlength %i\n", config->dBufferlength);
-		fprintf(fp, "dHistMinInterval %i\n", config->dHistMinInterval);
-		fprintf(fp, "dHistPercentage %i\n", config->dHistPercentage);
 		fprintf(fp, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
 		fprintf(fp, "dImageCounter %i\n", (int)config->dImageCounter);
 		fprintf(fp, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
@@ -584,8 +582,6 @@ int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *c
 	png_length = insertStringValue(png, "timestampAfter",     iso_date, png_length);
 
 	png_length = insertValue(png, "dBufferlength",      (float)config->dBufferlength,      png_length);
-	png_length = insertValue(png, "dHistMinInterval",   (float)config->dHistMinInterval,   png_length);
-	png_length = insertValue(png, "dHistPercentage",    (float)config->dHistPercentage,    png_length);
 	png_length = insertValue(png, "dDarkCurrent",       (float)sSO2Parameters->dDarkCurrent,       png_length);
 	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);

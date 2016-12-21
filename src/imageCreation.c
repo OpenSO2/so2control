@@ -8,7 +8,6 @@
 #include "log.h"
 #include "camera.h"
 #include "io.h"
-#include "exposureTimeControl.h"
 
 int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config);
 
@@ -21,23 +20,19 @@ int startAquisition(sParameterStruct * sParameters_A,
 	for (i = 0; i < config->noofimages || config->noofimages == -1; i++) {
 		if (i % config->darkframeintervall == 0){
 			aquire_darkframe(sParameters_A, sParameters_B, config);
-		}
-		if (i % 1000 == 0){
-			/* set exposure */
-			state = setExposureTime(sParameters_A, config);
-			if (state != 0) {
-				log_error("setExposureTime for cam B failed");
-				return 1;
-			}
-			log_message("exposure time for cam A set");
 
-			state = setExposureTime(sParameters_B, config);
+			state = camera_autosetExposure(sParameters_A, config);
 			if (state != 0) {
-				log_error("setExposureTime for cam B failed");
+				log_error("auto set exposure for cam A failed");
 				return 1;
 			}
-			log_message("exposure time for cam B set");
+			state = camera_autosetExposure(sParameters_B, config);
+			if (state != 0) {
+				log_error("auto set exposure for cam B failed");
+				return 1;
+			}
 		}
+
 		aquire(sParameters_A, sParameters_B, config);
 	}
 
