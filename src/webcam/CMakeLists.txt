@@ -54,6 +54,10 @@ include_directories(. ..)
 # create lib
 option(MOCK_WEBCAM "MOCK_WEBCAM" OFF)
 
+# in newer versions of openCV the c api is broken,
+# but we can compile as c++ to circumvent that issue
+#SET_SOURCE_FILES_PROPERTIES(../timehelpers.c  ./elpcam/webcam.c ./mock/webcam.c PROPERTIES LANGUAGE CXX)
+
 if(MOCK_WEBCAM)
 	message("=====MOCK_WEBCAM=======")
 	file(COPY mock/fixtures/ DESTINATION mock/fixtures/)

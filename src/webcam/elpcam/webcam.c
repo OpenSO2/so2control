@@ -18,8 +18,8 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, config->webcam_xRes);
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, config->webcam_yRes);
 
-	webcam->timestampBefore = malloc(sizeof(timeStruct));
-	webcam->timestampAfter = malloc(sizeof(timeStruct));
+	webcam->timestampBefore = (timeStruct*)malloc(sizeof(timeStruct));
+	webcam->timestampAfter = (timeStruct*)malloc(sizeof(timeStruct));
 
 	return 0;
 }
@@ -62,4 +62,3 @@ int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
-
