@@ -223,6 +223,9 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
+	/* start taking webcam images */
+	threads_webcam_start(&config, &webcam);
+
 	/* initiate spectrometer-shutter */
 	state = spectrometer_shutter_init(&config);
 	if (state != 0) {
