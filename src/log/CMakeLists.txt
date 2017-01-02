@@ -48,15 +48,5 @@ else()
 	add_definitions(-DWIN)
 endif()
 
-# include common
-include_directories( .. )
-
 # create lib
-option(MOCK_LOG "MOCK_LOG" OFF)
-
-if(MOCK_LOG)
-	message("=====MOCK_LOG=======")
-	add_library(log ../timehelpers.c  ./mock/log.c)
-else()
-	add_library(log ../timehelpers.c ./custom/log.c)
-endif()
+add_library(log ../timehelpers.c ./custom/log.c)

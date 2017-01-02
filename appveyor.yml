@@ -10,7 +10,6 @@ build_script:
   - cmake -G "Visual Studio 11 2012 Win64"
     -DCMAKE_BUILD_TYPE=Release
     -DMOCK_CAMERA=ON
-    -DMOCK_LOG=ON
     -DMOCK_FILTERWHEEL=ON
     -DOpenCV_DIR=c:\opencv\opencv\build
     .
