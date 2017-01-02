@@ -113,6 +113,10 @@ int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 	}
 }
 
+int camera_autosetExposure(sParameterStruct * sSO2Parameters, sConfigStruct *config){
+	return 0;
+}
+
 int camera_setExposure(sParameterStruct * sSO2Parameters)
 {
 	return 0;
