@@ -118,11 +118,6 @@ target_link_libraries( so2-camera comm )
 # dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# spectrometer executables
-add_executable( spectro src/spectro.c src/configurations.c )
-target_link_libraries( spectro spectrometer log spectrometer-shutter)
-
-
 ########################################################################
 # custom commands
 add_custom_target(checkstyle
