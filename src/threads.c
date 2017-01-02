@@ -96,9 +96,8 @@ void * threads_spectroscopy_run(void * args)
 		/* save spectrum */
 		status = io_spectrum_save(spectro, config);
 		if (status != 0) {
-			log_error("failed to write webcam image");
+			log_error("failed to write spectrum");
 		}
-		sleep(3);
 	}
 
 	#ifdef WIN
