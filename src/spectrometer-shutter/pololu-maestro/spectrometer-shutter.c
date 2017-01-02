@@ -86,7 +86,8 @@ int spectrometer_shutter_close(void)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectrometer_shutter_uninit(sConfigStruct * config)
 {
-	close(fd);
+	if(fd != -1)
+		return close(fd);
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
