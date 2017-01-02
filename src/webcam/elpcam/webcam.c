@@ -62,3 +62,4 @@ int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
+
