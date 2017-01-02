@@ -85,7 +85,6 @@ int filterwheel_send(int position)
 			log_debug("waited %i cycles per 100ms for filterwheel", i);
 		}
 	}
-	sleepMs(2000);
 	return 0;
 #else
 	/* Send specified text (remaining command line arguments) */
