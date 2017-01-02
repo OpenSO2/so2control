@@ -4,41 +4,44 @@
 
 int main(int argc, char *argv[])
 {
-	int noOfMeasurementsLeft = 1;
-	int integration_time_micros = 1;
-	char * filename;
 	int i;
 	FILE * pFile;
 	sSpectrometerStruct spectro;
 	sConfigStruct config;
 	int status = 0;
-	filename = argv[1];
 
-	if (argc != 4) {
-		printf("usage: spectrometer-cli <outputfile> <number of scans> <exposure time in ms>\n");
+	if (argc != 2 && argc != 3) {
+		printf("usage: spectrometer-cli <exposure time in ms> [<outputfile]\n");
 		return 1;
 	}
-	noOfMeasurementsLeft = strtol(argv[2], NULL, 10) + 1;
-	integration_time_micros = strtol(argv[3], NULL, 10) * 1000;
 
-	/* init */
-	status = spectrometer_init(&spectro);
+	if (argc == 3) {
+		pFile = fopen(argv[2], "wt");
+	} else {
+		pFile = stdout;
+	}
+
+	spectro.integration_time_micros = strtol(argv[1], NULL, 10) * 1000;
+
+	status = spectroscopy_init(&spectro);
 	if(status){
 		printf("init spectrometer failed\n");
 		return 1;
 	}
 
-	spectroscopy_meanAndSubstract(noOfMeasurementsLeft, integration_time_micros, &spectro);
+	status = spectrometer_get(&spectro);
+	if(status){
+		printf("could not get spectrum\n");
+		return 1;
+	}
 
-	printf("spectrum is %i long\n", spectro.spectrum_length);
-	pFile = fopen(filename, "wt");
+	//~ printf("spectrum is %i long\n", spectro.spectrum_length);
 	if (pFile){
-		printf("write to %s\n", filename);
 		for(i = 0; i < spectro.spectrum_length; i++){
 			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.lastSpectrum[i]);
 		}
 	} else{
-		printf("Something wrong writing to File.\n");
+		printf("Something wrong writing to file.\n");
 	}
 
 	/* uninit */

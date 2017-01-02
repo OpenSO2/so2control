@@ -71,6 +71,10 @@ else( )
 	target_link_libraries(spectrometer usb seabreeze)
 endif()
 
+
+file(COPY spectrometerlive.py DESTINATION .)
+
+
 if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(spectrometer-cli ${M_LIB})
