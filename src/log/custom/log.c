@@ -79,7 +79,7 @@ int log_debug(char *message, ...)
 {
 	va_list args;
 
-	if(conf && conf->debug == 0) return 0;
+	if(!conf || conf->debug) return 0;
 
 	va_start(args, message);
 	return logg("DEBUG", message, args);
