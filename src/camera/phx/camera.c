@@ -211,6 +211,7 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 	}
 	/* contrast enhancement gain: low */
 	/* CEG L CONTRAST ENHANCEMENT GAIN  (CEG L: 0dB) (CEG H: 14dB) */
+	log_message("set contrast enhancement gain to HIGH");
 	eStat = sendMessage(hCamera, (ui8*)"CEG H\r");
 	if (PHX_OK != eStat) {
 		log_error("sending CEG H to camera was unsuccessfull");
@@ -244,7 +245,7 @@ void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params)
 		sSO2Parameters->hCamera = hCamera;
 		sSO2Parameters->fBufferReady = (1==1);
 	} else {
-		log_error("phx cllback called but frame was not aquired");
+		log_error("phx callback called but frame was not aquired");
 	}
 }
 
