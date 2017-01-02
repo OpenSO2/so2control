@@ -1,5 +1,5 @@
-#ifndef _timeh_
-#define _timeh_
+#ifndef _timehelpersh_
+#define _timehelpersh_
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
