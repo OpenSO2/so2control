@@ -106,7 +106,6 @@ Compilation flags can be used to controll the compilation of the program
 
 * `DEBUG` - increases the logging output. Use as `cmake -DDEBUG=ON` or `-DDEBUG=OFF`
 * `MOCK_CAMERA` - Replaces the camera code with a mock that always returns a dummy picture. Useful for testing. Use as `cmake -DMOCK_CAMERA=ON` or `-DMOCK_CAMERA=OFF`.
-* `MOCK_LOG` - Prevents the creation and the writing to log files, which is useful for unit testing. Use as `cmake -DMOCK_LOG=ON` or `-DMOCK_LOG=OFF`.
 
 
 Coding style

@@ -27,6 +27,7 @@
 #include<opencv/highgui.h>
 #include "configurations.h"
 #include "../io.h"
+#include "timehelpers.h"
 #include "make_png_header.c"
 #include "comm.h"
 
@@ -53,12 +54,10 @@ int io_init(sConfigStruct * config)
 {
 	#define SUBFOLDER_STR_LEN 18
 	int status;
-	static time_t time_ptr;
-	static struct tm now;
+	static timeStruct now;
 	struct stat st = {0};
 	char * subfolder = (char *)malloc(SUBFOLDER_STR_LEN + 1);
-	time(&time_ptr);
-	now = *gmtime(&time_ptr);
+	getTime(&now);
 
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
@@ -74,11 +73,11 @@ int io_init(sConfigStruct * config)
 	// eg. /2016-08-08_12_12/
 	//     123456789012345678
 	sprintf(subfolder, "/%04d-%02d-%02d_%02d_%02d/",
-		now.tm_year + 1900,
-		now.tm_mon,
-		now.tm_mday,
-		now.tm_hour,
-		now.tm_min);
+		now.year,
+		now.mon,
+		now.day,
+		now.hour,
+		now.min);
 
 	config->cImagePath = (char *) realloc(config->cImagePath, strlen(config->cImagePath) + strlen(subfolder) + 1);
 

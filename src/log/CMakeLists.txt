@@ -37,7 +37,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
 	add_definitions("-Wbad-function-cast")
 	add_definitions("-Wnested-externs")
 	add_definitions("-Wold-style-definition")
-	add_definitions("-std=c99")
 	add_definitions("-Wmissing-declarations")
 	add_definitions("-Wdeclaration-after-statement")
 endif()
@@ -49,15 +48,5 @@ else()
 	add_definitions(-DWIN)
 endif()
 
-# include self
-include_directories( . .. )
-
 # create lib
-option(MOCK_LOG "MOCK_LOG" OFF)
-
-if(MOCK_LOG)
-	message("=====MOCK_LOG=======")
-	add_library(log ./mock/log.c)
-else()
-	add_library(log ./custom/log.c)
-endif()
+add_library(log ../timehelpers.c ./custom/log.c)

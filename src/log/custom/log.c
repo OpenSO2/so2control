@@ -3,6 +3,7 @@
 #include<time.h>
 #include<sys/stat.h>
 #include "log.h"
+#include "timehelpers.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -10,18 +11,17 @@
 
 static sConfigStruct * conf = NULL;
 static FILE *logfile = NULL;
+static timeStruct t;
 
 int logg(char * type, char *message, va_list args);
 
 int log_init(sConfigStruct * config)
 {
-	static time_t time_ptr;
-	static struct tm t;
 	static char nameLogFile[LOG_BUFFER_SIZE];
 	struct stat st = {0};
+
 	conf = config;
-	time(&time_ptr);
-	t = *gmtime(&time_ptr);
+	getTime(&t);
 
 	/* check if log folder exists and create if not */
 	if (stat("logs/", &st) == -1) {
@@ -29,7 +29,7 @@ int log_init(sConfigStruct * config)
 	}
 
 	snprintf(nameLogFile, LOG_BUFFER_SIZE, "logs/log_%04d_%02d_%02d_%02d_%02d.txt",
-		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min);
+		t.year, t.mon, t.day, t.hour, t.min);
 
 	logfile = fopen(nameLogFile, "a");
 	if (NULL == logfile) {
@@ -54,7 +54,7 @@ int log_init(sConfigStruct * config)
 	log_message("*                                         *");
 	log_message("*******************************************");
 	log_message("Today is %02d.%02d.%04d %02d:%02d",
-		t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min);
+		t.day, t.mon, t.year, t.hour, t.min);
 
 	return 0;
 }
@@ -88,19 +88,17 @@ int log_debug(char *message, ...)
 
 int logg(char * type, char *message, va_list args)
 {
-	static time_t time_ptr;
-	static struct tm t;
 	static char buffer[LOG_BUFFER_SIZE];
 	static char buffer2[LOG_BUFFER_SIZE];
-	time(&time_ptr);
-	t = *gmtime(&time_ptr);
+
+	getTime(&t);
 
 	// resolve placeholders message
 	vsnprintf(buffer, LOG_BUFFER_SIZE, message, args);
 
 	// generate final log string
 	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d | %s | %s\n",
-		t.tm_hour, t.tm_min, t.tm_sec, type, buffer);
+		t.hour, t.min, t.sec, type, buffer);
 
 	if(strcmp(type, "ERROR"))
 		fprintf(stdout, "%s", buffer2);
