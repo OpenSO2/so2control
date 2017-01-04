@@ -1,15 +1,9 @@
 /*
- *
  * live cycle
  *
  * spectro init
- *
  * spectro get
- * spectro get
- * spectro get
- *
- * spectro calib
- *
+ * spectro uninit
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,9 +23,7 @@
 
 static long deviceID;
 static long featureID;
-/*
- *
- */
+
 int spectrometer_init(sSpectrometerStruct * spectro){
 	int error_code = 0;
 	int number_of_ids;
@@ -44,7 +36,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 
 	found_devices = sbapi_probe_devices();
 	if(found_devices == 0){
-		log_debug("sbapi_probe_devices: %i", status);
+		log_error("sbapi_probe_devices: %i", status);
 		return 1;
 	}
 	log_debug("Found %i devices", found_devices);
@@ -61,7 +53,6 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	log_debug("ID of first device is %lu of %i device(s)", ids[0], number_of_ids);
 	deviceID = ids[0];
 
-
 	status = sbapi_open_device(deviceID, &error_code);
 	if(status){
 		const char* error = sbapi_get_error_string(error_code);
@@ -72,7 +63,7 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 
 	number_of_spectrometer_features = sbapi_get_number_of_spectrometer_features(deviceID, &error_code);
 	if(error_code != 0){
-		log_debug("sbapi_get_number_of_spectrometer_features. status: %i, error_code: %i", status, error_code);
+		log_error("sbapi_get_number_of_spectrometer_features. status: %i, error_code: %i", status, error_code);
 		return 1;
 	}
 	log_debug("Spectrometer has %i features", number_of_spectrometer_features);
@@ -80,18 +71,15 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	long features[number_of_spectrometer_features];
 	sbapi_get_spectrometer_features(deviceID, &error_code, features, number_of_spectrometer_features);
 	if(error_code != 0){
-		log_debug("sbapi_get_spectrometer_features. error_code: %i", error_code);
+		log_error("sbapi_get_spectrometer_features. error_code: %i", error_code);
 		return 1;
 	}
 	featureID = features[0];
 	log_debug("ID of first feature is %lu", featureID);
 
-	/*
-	 *
-	 */
 	spectro->spectrum_length = sbapi_spectrometer_get_formatted_spectrum_length(deviceID, featureID, &error_code);
 	if(error_code != 0){
-		log_debug("sbapi_spectrometer_get_formatted_spectrum_length. error_code: %i", error_code);
+		log_error("sbapi_spectrometer_get_formatted_spectrum_length. error_code: %i", error_code);
 		return 1;
 	}
 	log_debug("Spectrometer spectrum length is %i", spectro->spectrum_length);
@@ -99,13 +87,13 @@ int spectrometer_init(sSpectrometerStruct * spectro){
 	spectro->lastSpectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
 	spectro->wavelengths = (double *)calloc(spectro->spectrum_length, sizeof(double));
 
-	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, spectro->wavelengths, spectro->wavelengths);
+	sbapi_spectrometer_get_wavelengths(deviceID, featureID, &error_code, spectro->wavelengths, spectro->spectrum_length);
 	if(error_code != 0){
-		log_debug("sbapi_spectrometer_get_wavelengths. error_code: %i", error_code);
+		log_error("sbapi_spectrometer_get_wavelengths. error_code: %i", error_code);
 		return 1;
 	}
 
-	spectro->max = 4096;
+	spectro->max = 65535; /* 16bit */
 
 	spectro->timestampBefore = malloc(sizeof(timeStruct));
 	spectro->timestampAfter = malloc(sizeof(timeStruct));
@@ -125,24 +113,25 @@ int spectrometer_get(sSpectrometerStruct * spectro)
 	sbapi_spectrometer_set_integration_time_micros(deviceID, featureID, &error_code, spectro->integration_time_micros);
 	if(error_code != 0){
 		const char* error = sbapi_get_error_string(error_code);
-		log_debug("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s", error_code, error);
+		log_error("sbapi_spectrometer_set_integration_time_micros. error_code: %i, %s", error_code, error);
 		return 1;
 	}
 
-	//FIXME: Explain
-
+	/* For some reason (might be a bug in the lib), the the spectrum is
+	 * returned quicker than the exposure time would allow.
+	 * Measure the return time and retry if necessary.
+	 */
 	do {
 		time = getTimeStamp();
 		sbapi_spectrometer_get_formatted_spectrum(deviceID, featureID, &error_code, spectro->lastSpectrum, spectro->spectrum_length);
 		if(error_code != 0){
 			const char* error = sbapi_get_error_string(error_code);
-			log_error("failed to get formatted spectrum");
-			log_debug("sbapi_spectrometer_get_formatted_spectrum. error_code: %i, translates to %s", error_code, error);
+			log_error("failed to get formatted spectrum: sbapi_spectrometer_get_formatted_spectrum. error_code: %i, translates to %s", error_code, error);
 			return 1;
 		}
 		log_debug("spectrum took %i ms; was supposed to take %i", (int)(getTimeStamp() - time), (int)(spectro->integration_time_micros/1000));
 
-	} while(getTimeStamp() - time < (spectro->integration_time_micros/1000)*.95);
+	} while(getTimeStamp() - time < (spectro->integration_time_micros/1000)*.95 || getTimeStamp() - time > (spectro->integration_time_micros/1000)*1.1);
 
 	return 0;
 }

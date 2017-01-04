@@ -79,7 +79,7 @@ int log_debug(char *message, ...)
 {
 	va_list args;
 
-	if(!conf || conf->debug) return 0;
+	if(!conf || conf->debug == 0) return 0;
 
 	va_start(args, message);
 	return logg("DEBUG", message, args);
@@ -93,10 +93,10 @@ int logg(char * type, char *message, va_list args)
 
 	getTime(&t);
 
-	// resolve placeholders message
+	/* resolve placeholders message */
 	vsnprintf(buffer, LOG_BUFFER_SIZE, message, args);
 
-	// generate final log string
+	/* generate final log string */
 	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d | %s | %s\n",
 		t.hour, t.min, t.sec, type, buffer);
 

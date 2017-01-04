@@ -7,19 +7,14 @@
 #include "spectrometer.h"
 #include "log.h"
 
-static int noOfMeasurementsLeft = 0;
-static int noOfMeasurements = 0;
-double * spectrum;
-
 int spectroscopy_init(sSpectrometerStruct * spectro)
 {
 	int status = spectrometer_init(spectro);
 	if(status){
-		printf("init spectroscopy failed\n");
+		log_error("init spectroscopy failed");
 		return 1;
 	}
 
-	spectrum = calloc(spectro->spectrum_length, sizeof(double));
 	spectro->electronic_offset = calloc(spectro->spectrum_length, sizeof(double));
 	spectro->dark_current = calloc(spectro->spectrum_length, sizeof(double));
 
@@ -40,7 +35,7 @@ double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 	int i = 0;
 	int l = spectro->spectrum_length;
 	double * wavelengths = spectro->wavelengths;
-	double summ;
+	double summ = 0;
 	while( l-- ){
 		if(wavelengths[l] > roi_lower && wavelengths[l] < roi_upper){
 			summ += spectro->lastSpectrum[l];
@@ -85,27 +80,23 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 	int i;
 	int dark_current_integration_time_s = 60;
 
-	printf("… Measuring electronic offset \n");
-	// measure electronic offset
+	log_message("Spectroscopy: Measuring electronic offset");
+	/* measure electronic offset */
 	spectroscopy_meanAndSubstract(10000, 3000, spectro);
 
-	// copy last spectrum into electronic_offset buffer
+	/* copy last spectrum into electronic_offset buffer */
 	for (i = 0; i < spectro->spectrum_length; i++) {
-		spectro->electronic_offset[i] = spectrum[i];
-
+		spectro->electronic_offset[i] = spectro->lastSpectrum[i];
 		spectro->lastSpectrum[i] = 0;
-		spectrum[i] = 0.;
 	}
 
-	printf("… Measuring dark current \n");
+	log_message("Spectroscopy: Measuring dark current");
 	spectroscopy_meanAndSubstract(1, dark_current_integration_time_s * 1000 * 1000, spectro);
 
-	// copy last spectrum into dark_current buffer
+	/* copy last spectrum into dark_current buffer */
 	for (i = 0; i < spectro->spectrum_length; i++) {
 		spectro->dark_current[i] = spectro->lastSpectrum[i];
-
 		spectro->lastSpectrum[i] = 0;
-		spectrum[i] = 0.;
 	}
 
 	return 0;
@@ -114,7 +105,7 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 {
 	double photon_noise, diff;
-	double spectrum1[spectro->spectrum_length];
+	double spectrum[spectro->spectrum_length];
 	int i, l;
 
 	l = spectro->spectrum_length;
@@ -123,7 +114,7 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
 
 	for(i=0; i<l; i++)
-		spectrum1[i] = spectro->lastSpectrum[i];
+		spectrum[i] = spectro->lastSpectrum[i];
 
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
 
@@ -131,39 +122,43 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	// calc average difference
 	diff = 0;
 	for(i=0; i<l; i++)
-		diff += abs( spectrum1[i] - spectro->lastSpectrum[i] );
+		diff += abs( spectrum[i] - spectro->lastSpectrum[i] );
 
 	// sigma_I = sigma_D / √2
 	photon_noise = diff / M_SQRT2;
-	log_debug("photon noise is %f", photon_noise);
+	log_debug("Spectroscopy: photon noise is %f", photon_noise);
 
 	return photon_noise;
 }
 
-// FIXME: WHERE IS SPECTRUM SAVED?
-
+/*
+ * After this operation the result is saved in spectro->lastSpectrum
+ * call io_spectrum_save(spectro, config) to save to disk
+ */
 int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
 {
 	int i, j;
 	spectro->integration_time_micros = integration_time_micros;
-	noOfMeasurements = number_of_spectra;
-	noOfMeasurementsLeft = noOfMeasurements;
+	int noOfMeasurements = number_of_spectra;
+
+	double * spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectrum[i] = 0;
+	}
 
 	for( j = 0; j < noOfMeasurements; j++){
 		spectrometer_get(spectro);
 
 		for (i = 0; i < spectro->spectrum_length; i++) {
-			//~ printf("applying electronic offset correction: %f\n", spectro->electronic_offset[i]);
 			spectro->lastSpectrum[i] -= spectro->electronic_offset[i]; // substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
 
-			//~ printf("applying dark current correction: %f of %f to %f \n", spectro->dark_current[i] * spectro->integration_time_micros/60000000, spectro->dark_current[i], spectro->lastSpectrum[i]);
 			spectro->lastSpectrum[i] -= spectro->dark_current[i] * spectro->integration_time_micros/60000000; // substract dark current, scaled by integration time
 
 			spectrum[i] += spectro->lastSpectrum[i] / noOfMeasurements;
 		}
- 	}
+	}
 
-	printf("✓ Measurement done\n\n");
+	free(spectrum);
 
 	return 0;
 }
@@ -175,13 +170,14 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 int spectroscopy_measure(sSpectrometerStruct * spectro)
 {
 	spectroscopy_meanAndSubstract(1, spectro->integration_time_micros, spectro);
+
+	log_message("Spectroscopy: measurement done");
 	return 0;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectroscopy_uninit(sSpectrometerStruct * spectro)
 {
-	free(spectrum);
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"

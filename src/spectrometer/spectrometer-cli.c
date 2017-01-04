@@ -21,13 +21,13 @@ int main(int argc, char *argv[])
 		pFile = stdout;
 	}
 
-	spectro.integration_time_micros = strtol(argv[1], NULL, 10) * 1000;
-
 	status = spectroscopy_init(&spectro);
 	if(status){
 		printf("init spectrometer failed\n");
 		return 1;
 	}
+
+	spectro.integration_time_micros = strtol(argv[1], NULL, 10) * 1000;
 
 	status = spectrometer_get(&spectro);
 	if(status){
@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	//~ printf("spectrum is %i long\n", spectro.spectrum_length);
 	if (pFile){
 		for(i = 0; i < spectro.spectrum_length; i++){
 			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.lastSpectrum[i]);
