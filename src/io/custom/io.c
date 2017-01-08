@@ -371,8 +371,8 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		for(i = 0; i < spectro->spectrum_length; i++){
 			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
 		}
+		fclose(f);
 	}
-	fclose(f);
 
 	// FIXME: dark current?
 	comm_set_buffer("spc", (char*)spectro->dark_current, spectro->spectrum_length*sizeof(char));
@@ -388,8 +388,8 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(spectro->timestampAfter, iso_date);
 		fprintf(f, "timestampAfter %s\n", iso_date);
+		fclose(f);
 	}
-	fclose(f);
 
 	return 0;
 }
