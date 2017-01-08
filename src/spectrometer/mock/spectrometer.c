@@ -69,6 +69,7 @@ int spectrometer_uninit(sConfigStruct * config)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectrometer_get(sSpectrometerStruct * spectro)
 {
+	sleep(1);
 	spectro->lastSpectrum = spectrum;
 	spectro->wavelengths = wavelengths;
 
