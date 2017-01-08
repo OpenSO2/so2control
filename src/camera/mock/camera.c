@@ -107,6 +107,7 @@ int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 	stBuffer = getBufferFromFile(filename, 0);
 	if (stBuffer){
 		sSO2Parameters->stBuffer = stBuffer;
+		sSO2Parameters->fBufferReady = 1;
 		return 0;
 	} else {
 		return 1;
