@@ -56,9 +56,18 @@ int webcam_get(sWebCamStruct * webcam)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 {
-	free(buffer);
-	free(webcam->timestampBefore);
-	free(webcam->timestampAfter);
+	if (buffer != NULL) {
+		free(buffer);
+	}
+
+	if (webcam->timestampBefore != NULL) {
+		free(webcam->timestampBefore);
+	}
+
+	if (webcam->timestampAfter != NULL) {
+		free(webcam->timestampAfter);
+	}
+
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
