@@ -62,6 +62,7 @@ int io_init(sConfigStruct * config)
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
 		log_debug("skip io init");
+		free(subfolder);
 		return 0;
 	}
 
@@ -222,6 +223,10 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
 		log_debug("do not save png webcam image");
+
+		/* cleanup */
+		free(buffer);
+
 		return 0;
 	}
 
@@ -254,8 +259,6 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 		state = 1;
 		log_error("Couldn't open png file");
 	}
-
-	comm_set_buffer("cam", buffer, writen_bytes);
 
 	/* cleanup */
 	free(buffer);
@@ -373,9 +376,6 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		}
 		fclose(f);
 	}
-
-	// FIXME: dark current?
-	comm_set_buffer("spc", (char*)spectro->dark_current, spectro->spectrum_length*sizeof(char));
 
 	/* save meta */
 	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum_meta", "txt");
@@ -538,6 +538,10 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
 		log_debug("do not save png image");
+
+		/* cleanup */
+		free(buffer);
+
 		return 0;
 	}
 
@@ -565,8 +569,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		state = 1;
 		log_error("Couldn't open png file");
 	}
-
-	comm_set_buffer(camname, buffer, writen_bytes);
 
 	/* cleanup */
 	free(buffer);

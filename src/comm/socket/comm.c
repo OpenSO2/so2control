@@ -22,19 +22,18 @@
 #include "comm.h"
 #include "log.h"
 
-int handle_socket(int newsockfd);
-int send_all(int socket, char *ptr, size_t length);
-int send_buf(int newsockfd, char *cmd, int size);
+int handle_socket(int);
+int send_all(int, char *, size_t);
+int send_buf(int, char *);
 int init(int sockfd);
-int recv_all(int socket, char *ptr, size_t length);
-void kill_socket_processes(int reason);
-char *get_buf(char *cmd, int size);
+int recv_all(int, char *, size_t);
+void kill_socket_processes(int);
 
 pid_t *socket_pids;
 int socket_pids_length = 0;
 int *sockets;
 int sockets_length;
-pid_t accept_pid;
+pid_t accept_pid = 0;
 
 typedef struct {
 	int topSize;
@@ -43,14 +42,14 @@ typedef struct {
 	int spcSize;
 	int readLock;
 	int writeLock;
+	char * top;
+	char * bot;
+	char * cam;
+	char * spc;
 } buffersStruct;
 
 static buffersStruct *buffers;
 
-char *buffers_top;
-char *buffers_bot;
-char *buffers_cam;
-char *buffers_spc;
 
 void kill_socket_processes(int reason)
 {
@@ -106,44 +105,24 @@ int recv_all(int socket, char *ptr, size_t length)
 	return 0;
 }
 
-char *get_buf(char *cmd, int size)
-{
-	int fd;
-	char file[13];
-	char *base = "/buffers.";
-	memset(file, '\0', sizeof(file));
-	strncat(file, base, 9);
-	strncat(file, cmd, 3);
-
-	fd = shm_open(file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	ftruncate(fd, size * sizeof(char));
-	return (char *) mmap(NULL, size * sizeof(char), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-}
-
 int comm_init(sConfigStruct * config)
 {
-	int fd;
 	int sockfd;
 	struct sockaddr_in serv_addr;
 
 	buffers = (buffersStruct *) mmap(NULL, sizeof *buffers, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-	fd = shm_open("/buffers.top", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	buffers_top = (char *) mmap(NULL, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	// FIXME:
+	buffers->topSize = 100000000;
+	buffers->botSize = 100000000;
+	buffers->camSize = 100000000;
+	buffers->spcSize = 100000000;
 
-	fd = shm_open("/buffers.bot", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	buffers_bot = (char *) mmap(NULL, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	buffers->top = (char *) mmap(NULL, buffers->topSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->bot = (char *) mmap(NULL, buffers->botSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->cam = (char *) mmap(NULL, buffers->camSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->spc = (char *) mmap(NULL, buffers->spcSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-	fd = shm_open("/buffers.cam", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	buffers_cam = (char *) mmap(NULL, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	fd = shm_open("/buffers.spc", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	buffers_spc = (char *) mmap(NULL, 1, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	buffers->topSize = 1;
-	buffers->botSize = 1;
-	buffers->camSize = 1;
-	buffers->spcSize = 1;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0) {
@@ -253,12 +232,16 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 
 	/* set size for each type of buffer */
 	if (strncmp(cmd, "top", 3) == 0) {
+		buf = buffers->top;
 		buffers->topSize = size;
 	} else if (strncmp(cmd, "bot", 3) == 0) {
+		buf = buffers->bot;
 		buffers->botSize = size;
 	} else if (strncmp(cmd, "cam", 3) == 0) {
+		buf = buffers->cam;
 		buffers->camSize = size;
 	} else if (strncmp(cmd, "spc", 3) == 0) {
+		buf = buffers->spc;
 		buffers->spcSize = size;
 	} else {
 		fprintf(stderr, "incorrect buffer name\n");
@@ -266,7 +249,6 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 		return -1;
 	}
 
-	buf = get_buf(cmd, size);
 	memcpy(buf, buffer, size);
 
 	/* release lock */
@@ -275,15 +257,32 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 	return 0;
 }
 
-int send_buf(int newsockfd, char *cmd, int size)
+int send_buf(int newsockfd, char *cmd)
 {
 	int n;
+	int size;
 	char *buf;
 
-	log_debug("Sending Picture Size (%i)", size);
+	if (strncmp(cmd, "top", 3) == 0) {
+		buf = buffers->top;
+		size = buffers->topSize;
+	} else if (strncmp(cmd, "bot", 3) == 0) {
+		buf = buffers->bot;
+		size = buffers->botSize;
+	} else if (strncmp(cmd, "cam", 3) == 0) {
+		buf = buffers->cam;
+		size = buffers->camSize;
+	} else if (strncmp(cmd, "spc", 3) == 0) {
+		buf = buffers->spc;
+		size = buffers->spcSize;
+	} else {
+		log_error("incorrect buffer name");
+		return -1;
+	}
+
+	log_debug("Sending picture size (%i)", size);
 	write(newsockfd, &size, sizeof(size));
 
-	buf = get_buf(cmd, size);
 	n = send_all(newsockfd, buf, size);
 	if (n < 0) {
 		log_error("ERROR writing to socket");
@@ -315,6 +314,8 @@ int handle_socket(int newsockfd)
 		} else if (n == 0) {
 			log_message("socket %i was closed by peer", newsockfd);
 			return 0;
+		} else if (n != size){
+			log_error("received message was incomplete");
 		}
 
 		log_debug("received command '%s' of length %i", cmd, size);
@@ -330,13 +331,13 @@ int handle_socket(int newsockfd)
 		 */
 		buffers->readLock = 1;
 		if (strncmp(cmd, "top", 3) == 0) {
-			send_buf(newsockfd, cmd, buffers->topSize);
+			send_buf(newsockfd, cmd);
 		} else if (strncmp(cmd, "bot", 3) == 0) {
-			send_buf(newsockfd, cmd, buffers->botSize);
+			send_buf(newsockfd, cmd);
 		} else if (strncmp(cmd, "cam", 3) == 0) {
-			send_buf(newsockfd, cmd, buffers->camSize);
+			send_buf(newsockfd, cmd);
 		} else if (strncmp(cmd, "spc", 3) == 0) {
-			send_buf(newsockfd, cmd, buffers->spcSize);
+			send_buf(newsockfd, cmd);
 		} else {
 			log_message("I did not understand this command: %s", cmd);
 		}
@@ -351,18 +352,14 @@ int handle_socket(int newsockfd)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int comm_uninit(sConfigStruct * config)
 {
-	kill(accept_pid, SIGTERM);
-	waitpid(accept_pid, NULL, 0);
 
-	/* cleanup mapped memory */
-	shm_unlink("/buffers.top");
-	shm_unlink("/buffers.bot");
-	shm_unlink("/buffers.cam");
-	shm_unlink("/buffers.spc");
+	if(accept_pid){
+		kill(accept_pid, SIGTERM);
+		waitpid(accept_pid, NULL, 0);
+	}
 
 	free(socket_pids);
 
 	return 0;
 }
-
 #pragma GCC diagnostic warning "-Wunused-parameter"
