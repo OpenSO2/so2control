@@ -1,0 +1,13 @@
+image: gcc
+
+build:
+  stage: build
+  before_script:
+     - whoami
+     - sudo apt-get install -y cmake libopencv-dev libcv-dev libhighgui-dev pngcheck valgrind  
+  script: 
+    - mkdir build
+    - cd build
+    - cmake .. -DMOCK_SPECTROMETER=ON -DMOCK_SPECTROMETER_SHUTTER=ON -DMOCK_WEBCAM=ON -DMOCK_CAMERA=ON -DMOCK_FILTERWHEEL=ON
+    - cmake --build .
+    - ctest --output-on-failure .
