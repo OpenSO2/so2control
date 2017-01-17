@@ -70,7 +70,6 @@ int main(int argc, char *argv[])
 
 	parse_filename_to_timeStruct(infile, &time);
 
-	sSO2Parameters.dTriggerPulseWidth = 15;
 	sSO2Parameters.dExposureTime = 0;
 	sSO2Parameters.dDarkCurrent = 0;
 	sSO2Parameters.identifier = strstr(infile, "top") ? 'a' : 'b';

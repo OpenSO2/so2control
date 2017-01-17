@@ -12,8 +12,6 @@ pngcheck -t %file% | %check_cmd% /c:"dImageCounter: 0.000000"
 if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dInterFrameDelay: 10.000000"
 if errorlevel 1 exit 1
-pngcheck -t %file% | %check_cmd% /c:"dTriggerPulseWidth: 15.000000"
-if errorlevel 1 exit 1
 REM pngcheck -t %file% | %check_cmd% /c:"dExposureTime: 0.000000"
 if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dFixTime: 0.000000"

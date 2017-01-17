@@ -12,8 +12,6 @@ if errorlevel 1 exit 1
 if errorlevel 1 exit 1
 %check_cmd% /c:"dInterFrameDelay 10" %file%
 if errorlevel 1 exit 1
-%check_cmd% /c:"dTriggerPulseWidth 15" %file%
-if errorlevel 1 exit 1
 REM %check_cmd% /c:"dExposureTime 0.000000" %file%
 if errorlevel 1 exit 1
 %check_cmd% /c:"dFixTime 0" %file%

@@ -12,6 +12,5 @@ $check_cmd "dBufferlength 1376256" $file
 $check_cmd "dDarkCurrent " $file
 $check_cmd "dImageCounter 0" $file
 $check_cmd "dInterFrameDelay 10" $file
-$check_cmd "dTriggerPulseWidth 15" $file
 $check_cmd "dExposureTime 0.000000" $file
 $check_cmd "dFixTime 0" $file

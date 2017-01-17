@@ -126,9 +126,6 @@ typedef struct {
 	/* Timestamp taken after the image buffer has been returned */
 	timeStruct *timestampAfter;
 
-	/* length of the triggerpulse in [ms] */
-	unsigned long dTriggerPulseWidth;
-
 	/* contains the Exposuretime in [ms] */
 	double dExposureTime;
 

@@ -472,7 +472,6 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		fprintf(fp, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
 		fprintf(fp, "dImageCounter %i\n", (int)config->dImageCounter);
 		fprintf(fp, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
-		fprintf(fp, "dTriggerPulseWidth %i\n", (int)sSO2Parameters->dTriggerPulseWidth);
 		fprintf(fp, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
 		fprintf(fp, "cConfigFileName %s\n", config->cConfigFileName);
 		fprintf(fp, "cFileNamePrefix %s\n", config->cFileNamePrefix);
@@ -597,7 +596,6 @@ int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *c
 	png_length = insertValue(png, "dDarkCurrent",       (float)sSO2Parameters->dDarkCurrent,       png_length);
 	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
-	png_length = insertValue(png, "dTriggerPulseWidth", (float)sSO2Parameters->dTriggerPulseWidth, png_length);
 	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
 	png_length = insertValue(png, "dFixTime",           (float)config->dFixTime,           png_length);
 
