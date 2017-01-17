@@ -58,10 +58,9 @@ file(COPY fixtures/ DESTINATION fixtures/)
 if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(comm ${M_LIB})
+	find_library(RT_LIB rt)
+	target_link_libraries(comm ${RT_LIB})
 endif()
-
-target_link_libraries(comm rt)
-
 
 # create executables
 add_executable(comm-cli comm-cli.c)

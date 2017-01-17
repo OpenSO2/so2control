@@ -50,3 +50,8 @@ endif()
 
 # create lib
 add_library(log ../timehelpers.c ./custom/log.c)
+
+if( ${UNIX} )
+	find_library(M_LIB m)
+	target_link_libraries(log ${M_LIB})
+endif()
