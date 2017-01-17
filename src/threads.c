@@ -55,6 +55,8 @@ void * threads_webcam_run(void * args)
 	int status;
 	sWebCamStruct * webcam = ((struct webcam_struct*) args)->webcam;
 	sConfigStruct * config = ((struct webcam_struct*) args)->config;
+	int oldtype;
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
 	while( getWebcamRunning() ){
 		getTime(webcam->timestampBefore);
@@ -131,6 +133,8 @@ void * threads_spectroscopy_run(void * args)
 	int status;
 	sSpectrometerStruct * spectro = ((struct spectroscopy_struct*) args)->spectro;
 	sConfigStruct * config = ((struct spectroscopy_struct*) args)->config;
+	int oldtype;
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
 	while( getSpectroscopyRunning() ){
 		getTime(spectro->timestampBefore);
