@@ -88,6 +88,8 @@ target_link_libraries(io-cli log comm)
 if( ${UNIX} )
 	find_library(M_LIB m)
 	target_link_libraries(io-cli ${M_LIB})
+	target_link_libraries(webcam-raw2png ${M_LIB})
+	target_link_libraries(camera-raw2png ${M_LIB})
 endif()
 
 ########################################################################

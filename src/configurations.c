@@ -231,6 +231,7 @@ void config_load_default(sConfigStruct *config)
 	config->filterwheel_device = strlen(config->filterwheel_device) ? config->filterwheel_device : "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02PNA1-if00-port0";
 	config->cImagePath         = strlen(config->cImagePath)         ? config->cImagePath         : "";
 	config->cFileNamePrefix    = strlen(config->cFileNamePrefix)    ? config->cFileNamePrefix    : "";
+	config->createsubfolders = 1;
 }
 
 char * getString(char * source)

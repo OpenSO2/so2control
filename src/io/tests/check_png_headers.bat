@@ -6,10 +6,6 @@ pngcheck -t %file% | %check_cmd% /c:"2014-09-22T23:43:55.984Z"
 if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dBufferlength: 1376256.000000"
 if errorlevel 1 exit 1
-pngcheck -t %file% | %check_cmd% /c:"dHistMinInterval: 350.000000"
-if errorlevel 1 exit 1
-pngcheck -t %file% | %check_cmd% /c:"dHistPercentage: 5.000000"
-if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dDarkCurrent: "
 if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dImageCounter: 0.000000"

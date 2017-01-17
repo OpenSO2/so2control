@@ -53,6 +53,8 @@ typedef struct {
 	/* path to image directory */
 	char * cImagePath;
 
+	int createsubfolders;
+
 	/*
 	 * A switch to set the exposuretime fix to the value given in
 	 * the config file

@@ -9,8 +9,6 @@ $check_cmd "timestampBefore" $file
 $check_cmd "timestampAfter" $file
 $check_cmd "2014-09-22T23:43:55.984Z" $file
 $check_cmd "dBufferlength 1376256" $file
-$check_cmd "dHistMinInterval 350" $file
-$check_cmd "dHistPercentage 5" $file
 $check_cmd "dDarkCurrent " $file
 $check_cmd "dImageCounter 0" $file
 $check_cmd "dInterFrameDelay 10" $file

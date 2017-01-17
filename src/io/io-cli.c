@@ -4,6 +4,7 @@
 #include "getBufferFromFile.c"
 #include "io.h"
 #include "log.h"
+#include "comm.h"
 
 #ifdef BENCHMARK
 #include <time.h>
@@ -41,6 +42,10 @@ int main(int argc, char *argv[])
 	if (log_init(&config)) {
 		printf("could not start log file, stop.\n");
 	}
+
+	config.comm_port = 9999;
+	comm_init(&config);
+
 #ifdef BENCHMARK
 	float startTime;
 #endif
@@ -68,7 +73,7 @@ int main(int argc, char *argv[])
 	sSO2Parameters.dTriggerPulseWidth = 15;
 	sSO2Parameters.dExposureTime = 0;
 	sSO2Parameters.dDarkCurrent = 0;
-	sSO2Parameters.identifier = 'a';
+	sSO2Parameters.identifier = strstr(infile, "top") ? 'a' : 'b';
 	sSO2Parameters.stBuffer = buffer;
 	sSO2Parameters.timestampBefore = &time;
 	sSO2Parameters.timestampAfter = &time;
@@ -81,8 +86,9 @@ int main(int argc, char *argv[])
 	config.dFixTime = 0.000000;
 	config.cFileNamePrefix = "image";
 	config.cConfigFileName = "";
-
-	config.cImagePath = outfolder;
+	config.createsubfolders = 0;
+	config.cImagePath = (char *)calloc(sizeof(char), strlen(outfolder) + 1);
+	strcpy(config.cImagePath, outfolder);
 	config.processing = rawdump;
 
 	io_init(&config);
@@ -96,5 +102,5 @@ int main(int argc, char *argv[])
 
 	io_uninit(&config);
 	free(buffer);
-	return 0;
+	return status;
 }

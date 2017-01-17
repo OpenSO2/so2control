@@ -6,10 +6,6 @@ if errorlevel 1 exit 1
 if errorlevel 1 exit 1
 %check_cmd% /c:"dBufferlength 1376256" %file%
 if errorlevel 1 exit 1
-%check_cmd% /c:"dHistMinInterval 350" %file%
-if errorlevel 1 exit 1
-%check_cmd% /c:"dHistPercentage 5" %file%
-if errorlevel 1 exit 1
 %check_cmd% /c:"dDarkCurrent " %file%
 if errorlevel 1 exit 1
 %check_cmd% /c:"dImageCounter 0" %file%

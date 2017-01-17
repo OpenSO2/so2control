@@ -56,7 +56,7 @@ int io_init(sConfigStruct * config)
 	int status;
 	static timeStruct now;
 	struct stat st = {0};
-	char * subfolder = (char *)malloc(SUBFOLDER_STR_LEN + 1);
+	char * subfolder = NULL;
 	getTime(&now);
 
 	if(strcmp(config->cImagePath, "-") == 0){
@@ -73,15 +73,19 @@ int io_init(sConfigStruct * config)
 
 	// eg. /2016-08-08_12_12/
 	//     123456789012345678
-	sprintf(subfolder, "/%04d-%02d-%02d_%02d_%02d/",
-		now.year,
-		now.mon,
-		now.day,
-		now.hour,
-		now.min);
-
+	if(config->createsubfolders){
+		subfolder = (char *)malloc(SUBFOLDER_STR_LEN + 1);
+		sprintf(subfolder, "/%04d-%02d-%02d_%02d_%02d/",
+			now.year,
+			now.mon,
+			now.day,
+			now.hour,
+			now.min);
+	} else {
+		subfolder = (char *)malloc(1 + 1);
+		sprintf(subfolder, "/");
+	}
 	config->cImagePath = (char *) realloc(config->cImagePath, strlen(config->cImagePath) + strlen(subfolder) + 1);
-
 	strcat(config->cImagePath, subfolder);
 
 	free(subfolder);

@@ -140,7 +140,7 @@ add_custom_target(coverity
 add_test(so2-camera_runs so2-camera --noofimages 1 --imagepath ./ --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/so2-camera.conf)
 
 if( ${UNIX} )
-	add_test(so2-camera_valgrind valgrind --track-origins=yes --error-exitcode=11 --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp  ./so2-camera --noofimages 1 --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/so2-camera.conf)
+	add_test(so2-camera_valgrind valgrind --track-origins=yes --error-exitcode=11 --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp  ./so2-camera --noofimages 1 --configfile ${CMAKE_CURRENT_SOURCE_DIR}/configurations/so2-camera.conf --imagepath .)
 endif()
 
 
