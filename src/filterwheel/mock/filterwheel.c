@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "filterwheel.h"
 #include "timehelpers.h"
 
