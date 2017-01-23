@@ -7,12 +7,12 @@ SO2 Camera control software written in C, licenced under MIT.
 | ------- | ----- | ------ |
 | [![Build status on Windows](https://ci.appveyor.com/api/projects/status/wtsnd28pv7ymsabg?svg=true)](https://ci.appveyor.com/project/jjacobsohn/so2-camera) | [![Build Status on Linux](https://travis-ci.org/johannjacobsohn/so2-camera.svg?branch=master)](https://travis-ci.org/johannjacobsohn/so2-camera)  | [![Coverity Scan Build Status](https://scan.coverity.com/projects/6043/badge.svg)](https://scan.coverity.com/projects/johannjacobsohn-so2-camera) |
 
-** Collaborators: **
+**Collaborators:**
 
 - [Johann Jacobsohn][jj] (Universität Hamburg)
 - Morten Harms (Universität Hamburg)
 
-** Dependencies: **
+**Dependencies:**
 
 - [OpenCV][opencv]
 - [zLib][zlib]
