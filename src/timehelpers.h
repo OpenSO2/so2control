@@ -13,6 +13,10 @@
 	#include<unistd.h>		/* usleep */
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Structures */
 typedef struct {
 	int milli;		/* milliseconds after second */
@@ -29,5 +33,9 @@ int sleepMs(int x);
 int getTime(timeStruct * pTS);
 time_t TimeFromTimeStruct(const timeStruct * pTime);
 long getTimeStamp(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

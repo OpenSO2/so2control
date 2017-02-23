@@ -439,7 +439,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	}
 
 	/* identify Camera for filename Prefix */
-	char *camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+	char *camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
 	state = createFilename(config, headerfile, headerfilelength, time, camname,  "txt");
 	if(state){
@@ -513,7 +513,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
 	/* identify camera for filename prefix */
-	camname = sSO2Parameters->dark ? (id == 'a' ? "top_dark" : "bot_dark") : (id == 'a' ? "top" : "bot");
+	camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
 	log_debug("filename created: %s", filename);
 

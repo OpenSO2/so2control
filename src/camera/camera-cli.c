@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	if (argc == 3) {
 		stat = sprintf(filename, "%s", argv[2]);
 	} else {
-		type = generate_png ? "png" : "raw";
+		type = generate_png ? (char*)"png" : (char*)"raw";
 
 		/* saving image */
 		stat = sprintf(filename, "outfile.%s", type);

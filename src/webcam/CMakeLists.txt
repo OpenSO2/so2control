@@ -54,9 +54,18 @@ include_directories(. ..)
 # create lib
 option(MOCK_WEBCAM "MOCK_WEBCAM" OFF)
 
-# in newer versions of openCV the c api is broken,
-# but we can compile as c++ to circumvent that issue
-#SET_SOURCE_FILES_PROPERTIES(../timehelpers.c  ./elpcam/webcam.c ./mock/webcam.c PROPERTIES LANGUAGE CXX)
+find_package( OpenCV REQUIRED )
+if(NOT ${OpenCV_VERSION} VERSION_LESS 3.0 )
+	# in newer versions of openCV the c api is broken,
+	# but we can compile as c++ to circumvent that issue
+	message("opencv version greater than 3.0, compiling webcam as c++")
+	SET_SOURCE_FILES_PROPERTIES(
+		webcam-cli.c
+		elpcam/webcam.c
+		mock/webcam.c
+	PROPERTIES LANGUAGE CXX)
+endif()
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 if(MOCK_WEBCAM)
 	message("=====MOCK_WEBCAM=======")
@@ -72,12 +81,7 @@ if( ${UNIX} )
 	target_link_libraries(webcam ${M_LIB})
 endif()
 
-find_package( OpenCV REQUIRED )
-if( OpenCV_FOUND )
-	message("OpenCV_FOUND found")
-	include_directories( ${OpenCV_INCLUDE_DIRS} )
-	target_link_libraries(webcam ${OpenCV_LIBS})
-endif()
+target_link_libraries(webcam ${OpenCV_LIBS})
 
 # create executables
 add_executable(webcam-cli webcam-cli.c)

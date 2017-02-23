@@ -21,6 +21,10 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "configurations.h"
 
 /**
@@ -46,5 +50,9 @@ int camera_abort(sParameterStruct *);
 int camera_setExposure(sParameterStruct *);
 int camera_autosetExposure(sParameterStruct *, sConfigStruct *);
 int camera_config(sParameterStruct *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -52,16 +52,28 @@ endif()
 # include common
 include_directories( .. )
 
+find_package( OpenCV REQUIRED )
+if(NOT ${OpenCV_VERSION} VERSION_LESS 3.0 )
+	# in newer versions of openCV the c api is broken,
+	# but we can compile as c++ to circumvent that issue
+	message("opencv version greater than 3.0, compiling io as c++")
+	SET_SOURCE_FILES_PROPERTIES(
+		camera-raw2png.c
+		custom/bufferToImage.c
+		custom/crc.c
+		custom/io.c
+		custom/make_png_header.c
+		getBufferFromFile.c
+		io-cli.c
+		viewer.c
+		webcam-raw2png.c
+	PROPERTIES LANGUAGE CXX)
+endif()
+
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+
 # create lib
 add_library(io ./custom/io.c custom/bufferToImage.c)
-
-# dependencies
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake)
-
-find_package( OpenCV REQUIRED )
-if(OpenCV_FOUND)
-	include_directories( ${OpenCV_INCLUDE_DIRS} )
-endif()
 
 # create executables
 add_executable(io-cli io-cli.c)

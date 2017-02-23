@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	}
 
 	(void)fseek(f, 0, SEEK_SET);
-	buffer = malloc(length);
+	buffer = (short int*)malloc(length);
 	if (!buffer) {
 		printf("failed to create buffer\n");
 		free(buffer);

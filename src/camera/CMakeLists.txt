@@ -101,17 +101,23 @@ elseif( ${UNIX} )
 	target_link_libraries(camera pthread)
 endif()
 
+find_package( OpenCV REQUIRED )
+if(NOT ${OpenCV_VERSION} VERSION_LESS 3.0 )
+	# in newer versions of openCV the c api is broken,
+	# but we can compile as c++ to circumvent that issue
+	message("opencv version greater than 3.0, compiling camera.cli as c++")
+	SET_SOURCE_FILES_PROPERTIES(
+		camera-cli.c
+	PROPERTIES LANGUAGE CXX)
+endif()
+
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+
 # create executables
 add_executable(camera-cli camera-cli.c)
 target_link_libraries(camera-cli camera)
 
-find_package( OpenCV REQUIRED )
-if( OpenCV_FOUND )
-	message("OpenCV_FOUND found")
-	include_directories( ${OpenCV_INCLUDE_DIRS} )
-	target_link_libraries( camera-cli ${OpenCV_LIBS} )
-endif()
-
+target_link_libraries( camera-cli ${OpenCV_LIBS} )
 
 # add log dependency
 if(NOT TARGET log)
