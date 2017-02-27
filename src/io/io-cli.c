@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
 		log_error("Something wrong writing to File.");
 	}
 
+	comm_uninit(&config);
 	io_uninit(&config);
 	free(buffer);
 	return status;
