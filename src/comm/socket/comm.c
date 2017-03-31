@@ -182,6 +182,10 @@ int init(int sockfd)
 	while ((newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))) {
 #pragma GCC diagnostic warning "-Wstrict-aliasing"
 		if (newsockfd < 0) {
+			if(errno == EINTR){
+				/* The system call was interrupted which is the desired behavior */
+				return 0;
+			}
 			log_error("ERROR on accepting connection: %s", strerror(errno));
 			return -1;
 		}
