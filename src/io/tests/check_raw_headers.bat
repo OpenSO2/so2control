@@ -16,5 +16,7 @@ REM %check_cmd% /c:"dExposureTime 0.000000" %file%
 if errorlevel 1 exit 1
 %check_cmd% /c:"dFixTime 0" %file%
 if errorlevel 1 exit 1
+%check_cmd% /c:"version" %file%
+if errorlevel 1 exit 1
 
 exit 0

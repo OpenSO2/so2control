@@ -14,3 +14,4 @@ $check_cmd "dImageCounter 0" $file
 $check_cmd "dInterFrameDelay 10" $file
 $check_cmd "dExposureTime 0.000000" $file
 $check_cmd "dFixTime 0" $file
+$check_cmd "version" $file

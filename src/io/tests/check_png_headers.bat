@@ -16,5 +16,7 @@ REM pngcheck -t %file% | %check_cmd% /c:"dExposureTime: 0.000000"
 if errorlevel 1 exit 1
 pngcheck -t %file% | %check_cmd% /c:"dFixTime: 0.000000"
 if errorlevel 1 exit 1
+pngcheck -t %file% | %check_cmd% /c:"version"
+if errorlevel 1 exit 1
 
 exit 0

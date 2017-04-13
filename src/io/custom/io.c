@@ -306,6 +306,9 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(webcam->timestampAfter, iso_date);
 		fprintf(f, "timestampAfter %s\n", iso_date);
+#ifdef VERSION
+		fprintf(f, "version %s\n", VERSION);
+#endif
 	}
 	fclose(f);
 
@@ -396,6 +399,10 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(spectro->timestampAfter, iso_date);
 		fprintf(f, "timestampAfter %s\n", iso_date);
+
+#ifdef VERSION
+		fprintf(f, "version %s\n", VERSION);
+#endif
 		fclose(f);
 	}
 
@@ -425,7 +432,7 @@ int io_uninit(sConfigStruct * config)
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	FILE *imageFile;
-	FILE *fp;
+	FILE *f;
 	char headerfile[512];
 	int headerfilelength = 512;
 	char rawfile[512];
@@ -470,23 +477,26 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	}
 
 	/* write a text file containing header information */
-	fp = fopen(headerfile, "ab");
-	if (fp != NULL) {
-		fprintf(fp, "dBufferlength %i\n", config->dBufferlength);
-		fprintf(fp, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
-		fprintf(fp, "dImageCounter %i\n", (int)config->dImageCounter);
-		fprintf(fp, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
-		fprintf(fp, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
-		fprintf(fp, "cConfigFileName %s\n", config->cConfigFileName);
-		fprintf(fp, "cFileNamePrefix %s\n", config->cFileNamePrefix);
-		fprintf(fp, "cImagePath %s\n", config->cImagePath);
-		fprintf(fp, "dFixTime %i\n", config->dFixTime);
+	f = fopen(headerfile, "ab");
+	if (f != NULL) {
+		fprintf(f, "dBufferlength %i\n", config->dBufferlength);
+		fprintf(f, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
+		fprintf(f, "dImageCounter %i\n", (int)config->dImageCounter);
+		fprintf(f, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
+		fprintf(f, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
+		fprintf(f, "cConfigFileName %s\n", config->cConfigFileName);
+		fprintf(f, "cFileNamePrefix %s\n", config->cFileNamePrefix);
+		fprintf(f, "cImagePath %s\n", config->cImagePath);
+		fprintf(f, "dFixTime %i\n", config->dFixTime);
 		dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
-		fprintf(fp, "timestampBefore %s\n", iso_date);
+		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(sSO2Parameters->timestampAfter, iso_date);
-		fprintf(fp, "timestampAfter %s\n", iso_date);
+		fprintf(f, "timestampAfter %s\n", iso_date);
+#ifdef VERSION
+		fprintf(f, "version %s\n", VERSION);
+#endif
 
-		fclose(fp);
+		fclose(f);
 	} else {
 		log_error("could not open text file");
 	}
@@ -602,6 +612,9 @@ int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *c
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
 	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
 	png_length = insertValue(png, "dFixTime",           (float)config->dFixTime,           png_length);
+#ifdef VERSION
+	png_length = insertStringValue(png, "version", VERSION, png_length);
+#endif
 
 	return png_length;
 }
