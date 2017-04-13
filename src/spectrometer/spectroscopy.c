@@ -43,8 +43,6 @@ double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 		if(wavelengths[l] > spectroscopy_roi_lower && wavelengths[l] < spectroscopy_roi_upper){
 			if(spectro->lastSpectrum[l] > highest)
 				highest = spectro->lastSpectrum[l];
-		} else {
-			printf("not included %f \n", wavelengths[l]);
 		}
 	}
 

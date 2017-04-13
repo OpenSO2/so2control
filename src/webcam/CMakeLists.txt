@@ -58,7 +58,7 @@ find_package( OpenCV REQUIRED )
 if(NOT ${OpenCV_VERSION} VERSION_LESS 3.0 )
 	# in newer versions of openCV the c api is broken,
 	# but we can compile as c++ to circumvent that issue
-	message("opencv version greater than 3.0, compiling webcam as c++")
+	message(STATUS "opencv version greater than 3.0, compiling webcam as c++")
 	SET_SOURCE_FILES_PROPERTIES(
 		webcam-cli.c
 		elpcam/webcam.c
