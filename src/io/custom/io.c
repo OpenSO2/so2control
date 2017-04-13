@@ -480,7 +480,6 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	f = fopen(headerfile, "ab");
 	if (f != NULL) {
 		fprintf(f, "dBufferlength %i\n", config->dBufferlength);
-		fprintf(f, "dDarkCurrent %i\n", (int)sSO2Parameters->dDarkCurrent);
 		fprintf(f, "dImageCounter %i\n", (int)config->dImageCounter);
 		fprintf(f, "dInterFrameDelay %i\n", (int)config->dInterFrameDelay);
 		fprintf(f, "dExposureTime %f\n", sSO2Parameters->dExposureTime);
@@ -607,7 +606,6 @@ int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *c
 	png_length = insertStringValue(png, "timestampAfter",     iso_date, png_length);
 
 	png_length = insertValue(png, "dBufferlength",      (float)config->dBufferlength,      png_length);
-	png_length = insertValue(png, "dDarkCurrent",       (float)sSO2Parameters->dDarkCurrent,       png_length);
 	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
 	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);

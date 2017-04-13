@@ -121,9 +121,6 @@ typedef struct {
 
 /* Camera parameters */
 typedef struct {
-	/* not used right now. should contain a value for image noise */
-	unsigned long dDarkCurrent;
-
 	/* A handle to identify the camera */
 	unsigned long hCamera;
 
