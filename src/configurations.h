@@ -95,6 +95,12 @@ typedef struct {
 	/* port on which a tcp connection can be made */
 	int comm_port;
 
+	/* switch to disable webcam code */
+	int enableWebcam;
+
+	/* switch to disable spectroscopy and spectrometer code */
+	int enableSpectroscopy;
+
 } sConfigStruct;
 
 

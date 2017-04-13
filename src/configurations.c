@@ -57,6 +57,8 @@ void config_init_sConfigStruct(sConfigStruct *config){
 	config->spectroscopy_roi_lower = -1;
 	config->filterwheel_device = "";
 	config->comm_port = -1;
+	config->enableWebcam = -1;
+	config->enableSpectroscopy = -1;
 }
 
 /*
@@ -88,6 +90,10 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 		} else if (strcmp(argv[i], "--port") == 0 && argv[i + 1]) {
 			config->comm_port = strtol(argv[i + 1], NULL, 10);
 			i++;
+		} else if (strcmp(argv[i], "--disableWebcam") == 0) {
+			config->enableWebcam = 0;
+		} else if (strcmp(argv[i], "--disableSpectroscopy") == 0) {
+			config->enableSpectroscopy = 0;
 		} else {
 			sprintf(errstr, "unknown command line option \"%s\"", argv[i]);
 			log_error(errstr);
@@ -217,6 +223,10 @@ int config_load_configfile(sConfigStruct * config)
 			config->spectrometer_shutter_channel = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "port") && config->comm_port == -1) {
 			config->comm_port = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "enableSpectroscopy") && config->enableSpectroscopy == -1) {
+			config->enableSpectroscopy = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "enableWebcam") && config->enableWebcam == -1) {
+			config->enableWebcam = atoi(delimeterBuf + 1);
 		}
 	}
 
@@ -240,7 +250,9 @@ void config_load_default(sConfigStruct *config)
 	config->filterwheel_device = strlen(config->filterwheel_device) ? config->filterwheel_device : "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI02PNA1-if00-port0";
 	config->cImagePath         = strlen(config->cImagePath)         ? config->cImagePath         : "";
 	config->cFileNamePrefix    = strlen(config->cFileNamePrefix)    ? config->cFileNamePrefix    : "";
-	config->createsubfolders = 1;
+	config->createsubfolders   = 1;
+	config->enableSpectroscopy = config->enableSpectroscopy != -1   ? config->enableSpectroscopy : 1;
+	config->enableWebcam       = config->enableWebcam != -1         ? config->enableWebcam       : 1;
 }
 
 char * getString(char * source)

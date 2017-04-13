@@ -57,8 +57,10 @@ static void stop_program(int reason)
 	/* stop webcam */
 	threads_webcam_stop();
 
-	/* uninitialize webcam */
-	webcam_uninit(&config, &webcam);
+	if(config.enableWebcam){
+		/* uninitialize webcam */
+		webcam_uninit(&config, &webcam);
+	}
 
 	/* uninitialize io */
 	io_uninit(&config);
@@ -69,11 +71,13 @@ static void stop_program(int reason)
 	/* uninitialize spectrometer-shutter */
 	spectrometer_shutter_uninit(&config);
 
-	/* stop spectrometer thread */
-	threads_spectroscopy_stop();
+	if(config.enableSpectroscopy){
+		/* stop spectrometer thread */
+		threads_spectroscopy_stop();
 
-	/* uninitialize spectrometer */
-	spectrometer_uninit(&config);
+		/* uninitialize spectrometer */
+		spectrometer_uninit(&config);
+	}
 
 	/* stop communication and close all connections */
 	comm_uninit(&config);
@@ -206,15 +210,6 @@ int main(int argc, char *argv[])
 	}
 	log_message("filterwheel opened");
 
-	/* initiate webcam */
-	state = webcam_init(&config, &webcam);
-	if (state != 0) {
-		log_error("init webcam failed");
-		stop_program(1);
-		return state;
-	}
-	log_message("webcam initialized");
-
 	/* initiate communications */
 	state = comm_init(&config);
 	if (state != 0) {
@@ -223,37 +218,54 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
-	/* start taking webcam images */
-	threads_webcam_start(&config, &webcam);
+	if(config.enableWebcam){
+		/* initiate webcam */
+		state = webcam_init(&config, &webcam);
+		if (state != 0) {
+			log_error("init webcam failed");
+			stop_program(1);
+			return state;
+		}
+		log_message("webcam initialized");
 
-	/* initiate spectrometer-shutter */
-	state = spectrometer_shutter_init(&config);
-	if (state != 0) {
-		log_error("init spectrometer-shutter failed");
-		stop_program(1);
-		return state;
+		/* start taking webcam images */
+		threads_webcam_start(&config, &webcam);
+	} else {
+		log_message("disable webcam");
 	}
-	log_message("spectrometer-shutter initialized");
 
-	/* initiate spectrometer */
-	state = spectrometer_init(&spectro);
-	if (state != 0) {
-		log_error("init spectrometer failed");
-		stop_program(1);
-		return state;
+	if(config.enableSpectroscopy){
+		/* initiate spectrometer-shutter */
+		state = spectrometer_shutter_init(&config);
+		if (state != 0) {
+			log_error("init spectrometer-shutter failed");
+			stop_program(1);
+			return state;
+		}
+		log_message("spectrometer-shutter initialized");
+
+		/* initiate spectrometer */
+		state = spectrometer_init(&spectro);
+		if (state != 0) {
+			log_error("init spectrometer failed");
+			stop_program(1);
+			return state;
+		}
+		log_message("spectrometer initialized");
+
+		state = spectroscopy_init(&config, &spectro);
+		if (state != 0) {
+			log_error("init spectroscopy failed");
+			stop_program(1);
+			return state;
+		}
+		log_message("spectroscopy initialized");
+
+		/* start taking spectra */
+		threads_spectroscopy_start(&config, &spectro);
+	} else {
+		log_message("disable spectroscopy");
 	}
-	log_message("spectrometer initialized");
-
-	state = spectroscopy_init(&config, &spectro);
-	if (state != 0) {
-		log_error("init spectroscopy failed");
-		stop_program(1);
-		return state;
-	}
-	log_message("spectroscopy initialized");
-
-	/* start taking spectra */
-	threads_spectroscopy_start(&config, &spectro);
 
 	/* initiate camera */
 	state = camera_init(&sParameters_A);
@@ -273,9 +285,6 @@ int main(int argc, char *argv[])
 		return state;
 	}
 	log_message("camera B initialized");
-
-	/* start taking webcam images */
-	threads_webcam_start(&config, &webcam);
 
 	/*
 	 * Starting the acquisition with the exposure parameter set in

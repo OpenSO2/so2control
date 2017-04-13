@@ -5,7 +5,7 @@ _so2_camera()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-	opts="--speedy-gonzales --noprocessing --png-only --debug --noofimages --configfile --imagepath --port"
+	opts="--speedy-gonzales --noprocessing --png-only --debug --noofimages --configfile --imagepath --port --disableWebcam --disableSpectroscopy"
 
 	case "${prev}" in
 		--noofimages)
