@@ -8,13 +8,9 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 plt.show()
 
-first = True
+p = False
 
-def run():
-	return subprocess.Popen(["./spectrometer-cli", "250"], stdout=subprocess.PIPE)
-
-proc = run()
-
+# intercept ctrl+c
 def signal_handler(signal, frame):
 	proc.kill()
 	proc.wait()
@@ -22,13 +18,17 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+# plot indefinitely
 while 1:
-	retcode = proc.poll()
-	if retcode is None:
-		plt.pause(.01)
-		continue
+	proc = subprocess.Popen(["./spectrometer-cli", "250"], stdout=subprocess.PIPE)
 
+	# check if subprocess has returned
+	while proc.poll() is None:
+		plt.pause(.01)
+
+	# get and parse output from subprocess
 	spectro = proc.communicate()[0]
+
 	y = []
 	x = []
 	for line in spectro.split("\n"):
@@ -37,14 +37,10 @@ while 1:
 			x.append( float(vals[0]) )
 			y.append( float(vals[1]) )
 
-	if first:
-		first = False
+	# init or update plot
+	if not p:
 		p = ax.plot(x, y, 'r-')[0]
 
 	p.set_ydata(y)
 	plt.draw()
-	fig.canvas.flush_events()
-
-	proc.wait()
-
-	proc = run()
+	#~ fig.canvas.flush_events() # cargo-cult
