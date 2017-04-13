@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 	}
 	log_message("spectrometer initialized");
 
-	state = spectroscopy_init(&spectro);
+	state = spectroscopy_init(&config, &spectro);
 	if (state != 0) {
 		log_error("init spectroscopy failed");
 		stop_program(1);

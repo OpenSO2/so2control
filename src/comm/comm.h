@@ -6,9 +6,9 @@
 extern "C" {
 #endif
 
-int comm_init(sConfigStruct * config);
-int comm_set_buffer(char *cmd, char *buffer, int size);
-int comm_uninit(sConfigStruct * config);
+int comm_init(sConfigStruct *);
+int comm_set_buffer(char *, char *, int);
+int comm_uninit(sConfigStruct *);
 
 #ifdef __cplusplus
 }

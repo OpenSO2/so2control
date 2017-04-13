@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-int webcam_init(sConfigStruct * config, sWebCamStruct * webcam);
-int webcam_get(sWebCamStruct * webcam);
-int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam);
+int webcam_init(sConfigStruct *, sWebCamStruct *);
+int webcam_get(sWebCamStruct *);
+int webcam_uninit(sConfigStruct *, sWebCamStruct *);
 
 #ifdef __cplusplus
 }

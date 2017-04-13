@@ -175,9 +175,9 @@ typedef struct {
  /******************************
  *   FUNCTIONS
  ******************************/
-int config_process_cli_arguments(int argc, char *argv[], sConfigStruct *config);
-int config_load_configfile(sConfigStruct *config);
-void config_load_default(sConfigStruct *config);
-void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier);
-void config_init_sConfigStruct(sConfigStruct *config);
+int config_process_cli_arguments(int, char *[], sConfigStruct *);
+int config_load_configfile(sConfigStruct *);
+void config_load_default(sConfigStruct *);
+void config_init_sParameterStruct(sParameterStruct *, sConfigStruct *, char);
+void config_init_sConfigStruct(sConfigStruct *);
 #endif

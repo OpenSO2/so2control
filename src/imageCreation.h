@@ -5,8 +5,6 @@
 /******************************
  *   FUNCTIONS
  ******************************/
-int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config);
-int aquire(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config);
+int startAquisition(sParameterStruct *, sParameterStruct *, sConfigStruct *);
+int aquire(sParameterStruct *, sParameterStruct * sParameters_B, sConfigStruct *);
 #endif

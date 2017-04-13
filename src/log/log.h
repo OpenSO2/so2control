@@ -6,10 +6,10 @@
 extern "C" {
 #endif
 
-int log_init(sConfigStruct * config);
-int log_message(char *message, ...);
-int log_debug(char *message, ...);
-int log_error(char *message, ...);
+int log_init(sConfigStruct *);
+int log_message(char *, ...);
+int log_debug(char *, ...);
+int log_error(char *, ...);
 int log_uninit(void);
 
 #ifdef __cplusplus

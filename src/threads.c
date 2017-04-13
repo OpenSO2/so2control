@@ -4,6 +4,7 @@
 #include "webcam.h"
 #include "log.h"
 #include "io.h"
+#include "spectrometer.h"
 #include "spectroscopy.h"
 #include "spectrometer-shutter.h"
 
@@ -154,7 +155,6 @@ void * threads_spectroscopy_run(void * args)
 			spectrometer_shutter_open();
 			io_spectrum_save_calib(spectro, config);
 
-			int integration_time_micros = spectro->integration_time_micros;
 			status = spectrometer_get(spectro);
 			// fixme handle return
 

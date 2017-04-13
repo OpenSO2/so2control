@@ -3,8 +3,8 @@
 
 #include "configurations.h"
 
-int spectrometer_init(sSpectrometerStruct * spectro);
-int spectrometer_get(sSpectrometerStruct * config);
-int spectrometer_uninit(sConfigStruct * config);
+int spectrometer_init(sSpectrometerStruct *);
+int spectrometer_get(sSpectrometerStruct *);
+int spectrometer_uninit(sConfigStruct *);
 
 #endif

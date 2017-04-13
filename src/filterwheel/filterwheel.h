@@ -8,7 +8,7 @@
 #define FILTERWHEEL_OPENED_A 2
 #define FILTERWHEEL_OPENED_B 2
 
-int filterwheel_init(sConfigStruct * config);
-int filterwheel_send(int position);
-int filterwheel_uninit(sConfigStruct * config);
+int filterwheel_init(sConfigStruct *);
+int filterwheel_send(int);
+int filterwheel_uninit(sConfigStruct *);
 #endif

@@ -168,7 +168,7 @@ int camera_init(sParameterStruct * sSO2Parameters)
 		return eStat;
 	}
 
-	log_message("configuring of the frame grabber was successfull");
+	log_message("configuring of the frame grabber was successful");
 
 	return setup_camera(sSO2Parameters);
 }
@@ -187,38 +187,38 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 	/* initialize default values */
 	eStat = sendMessage(hCamera, (ui8*)"INI\r");
 	if (PHX_OK != eStat) {
-		log_error("sending INI to camera was unsuccessfull");
+		log_error("sending INI to camera was unsuccessful");
 		return eStat;
 	}
 	/* freerunning or external control mode: */
 	/* N freerun mode, E external */
 	eStat = sendMessage(hCamera, (ui8*)"AMD N\r");
 	if (PHX_OK != eStat) {
-		log_error("sending AMD N to camera was unsuccessfull");
+		log_error("sending AMD N to camera was unsuccessful");
 		return eStat;
 	}
 	/* scanning mode: N Normal, S superpixel */
 	eStat = sendMessage(hCamera, (ui8*)"SMD N\r");
 	if (PHX_OK != eStat) {
-		log_error("sending SMD N to camera was unsuccessfull");
+		log_error("sending SMD N to camera was unsuccessful");
 		return eStat;
 	}
 	/* horizontal pixel output: M = 1344 */
 	eStat = sendMessage(hCamera, (ui8*)"SHA M\r");
 	if (PHX_OK != eStat) {
-		log_error("sending SHA M to camera was unsuccessfull");
+		log_error("sending SHA M to camera was unsuccessful");
 		return eStat;
 	}
 	/* contrast enhancement gain: low */
 	/* CEG L CONTRAST ENHANCEMENT GAIN  (CEG L: 0dB) (CEG H: 14dB) */
-	log_message("set contrast enhancement gain to HIGH");
-	eStat = sendMessage(hCamera, (ui8*)"CEG H\r");
+	log_message("set contrast enhancement gain to LOW");
+	eStat = sendMessage(hCamera, (ui8*)"CEG L\r");
 	if (PHX_OK != eStat) {
-		log_error("sending CEG H to camera was unsuccessfull");
+		log_error("sending CEG L to camera was unsuccessful");
 		return eStat;
 	}
 
-	log_message("configuration of camera was successfull");
+	log_message("configuration of camera was successful");
 	return eStat;
 }
 
@@ -293,7 +293,7 @@ static int sendMessage(tHandle hCamera, ui8 *msg)
 			continue; /* short circuit */
 		}
 
-		/* if cameras answer equals input string, exit successfull */
+		/* if cameras answer equals input string, exit successful */
 		if (strncmp((const char *)msg, (const char *)msg, msgLength)) {
 			log_debug("String send and string received were not equal.");
 			continue; /* short circuit */

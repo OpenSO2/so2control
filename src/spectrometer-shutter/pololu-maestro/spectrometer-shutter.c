@@ -27,7 +27,7 @@ int maestroSetTarget(unsigned short target)
 {
 	unsigned char command[] = {0x84, channel, target & 0x7F, target >> 7 & 0x7F};
 	if (write(fd, command, sizeof(command)) == -1) {
-		log_error("error writing");
+		log_error("error sending command to spectrometer shutter");
 		return -1;
 	}
 	return 0;

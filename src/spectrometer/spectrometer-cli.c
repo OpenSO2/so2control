@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 		pFile = stdout;
 	}
 
-	status = spectroscopy_init(&spectro);
+	status = spectroscopy_init(&config, &spectro);
 	if(status){
 		printf("init spectrometer failed\n");
 		return 1;

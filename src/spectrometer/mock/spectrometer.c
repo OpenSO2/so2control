@@ -6,7 +6,7 @@
 static double * wavelengths = NULL;
 static double * spectrum = NULL;
 
-int spectrometer_init(sConfigStruct * config, sSpectrometerStruct * spectro)
+int spectrometer_init(sSpectrometerStruct * spectro)
 {
 	int i;
 	int number_of_lines = 0;

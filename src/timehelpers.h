@@ -29,9 +29,9 @@ typedef struct {
 } timeStruct;
 
 /* Functions */
-int sleepMs(int x);
-int getTime(timeStruct * pTS);
-time_t TimeFromTimeStruct(const timeStruct * pTime);
+int sleepMs(int);
+int getTime(timeStruct *);
+time_t TimeFromTimeStruct(const timeStruct *);
 long getTimeStamp(void);
 
 #ifdef __cplusplus

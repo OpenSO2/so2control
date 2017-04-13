@@ -10,7 +10,7 @@
 int spectroscopy_roi_upper;
 int spectroscopy_roi_lower;
 
-int spectroscopy_init(sConfigStruct *, sSpectrometerStruct * spectro)
+int spectroscopy_init(sConfigStruct * config, sSpectrometerStruct * spectro)
 {
 	int status = spectrometer_init(spectro);
 	if(status){
