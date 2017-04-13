@@ -399,6 +399,7 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(spectro->timestampAfter, iso_date);
 		fprintf(f, "timestampAfter %s\n", iso_date);
+		fprintf(f, "scans %i\n", spectro->scans);
 
 #ifdef VERSION
 		fprintf(f, "version %s\n", VERSION);

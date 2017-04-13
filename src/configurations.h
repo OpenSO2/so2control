@@ -117,6 +117,8 @@ typedef struct {
 	timeStruct *timestampBefore;
 
 	timeStruct *timestampAfter;
+
+	int scans;
 } sSpectrometerStruct;
 
 /* Camera parameters */

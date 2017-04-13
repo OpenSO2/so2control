@@ -144,11 +144,11 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
  * After this operation the result is saved in spectro->lastSpectrum
  * call io_spectrum_save(spectro, config) to save to disk
  */
-int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
+int spectroscopy_meanAndSubstract(int noOfMeasurements, int integration_time_micros, sSpectrometerStruct * spectro)
 {
 	int i, j;
 	spectro->integration_time_micros = integration_time_micros;
-	int noOfMeasurements = number_of_spectra;
+	spectro->scans = noOfMeasurements;
 
 	double * spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
 	for (i = 0; i < spectro->spectrum_length; i++) {
@@ -160,9 +160,7 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 
 		for (i = 0; i < spectro->spectrum_length; i++) {
 			spectro->lastSpectrum[i] -= spectro->electronic_offset[i]; // substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
-
 			spectro->lastSpectrum[i] -= spectro->dark_current[i] * spectro->integration_time_micros/60000000; // substract dark current, scaled by integration time
-
 			spectrum[i] += spectro->lastSpectrum[i] / noOfMeasurements;
 		}
 	}
@@ -199,6 +197,8 @@ int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpect
 		 spectro->lastSpectrum[i] = spectrum[i] / noOfMeasurements;
 	}
 
+	spectro->scans = noOfMeasurements;
+
 	free(spectrum);
 
 	return 0;
@@ -210,9 +210,7 @@ int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpect
  */
 int spectroscopy_measure(sSpectrometerStruct * spectro)
 {
-	// FIXME: save number of scans
 	spectroscopy_meanAndSubstract(10, spectro->integration_time_micros, spectro);
-
 	log_message("Spectroscopy: measurement done");
 	return 0;
 }
