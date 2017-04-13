@@ -6,7 +6,7 @@
 static double * wavelengths = NULL;
 static double * spectrum = NULL;
 
-int spectrometer_init(sSpectrometerStruct * spectro)
+int spectrometer_init(sConfigStruct * config, sSpectrometerStruct * spectro)
 {
 	int i;
 	int number_of_lines = 0;
@@ -69,7 +69,7 @@ int spectrometer_uninit(sConfigStruct * config)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectrometer_get(sSpectrometerStruct * spectro)
 {
-	sleep(1);
+	sleep(spectro->integration_time_micros/1000000);
 	spectro->lastSpectrum = spectrum;
 	spectro->wavelengths = wavelengths;
 

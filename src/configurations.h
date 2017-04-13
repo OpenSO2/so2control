@@ -79,6 +79,13 @@ typedef struct {
 	 */
 	unsigned char spectrometer_shutter_channel;
 
+	/* measurement interval for recalibration of the doas instrument */
+	int spectrometer_calibrate_intervall;
+
+	/* region of interest for the spectrometer exposure time calculation */
+	int spectroscopy_roi_upper;
+	int spectroscopy_roi_lower;
+
 	/* Resolution in x direction */
 	int webcam_xRes;
 

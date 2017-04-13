@@ -7,7 +7,10 @@
 #include "spectrometer.h"
 #include "log.h"
 
-int spectroscopy_init(sSpectrometerStruct * spectro)
+int spectroscopy_roi_upper;
+int spectroscopy_roi_lower;
+
+int spectroscopy_init(sConfigStruct *, sSpectrometerStruct * spectro)
 {
 	int status = spectrometer_init(spectro);
 	if(status){
@@ -18,6 +21,9 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 	spectro->electronic_offset = calloc(spectro->spectrum_length, sizeof(double));
 	spectro->dark_current = calloc(spectro->spectrum_length, sizeof(double));
 
+	spectroscopy_roi_upper = config->spectroscopy_roi_upper;
+	spectroscopy_roi_lower = config->spectroscopy_roi_lower;
+
 	/* set 1s as initial integration time */
 	spectro->integration_time_micros = 1000 * 1000;
 
@@ -25,24 +31,24 @@ int spectroscopy_init(sSpectrometerStruct * spectro)
 }
 
 /*
- * Calculate the absolute exposure of the spectrum in the desired region of interest.
- * For SO2 measurements, the roi is between 200 and 300nm.
+ * Calculate the absolute exposure of the last spectrum in the desired region of interest.
+ * For SO2 measurements, the roi is between 300 and 325nm.
  */
 double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 {
-	int roi_lower = 250; // FIXME: move to conf
-	int roi_upper = 350; // FIXME: move to conf
-	int i = 0;
 	int l = spectro->spectrum_length;
 	double * wavelengths = spectro->wavelengths;
-	double summ = 0;
+	double highest = 0;
 	while( l-- ){
-		if(wavelengths[l] > roi_lower && wavelengths[l] < roi_upper){
-			summ += spectro->lastSpectrum[l];
-			i++;
+		if(wavelengths[l] > spectroscopy_roi_lower && wavelengths[l] < spectroscopy_roi_upper){
+			if(spectro->lastSpectrum[l] > highest)
+				highest = spectro->lastSpectrum[l];
+		} else {
+			printf("not included %f \n", wavelengths[l]);
 		}
 	}
-	return summ/i; // should be something between 0..max
+
+	return highest; // should be something between 0..max
 }
 
 /*
@@ -72,7 +78,8 @@ double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 */
 double spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
 {
-	return .7 * spectro->integration_time_micros  * spectro->max /  spectroscopy_calc_exposure(spectro);
+	log_message("spectro: find exposure time inttime: %i, max: %f, exposure: %f", spectro->integration_time_micros, spectro->max, spectroscopy_calc_exposure(spectro));
+	return .7 * spectro->integration_time_micros  * spectro->max / spectroscopy_calc_exposure(spectro);
 }
 
 int spectroscopy_calibrate(sSpectrometerStruct * spectro)
@@ -82,7 +89,7 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 
 	log_message("Spectroscopy: Measuring electronic offset");
 	/* measure electronic offset */
-	spectroscopy_meanAndSubstract(10000, 3000, spectro);
+	spectroscopy_mean(10000, 3000, spectro);
 
 	/* copy last spectrum into electronic_offset buffer */
 	for (i = 0; i < spectro->spectrum_length; i++) {
@@ -91,7 +98,7 @@ int spectroscopy_calibrate(sSpectrometerStruct * spectro)
 	}
 
 	log_message("Spectroscopy: Measuring dark current");
-	spectroscopy_meanAndSubstract(1, dark_current_integration_time_s * 1000 * 1000, spectro);
+	spectroscopy_mean(1, dark_current_integration_time_s * 1000 * 1000, spectro);
 
 	/* copy last spectrum into dark_current buffer */
 	for (i = 0; i < spectro->spectrum_length; i++) {
@@ -110,6 +117,8 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 
 	l = spectro->spectrum_length;
 
+	int old_integration_time = spectro->integration_time_micros;
+
 	// take two measurements in quick succession
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
 
@@ -127,6 +136,8 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	// sigma_I = sigma_D / √2
 	photon_noise = diff / M_SQRT2;
 	log_debug("Spectroscopy: photon noise is %f", photon_noise);
+
+	spectro->integration_time_micros = old_integration_time;
 
 	return photon_noise;
 }
@@ -158,6 +169,38 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
 		}
 	}
 
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectro->lastSpectrum[i] = spectrum[i];
+	}
+
+	free(spectrum);
+
+	return 0;
+}
+
+int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
+{
+	double * spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
+	int noOfMeasurements = number_of_spectra;
+	int i;
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		spectrum[i] = 0;
+	}
+
+	spectro->integration_time_micros = integration_time_micros;
+
+	while(number_of_spectra--){
+		spectrometer_get(spectro);
+
+		for (i = 0; i < spectro->spectrum_length; i++) {
+			spectrum[i] += spectro->lastSpectrum[i];
+		}
+	}
+
+	for (i = 0; i < spectro->spectrum_length; i++) {
+		 spectro->lastSpectrum[i] = spectrum[i] / noOfMeasurements;
+	}
+
 	free(spectrum);
 
 	return 0;
@@ -169,7 +212,8 @@ int spectroscopy_meanAndSubstract(int number_of_spectra, int integration_time_mi
  */
 int spectroscopy_measure(sSpectrometerStruct * spectro)
 {
-	spectroscopy_meanAndSubstract(1, spectro->integration_time_micros, spectro);
+	// FIXME: save number of scans
+	spectroscopy_meanAndSubstract(10, spectro->integration_time_micros, spectro);
 
 	log_message("Spectroscopy: measurement done");
 	return 0;

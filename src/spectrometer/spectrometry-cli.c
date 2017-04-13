@@ -7,9 +7,10 @@ int main(void)
 	FILE * pFile;
 	int i;
 	sSpectrometerStruct spectro;
+	sConfigStruct config;
 	double noise, exposure, exposure_opt;
 
-	spectroscopy_init(&spectro);
+	spectroscopy_init(&config, &spectro);
 
 	printf("\n➔ Please cover the spectrometer lens");
 	getchar();
@@ -35,11 +36,20 @@ int main(void)
 	spectroscopy_measure(&spectro);
 
 
+	spectro.integration_time_micros = 250000;
+	spectrometer_get(&spectro);
 	noise = spectroscopy_calc_noise(&spectro);
 	exposure = spectroscopy_calc_exposure(&spectro);
 	exposure_opt = spectroscopy_find_exposure_time(&spectro);
 
-	printf("exposure was %f, an optimal exposure time would be %f. Noise was %f \n", exposure, exposure_opt, noise);
+	printf("exposure was %f (%lu ms), an optimal exposure time would be %f. Noise was %f \n", exposure, spectro.integration_time_micros, exposure_opt, noise);
+
+	pFile = fopen("measurement.dat", "wt");
+	if (pFile){
+		for(i = 0; i < spectro.spectrum_length; i++){
+			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.lastSpectrum[i]);
+		}
+	}
 
 	return 0;
 }

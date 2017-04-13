@@ -5,6 +5,7 @@
 #include "log.h"
 #include "io.h"
 #include "spectroscopy.h"
+#include "spectrometer-shutter.h"
 
 pthread_t webcam_threadid = 0;
 
@@ -23,18 +24,18 @@ pthread_mutex_t webcamMutex;
 
 int getWebcamRunning(void);
 int getWebcamRunning(void) {
-  int ret = 0;
-  pthread_mutex_lock(&webcamMutex);
-  ret = webcam_running;
-  pthread_mutex_unlock(&webcamMutex);
-  return ret;
+	int ret = 0;
+	pthread_mutex_lock(&webcamMutex);
+	ret = webcam_running;
+	pthread_mutex_unlock(&webcamMutex);
+	return ret;
 }
 
 void setWebcamRunning(int);
 void setWebcamRunning(int val) {
-  pthread_mutex_lock(&webcamMutex);
-  webcam_running = val;
-  pthread_mutex_unlock(&webcamMutex);
+	pthread_mutex_lock(&webcamMutex);
+	webcam_running = val;
+	pthread_mutex_unlock(&webcamMutex);
 }
 
 
@@ -106,18 +107,18 @@ pthread_mutex_t spectroscopyMutex;
 
 int getSpectroscopyRunning(void);
 int getSpectroscopyRunning(void) {
-  int ret = 0;
-  pthread_mutex_lock(&spectroscopyMutex);
-  ret = spectroscopy_running;
-  pthread_mutex_unlock(&spectroscopyMutex);
-  return ret;
+	int ret = 0;
+	pthread_mutex_lock(&spectroscopyMutex);
+	ret = spectroscopy_running;
+	pthread_mutex_unlock(&spectroscopyMutex);
+	return ret;
 }
 
 void setSpectroscopyRunning(int);
 void setSpectroscopyRunning(int val) {
-  pthread_mutex_lock(&spectroscopyMutex);
-  spectroscopy_running = val;
-  pthread_mutex_unlock(&spectroscopyMutex);
+	pthread_mutex_lock(&spectroscopyMutex);
+	spectroscopy_running = val;
+	pthread_mutex_unlock(&spectroscopyMutex);
 }
 
 
@@ -135,18 +136,51 @@ void * threads_spectroscopy_run(void * args)
 	sSpectrometerStruct * spectro = ((struct spectroscopy_struct*) args)->spectro;
 	sConfigStruct * config = ((struct spectroscopy_struct*) args)->config;
 	int oldtype;
+	double noise, exposure_opt;
+	int i;
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
-	while( getSpectroscopyRunning() ){
-		getTime(spectro->timestampBefore);
-		status = spectroscopy_measure(spectro);
-		getTime(spectro->timestampAfter);
+	/* set integration time to 1s initially for the calibration */
+	spectro->integration_time_micros = 1000 * 1000;
 
-		/* save spectrum */
-		status = io_spectrum_save(spectro, config);
-		if (status != 0) {
-			log_error("failed to write spectrum");
+	for (i = 0; getSpectroscopyRunning(); i++) {
+
+		if (i % config->spectrometer_calibrate_intervall == 0){
+			getTime(spectro->timestampBefore);
+			getTime(spectro->timestampAfter);
+			spectrometer_shutter_close();
+			spectroscopy_calibrate(spectro);
+			spectrometer_shutter_open();
+			io_spectrum_save_calib(spectro, config);
+
+			int integration_time_micros = spectro->integration_time_micros;
+			status = spectrometer_get(spectro);
+			// fixme handle return
+
+			// calculate optimal exposure time
+			exposure_opt = spectroscopy_find_exposure_time(spectro);
+			log_error("optimal exposure would be %f, but was %i", exposure_opt, spectro->integration_time_micros);
+			spectro->integration_time_micros = exposure_opt;
+
+			// calculate number of averages spectra to control noise to a reasonable level
+			noise = spectroscopy_calc_noise(spectro);
+			// TODO calculate number of mean'd spectra
+
+			log_error("noise was %f", noise);
+		} else {
+			log_message("open shutter and take another spectrum");
+			spectrometer_shutter_open();
+
+			getTime(spectro->timestampBefore);
+			status = spectroscopy_measure(spectro);
+			getTime(spectro->timestampAfter);
+
+			/* save spectrum */
+			status = io_spectrum_save(spectro, config);
+			if (status != 0) {
+				log_error("failed to write spectrum");
+			}
 		}
 	}
 

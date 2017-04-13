@@ -1,22 +1,3 @@
-/*
- * This file implements the file output system, responsible for writing
- * the gathered data to disk and to process the data into reasonable
- * file formats. This could also do i.e. packaging files into a .tar
- * file.
- *
- * Currently, there are three write modes:
- * - dumb mode, the camera data and all relevent headers are dumped to
- *   files
- * - png mode, the camera data is converted to pngs, and relevant
- *   headers are written to ancillary text chunks
- * - default: both
- *
- * PNG mode is a lot slower, but produces smaller files which can be
- * easily viewed and used for further processing.
- * Dumb mode requires less processing and does not alter the original
- * data, but requires additional work for viewing and evalution.
- *
- */
 #include<stdio.h>
 #include<time.h>
 #include<sys/types.h>
@@ -268,7 +249,7 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	free(buffer);
 
 	if (!state) {
-		log_message("png image written");
+		log_message("webcam png image written");
 	}
 
 	return 0;
@@ -334,19 +315,43 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-	FILE * pFile;
+	FILE * f;
 	int i;
-	pFile = fopen("dark-current.dat", "wt");
-	if (pFile){
-		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
-		}
+	int state = 1;
+	char filename[512];
+	int filenamelength = 512;
+
+	state = createFilename(config, filename, filenamelength, spectro->timestampBefore, "dark-current", "dat");
+	if (state) {
+		log_error("could not create spectroscopy calibration filename (dark current)");
+		return state;
 	}
-	pFile = fopen("electronic-offset.dat", "wt");
-	if (pFile){
+
+	f = fopen(filename, "wt");
+	if (f){
 		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(pFile, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
+			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
 		}
+		fclose(f);
+	} else {
+		log_error("failed to write dark current");
+	}
+
+
+	state = createFilename(config, filename, filenamelength, spectro->timestampBefore, "electronic-offset", "dat");
+	if (state) {
+		log_error("could not create spectroscopy calibration filename (electronic offset)");
+		return state;
+	}
+
+	f = fopen(filename, "wt");
+	if (f){
+		for(i = 0; i < spectro->spectrum_length; i++){
+			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
+		}
+		fclose(f);
+	} else {
+		log_error("failed to write electronic offset");
 	}
 
 	return 0;
@@ -361,8 +366,7 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 	char filename[512];
 	int filenamelength = 512;
 
-	// FIXME: dark current?
-	comm_set_buffer("spc", (char*)spectro->dark_current, spectro->spectrum_length*sizeof(char));
+	comm_set_buffer("spc", (char*)spectro->lastSpectrum, spectro->spectrum_length*sizeof(char));
 
 	if(strcmp(config->cImagePath, "-") == 0){
 		// short circuit
@@ -376,7 +380,7 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 	f = fopen(filename, "wt");
 	if (f){
 		for(i = 0; i < spectro->spectrum_length; i++){
-			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
+			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->lastSpectrum[i]);
 		}
 		fclose(f);
 	}

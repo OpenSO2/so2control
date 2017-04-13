@@ -52,6 +52,9 @@ void config_init_sConfigStruct(sConfigStruct *config){
 	config->dFixTime = -1;
 	config->cConfigFileName = "";
 	config->darkframeintervall = -1;
+	config->spectrometer_calibrate_intervall = -1;
+	config->spectroscopy_roi_upper = -1;
+	config->spectroscopy_roi_lower = -1;
 	config->filterwheel_device = "";
 	config->comm_port = -1;
 }
@@ -198,6 +201,12 @@ int config_load_configfile(sConfigStruct * config)
 			config->processing = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "darkframeintervall") && config->darkframeintervall == -1) {
 			config->darkframeintervall = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "spectrometer_calibrate_intervall") && config->spectrometer_calibrate_intervall == -1) {
+			config->spectrometer_calibrate_intervall = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "spectroscopy_roi_upper") && config->spectroscopy_roi_upper == -1) {
+			config->spectroscopy_roi_upper = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "spectroscopy_roi_lower") && config->spectroscopy_roi_lower == -1) {
+			config->spectroscopy_roi_lower = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "webcam_xRes")) {
 			config->webcam_xRes = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "webcam_yRes")) {
