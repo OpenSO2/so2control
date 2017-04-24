@@ -146,11 +146,14 @@ int comm_init(sConfigStruct * config)
 	log_message("Listening to tcp socket on port %i", config->comm_port);
 
 	/* do communication in own process and return to main thread */
-	if ((accept_pid = fork()) < 0) {
+	accept_pid = fork();
+
+	if (accept_pid < 0) {
 		log_error("Could not fork process: %s", strerror(errno));
 		return -1;
-	} else if (accept_pid == 0) {	/* child */
-		/* replace signal handler inherited from parent process with my
+	} else if (accept_pid == 0) {
+		/* child
+		 * replace signal handler inherited from parent process with my
 		 * own, which will clean up the processes that this process will
 		 * fork
 		 */
@@ -162,7 +165,13 @@ int comm_init(sConfigStruct * config)
 
 		init(sockfd);
 		exit(0);
-	} else {		/* parent */
+	} else {
+		/* parent
+		 * wait for a bit to give the fork a chance to rid themselves of
+		 * the old signal handlers in case the program crashes right now
+		 * (which it totally never does) or is otherwise stopped
+		 */
+		sleep(1);
 		close(sockfd);
 	}
 

@@ -34,6 +34,7 @@ static sWebCamStruct webcam;
 static sSpectrometerStruct spectro;
 
 static void stop_program(int reason);
+static void emergency_stop_program(int reason);
 
 /* Stop programs and do general clean up
  *
@@ -91,6 +92,18 @@ static void stop_program(int reason)
 	_exit(reason);
 }
 
+/* Intercept SEGFAULT and try to at least kill all child processes.
+ * Restarting the program won't work otherwise as long as those
+ * processes are alive, since they are blocking comm->port.
+ *
+ * @author Pan Ick
+ */
+static void emergency_stop_program(int reason)
+{
+	comm_uninit(&config);
+	_exit(reason);
+}
+
 /*
  * Windows control handlers, almost directly taken from
  * https://msdn.microsoft.com/en-us/library/ms685049%28VS.85%29.aspx
@@ -127,6 +140,13 @@ int main(int argc, char *argv[])
 	sa.sa_handler = &stop_program;
 	sigaction(SIGINT, &sa, &osa);
 	sigaction(SIGTERM, &sa, &osa);
+
+	/* embarrassingly there is a non-zero chance of this program
+	 * segfaulting. Lets try to clean up enough so that the program can
+	 * be restarted without manual intervention
+	 */
+	sa.sa_handler = &emergency_stop_program;
+	sigaction(SIGSEGV, &sa, &osa);
 #else
 	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, (1==1))) {
 		log_error("Control handler could not be installed, Ctrl+C won't work");
