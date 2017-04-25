@@ -11,7 +11,8 @@ int sleepMs(int x)
 	return 0;
 }
 
-long getTimeStamp(void){
+long getTimeStamp(void)
+{
 	long mills = 0;
 	timeStruct time;
 	getTime(&time);

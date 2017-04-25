@@ -10,9 +10,9 @@ int main(int argc, char *argv[])
 	char filename[256];
 	FILE *fid;
 	sConfigStruct config;
-	char * type;
+	char *type;
 	int generate_png = 1;
-	IplImage* img;
+	IplImage *img;
 	static sParameterStruct sSO2Parameters;
 
 	if (argc < 2) {
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	if (argc == 3) {
 		stat = sprintf(filename, "%s", argv[2]);
 	} else {
-		type = generate_png ? (char*)"png" : (char*)"raw";
+		type = generate_png ? (char *)"png" : (char *)"raw";
 
 		/* saving image */
 		stat = sprintf(filename, "outfile.%s", type);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if(generate_png){
+	if (generate_png) {
 		/* create new image to hold the loaded data */
 		img = cvCreateImageHeader(cvSize(1344, 1024), IPL_DEPTH_16U, 1);
 		cvSetData(img, sSO2Parameters.stBuffer, img->widthStep);
@@ -73,12 +73,12 @@ int main(int argc, char *argv[])
 		cvSaveImage(filename, img, NULL);
 	} else {
 		fid = fopen(filename, "wb");
-		stat = fwrite(sSO2Parameters.stBuffer, sizeof(char), 1344*1024, fid);
-		if (stat != 1344*1024) {
+		stat = fwrite(sSO2Parameters.stBuffer, sizeof(char), 1344 * 1024, fid);
+		if (stat != 1344 * 1024) {
 			printf("failed to save image\n");
 			printf("fwrite stat = %d\n", stat);
 		} else {
-			printf("IMAGE: %s saved successful\n",filename);
+			printf("IMAGE: %s saved successful\n", filename);
 		}
 
 		fclose(fid);

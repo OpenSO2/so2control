@@ -1,4 +1,4 @@
-#include<string.h> /* memset */
+#include<string.h>		/* memset */
 #include<stdlib.h>
 
 #include "timehelpers.h"
@@ -11,14 +11,13 @@
 
 int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config);
 
-int startAquisition(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config)
+int startAquisition(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	int i = 0, state = 0;
 	log_message("Starting acquisition");
 
 	for (i = 0; i < config->noofimages || config->noofimages == -1; i++) {
-		if (i % config->darkframeintervall == 0){
+		if (i % config->darkframeintervall == 0) {
 			aquire_darkframe(sParameters_A, sParameters_B, config);
 
 			state = camera_autosetExposure(sParameters_A, config);
@@ -39,8 +38,7 @@ int startAquisition(sParameterStruct * sParameters_A,
 	return 0;
 }
 
-int aquire_darkframe(sParameterStruct * sParameters_A,
-	sParameterStruct * sParameters_B, sConfigStruct * config)
+int aquire_darkframe(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, sConfigStruct * config)
 {
 	log_message("closing filterwheel");
 	filterwheel_send(FILTERWHEEL_CLOSED_A);
@@ -91,14 +89,14 @@ int aquire(sParameterStruct * sParameters_A, sParameterStruct * sParameters_B, s
 	 * (b) The BufferReady event occurs indicating that the image is complete
 	 * (c) The FIFO overflow event occurs indicating that the image is corrupt.
 	 * Keep calling the sleep function to avoid burning CPU cycles */
-	while (!sParameters_A->fBufferReady || !sParameters_B->fBufferReady){
+	while (!sParameters_A->fBufferReady || !sParameters_B->fBufferReady) {
 		sleepMs(1);
 	}
 	log_debug("both image buffer ready");
 
 	/* Reset the buffer ready flags to false for next cycle */
-	sParameters_A->fBufferReady = !(1==1);
-	sParameters_B->fBufferReady = !(1==1);
+	sParameters_A->fBufferReady = !(1 == 1);
+	sParameters_B->fBufferReady = !(1 == 1);
 
 	/* get current time with milliseconds precision */
 	getTime(sParameters_A->timestampAfter);

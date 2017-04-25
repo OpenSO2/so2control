@@ -13,7 +13,7 @@ int spectroscopy_roi_lower;
 int spectroscopy_init(sConfigStruct * config, sSpectrometerStruct * spectro)
 {
 	int status = spectrometer_init(spectro);
-	if(status){
+	if (status) {
 		log_error("init spectroscopy failed");
 		return 1;
 	}
@@ -37,11 +37,11 @@ int spectroscopy_init(sConfigStruct * config, sSpectrometerStruct * spectro)
 double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 {
 	int l = spectro->spectrum_length;
-	double * wavelengths = spectro->wavelengths;
+	double *wavelengths = spectro->wavelengths;
 	double highest = 0;
-	while( l-- ){
-		if(wavelengths[l] > spectroscopy_roi_lower && wavelengths[l] < spectroscopy_roi_upper){
-			if(spectro->lastSpectrum[l] > highest)
+	while (l--) {
+		if (wavelengths[l] > spectroscopy_roi_lower && wavelengths[l] < spectroscopy_roi_upper) {
+			if (spectro->lastSpectrum[l] > highest)
 				highest = spectro->lastSpectrum[l];
 		}
 	}
@@ -77,7 +77,7 @@ double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 double spectroscopy_find_exposure_time(sSpectrometerStruct * spectro)
 {
 	log_message("spectro: find exposure time inttime: %i, max: %f, exposure: %f", spectro->integration_time_micros, spectro->max, spectroscopy_calc_exposure(spectro));
-	return .7 * spectro->integration_time_micros  * spectro->max / spectroscopy_calc_exposure(spectro);
+	return .7 * spectro->integration_time_micros * spectro->max / spectroscopy_calc_exposure(spectro);
 }
 
 int spectroscopy_calibrate(sSpectrometerStruct * spectro)
@@ -120,7 +120,7 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	// take two measurements in quick succession
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
 
-	for(i=0; i<l; i++)
+	for (i = 0; i < l; i++)
 		spectrum[i] = spectro->lastSpectrum[i];
 
 	spectroscopy_meanAndSubstract(1, 1 * 1000 * 1000, spectro);
@@ -128,8 +128,8 @@ double spectroscopy_calc_noise(sSpectrometerStruct * spectro)
 	// calc std deviation
 	// calc average difference
 	diff = 0;
-	for(i=0; i<l; i++)
-		diff += abs( spectrum[i] - spectro->lastSpectrum[i] );
+	for (i = 0; i < l; i++)
+		diff += abs(spectrum[i] - spectro->lastSpectrum[i]);
 
 	// sigma_I = sigma_D / √2
 	photon_noise = diff / M_SQRT2;
@@ -150,12 +150,12 @@ int spectroscopy_meanAndSubstract(int noOfMeasurements, int integration_time_mic
 	spectro->integration_time_micros = integration_time_micros;
 	spectro->scans = noOfMeasurements;
 
-	double * spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
+	double *spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
 	for (i = 0; i < spectro->spectrum_length; i++) {
 		spectrum[i] = 0;
 	}
 
-	for( j = 0; j < noOfMeasurements; j++){
+	for (j = 0; j < noOfMeasurements; j++) {
 		spectrometer_get(spectro);
 
 		for (i = 0; i < spectro->spectrum_length; i++) {
@@ -176,7 +176,7 @@ int spectroscopy_meanAndSubstract(int noOfMeasurements, int integration_time_mic
 
 int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpectrometerStruct * spectro)
 {
-	double * spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
+	double *spectrum = (double *)calloc(spectro->spectrum_length, sizeof(double));
 	int noOfMeasurements = number_of_spectra;
 	int i;
 	for (i = 0; i < spectro->spectrum_length; i++) {
@@ -185,7 +185,7 @@ int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpect
 
 	spectro->integration_time_micros = integration_time_micros;
 
-	while(number_of_spectra--){
+	while (number_of_spectra--) {
 		spectrometer_get(spectro);
 
 		for (i = 0; i < spectro->spectrum_length; i++) {
@@ -194,7 +194,7 @@ int spectroscopy_mean(int number_of_spectra, int integration_time_micros, sSpect
 	}
 
 	for (i = 0; i < spectro->spectrum_length; i++) {
-		 spectro->lastSpectrum[i] = spectrum[i] / noOfMeasurements;
+		spectro->lastSpectrum[i] = spectrum[i] / noOfMeasurements;
 	}
 
 	spectro->scans = noOfMeasurements;

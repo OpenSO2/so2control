@@ -58,7 +58,7 @@ static void stop_program(int reason)
 	/* stop webcam */
 	threads_webcam_stop();
 
-	if(config.enableWebcam){
+	if (config.enableWebcam) {
 		/* uninitialize webcam */
 		webcam_uninit(&config, &webcam);
 	}
@@ -72,7 +72,7 @@ static void stop_program(int reason)
 	/* uninitialize spectrometer-shutter */
 	spectrometer_shutter_uninit(&config);
 
-	if(config.enableSpectroscopy){
+	if (config.enableSpectroscopy) {
 		/* stop spectrometer thread */
 		threads_spectroscopy_stop();
 
@@ -117,7 +117,6 @@ BOOL CtrlHandler(DWORD fdwCtrlType)
 }
 #endif
 
-
 int main(int argc, char *argv[])
 {
 	/* definition of basic variables */
@@ -148,7 +147,7 @@ int main(int argc, char *argv[])
 	sa.sa_handler = &emergency_stop_program;
 	sigaction(SIGSEGV, &sa, &osa);
 #else
-	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, (1==1))) {
+	if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, (1 == 1))) {
 		log_error("Control handler could not be installed, Ctrl+C won't work");
 	}
 #endif
@@ -238,7 +237,7 @@ int main(int argc, char *argv[])
 		return state;
 	}
 
-	if(config.enableWebcam){
+	if (config.enableWebcam) {
 		/* initiate webcam */
 		state = webcam_init(&config, &webcam);
 		if (state != 0) {
@@ -254,7 +253,7 @@ int main(int argc, char *argv[])
 		log_message("disable webcam");
 	}
 
-	if(config.enableSpectroscopy){
+	if (config.enableSpectroscopy) {
 		/* initiate spectrometer-shutter */
 		state = spectrometer_shutter_init(&config);
 		if (state != 0) {

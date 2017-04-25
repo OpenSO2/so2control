@@ -5,7 +5,7 @@
 int main(int argc, char *argv[])
 {
 	int i;
-	FILE * pFile;
+	FILE *pFile;
 	sSpectrometerStruct spectro;
 	sConfigStruct config;
 	int status = 0;
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	}
 
 	status = spectroscopy_init(&config, &spectro);
-	if(status){
+	if (status) {
 		printf("init spectrometer failed\n");
 		return 1;
 	}
@@ -30,22 +30,22 @@ int main(int argc, char *argv[])
 	spectro.integration_time_micros = strtol(argv[1], NULL, 10) * 1000;
 
 	status = spectrometer_get(&spectro);
-	if(status){
+	if (status) {
 		printf("could not get spectrum\n");
 		return 1;
 	}
 
-	if (pFile){
-		for(i = 0; i < spectro.spectrum_length; i++){
+	if (pFile) {
+		for (i = 0; i < spectro.spectrum_length; i++) {
 			fprintf(pFile, "%f %f \n", spectro.wavelengths[i], spectro.lastSpectrum[i]);
 		}
-	} else{
+	} else {
 		printf("Something wrong writing to file.\n");
 	}
 
 	/* uninit */
 	status = spectrometer_uninit(&config);
-	if(status){
+	if (status) {
 		printf("uninit failed");
 	}
 

@@ -7,11 +7,11 @@
 int main(int argc, char *argv[])
 {
 	int stat = 0;
-	char * filename;
-	FILE * fid;
+	char *filename;
+	FILE *fid;
 	sWebCamStruct webcam;
 	sConfigStruct config;
-	IplImage * img;
+	IplImage *img;
 	int generate_png = 1;
 
 	printf("start test programm\n");
@@ -42,14 +42,14 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if(generate_png){
+	if (generate_png) {
 		img = cvCreateImageHeader(cvSize(config.webcam_xRes, config.webcam_yRes), IPL_DEPTH_8U, 3);
 		cvSetData(img, webcam.buffer, img->widthStep);
 
 		cvSaveImage(filename, img, NULL);
 	} else {
 		fid = fopen(filename, "wb");
-		stat = fwrite(webcam.buffer, sizeof(char), webcam.bufferSize,fid);
+		stat = fwrite(webcam.buffer, sizeof(char), webcam.bufferSize, fid);
 		if (stat != webcam.bufferSize) {
 			printf("failed to save image\n");
 			printf("buffersize stat = %d\n", webcam.bufferSize);

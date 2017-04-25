@@ -76,7 +76,7 @@ int filterwheel_send(int position)
 #ifdef POSIX
 	log_debug("write to filterwheel: %i", position);
 	write(fd, &position, bytes_to_send);
-	for (i=0;;i++){
+	for (i = 0;; i++) {
 		sleepMs(100);
 		read(fd, buffer, 80);
 
@@ -92,11 +92,12 @@ int filterwheel_send(int position)
 	return WriteFile(hSerial, bytes_to_send, 5, &bytes_written, NULL);
 #endif
 }
+
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int filterwheel_uninit(sConfigStruct * config)
 {
 #if defined(POSIX)
-	if(fd != -1)
+	if (fd != -1)
 		return close(fd);
 #else
 	return CloseHandle(hSerial);

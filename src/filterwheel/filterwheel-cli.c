@@ -14,11 +14,11 @@ int main(int argc, char *argv[])
 
 	a = (int)*argv[1] - '0'; /* convert char to int */
 
-	#if defined(POSIX)
-		config.filterwheel_device = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A402X19O-if00-port0";
-	#else
-	    config.filterwheel_device = "\\\\.\\COM22";
-	#endif
+#if defined(POSIX)
+	config.filterwheel_device = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A402X19O-if00-port0";
+#else
+	config.filterwheel_device = "\\\\.\\COM22";
+#endif
 
 	filterwheel_init(&config);
 	printf("sending %i...\n", a);

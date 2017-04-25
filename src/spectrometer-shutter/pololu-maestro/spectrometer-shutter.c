@@ -35,13 +35,13 @@ int maestroSetTarget(unsigned short target)
 
 int spectrometer_shutter_init(sConfigStruct * config)
 {
-	#ifdef POSIX
-		struct termios options;
-	#endif
-	const char * device = config->spectrometer_shutter_device;
+#ifdef POSIX
+	struct termios options;
+#endif
+	const char *device = config->spectrometer_shutter_device;
 	channel = config->spectrometer_shutter_channel;
 
-	if(channel > 5 || channel < 0){
+	if (channel > 5 || channel < 0) {
 		log_error("spectrometer_shutter channel insane");
 		close(fd);
 		return 2;
@@ -53,16 +53,15 @@ int spectrometer_shutter_init(sConfigStruct * config)
 		log_error("could not open spectrometer_shutter device");
 		return 1;
 	}
-
-	#ifdef POSIX
-		tcgetattr(fd, &options);
-		options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
-		options.c_oflag &= ~(ONLCR | OCRNL);
-		options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-		tcsetattr(fd, TCSANOW, &options);
-	#else
-		_setmode(fd, _O_BINARY);
-	#endif
+#ifdef POSIX
+	tcgetattr(fd, &options);
+	options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
+	options.c_oflag &= ~(ONLCR | OCRNL);
+	options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	tcsetattr(fd, TCSANOW, &options);
+#else
+	_setmode(fd, _O_BINARY);
+#endif
 
 	return 0;
 }
@@ -86,7 +85,7 @@ int spectrometer_shutter_close(void)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int spectrometer_shutter_uninit(sConfigStruct * config)
 {
-	if(fd != -1)
+	if (fd != -1)
 		return close(fd);
 	return 0;
 }

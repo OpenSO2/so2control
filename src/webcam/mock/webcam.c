@@ -20,12 +20,12 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	}
 
 	/* get filesize */
-	fseek (fid , 0 , SEEK_END);
-	fsize = ftell (fid);
-	rewind (fid);
+	fseek(fid, 0, SEEK_END);
+	fsize = ftell(fid);
+	rewind(fid);
 
 	/* allocate buffer */
-	buffer = (char*) malloc (sizeof(char)*fsize);
+	buffer = (char *)malloc(sizeof(char) * fsize);
 	if (buffer == NULL) {
 		log_error("error allocating enough memory");
 		return -1;
@@ -39,8 +39,8 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	fclose(fid);
 
 	webcam->bufferSize = fsize;
-	webcam->timestampBefore = (timeStruct*)malloc(sizeof(timeStruct));
-	webcam->timestampAfter = (timeStruct*)malloc(sizeof(timeStruct));
+	webcam->timestampBefore = (timeStruct *) malloc(sizeof(timeStruct));
+	webcam->timestampAfter = (timeStruct *) malloc(sizeof(timeStruct));
 
 	return 0;
 }
@@ -71,4 +71,3 @@ int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 	return 0;
 }
 #pragma GCC diagnostic warning "-Wunused-parameter"
-

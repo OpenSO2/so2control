@@ -9,16 +9,16 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define LOG_BUFFER_SIZE 512
 
-static sConfigStruct * conf = NULL;
+static sConfigStruct *conf = NULL;
 static FILE *logfile = NULL;
 static timeStruct t;
 
-int logg(char * type, char *message, va_list args);
+int logg(char *type, char *message, va_list args);
 
 int log_init(sConfigStruct * config)
 {
 	static char nameLogFile[LOG_BUFFER_SIZE];
-	struct stat st = {0};
+	struct stat st = { 0 };
 
 	conf = config;
 	getTime(&t);
@@ -79,14 +79,15 @@ int log_debug(char *message, ...)
 {
 	va_list args;
 
-	if(!conf || conf->debug == 0) return 0;
+	if (!conf || conf->debug == 0)
+		return 0;
 
 	va_start(args, message);
 	return logg("DEBUG", message, args);
 	va_end(args);
 }
 
-int logg(char * type, char *message, va_list args)
+int logg(char *type, char *message, va_list args)
 {
 	static char buffer[LOG_BUFFER_SIZE];
 	static char buffer2[LOG_BUFFER_SIZE];
@@ -100,12 +101,12 @@ int logg(char * type, char *message, va_list args)
 	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d | %s | %s\n",
 		t.hour, t.min, t.sec, type, buffer);
 
-	if(strcmp(type, "ERROR"))
+	if (strcmp(type, "ERROR"))
 		fprintf(stdout, "%s", buffer2);
 	else
 		fprintf(stderr, ANSI_COLOR_RED "%s" ANSI_COLOR_RESET, buffer2);
 
-	if(logfile){
+	if (logfile) {
 		fprintf(logfile, "%s", buffer2);
 	}
 
@@ -116,7 +117,7 @@ int log_uninit(void)
 {
 	va_list args;
 	logg("EXIT ", "The program exited this log file ends here", args);
-	if(logfile){
+	if (logfile) {
 		fclose(logfile);
 	}
 	return 0;

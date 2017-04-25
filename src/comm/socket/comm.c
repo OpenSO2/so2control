@@ -42,14 +42,13 @@ typedef struct {
 	int spcSize;
 	int readLock;
 	int writeLock;
-	char * top;
-	char * bot;
-	char * cam;
-	char * spc;
+	char *top;
+	char *bot;
+	char *cam;
+	char *spc;
 } buffersStruct;
 
 static buffersStruct *buffers;
-
 
 void kill_socket_processes(int reason)
 {
@@ -118,11 +117,10 @@ int comm_init(sConfigStruct * config)
 	buffers->camSize = 100000000;
 	buffers->spcSize = 100000000;
 
-	buffers->top = (char *) mmap(NULL, buffers->topSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	buffers->bot = (char *) mmap(NULL, buffers->botSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	buffers->cam = (char *) mmap(NULL, buffers->camSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	buffers->spc = (char *) mmap(NULL, buffers->spcSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-
+	buffers->top = (char *)mmap(NULL, buffers->topSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->bot = (char *)mmap(NULL, buffers->botSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->cam = (char *)mmap(NULL, buffers->camSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->spc = (char *)mmap(NULL, buffers->spcSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0) {
@@ -191,7 +189,7 @@ int init(int sockfd)
 	while ((newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen))) {
 #pragma GCC diagnostic warning "-Wstrict-aliasing"
 		if (newsockfd < 0) {
-			if(errno == EINTR){
+			if (errno == EINTR) {
 				/* The system call was interrupted which is the desired behavior */
 				return 0;
 			}
@@ -327,7 +325,7 @@ int handle_socket(int newsockfd)
 		} else if (n == 0) {
 			log_message("socket %i was closed by peer", newsockfd);
 			return 0;
-		} else if (n != size){
+		} else if (n != size) {
 			log_error("received message was incomplete");
 		}
 
@@ -366,7 +364,7 @@ int handle_socket(int newsockfd)
 int comm_uninit(sConfigStruct * config)
 {
 
-	if(accept_pid){
+	if (accept_pid) {
 		kill(accept_pid, SIGTERM);
 		waitpid(accept_pid, NULL, 0);
 	}

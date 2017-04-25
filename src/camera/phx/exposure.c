@@ -27,21 +27,21 @@ double getExposureTime(sParameterStruct *, sConfigStruct *);
 /* Either return the preset, fixed exposure time or run off into an
  * iterative loop to find a suitable value
  */
-double getExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
+double getExposureTime(sParameterStruct *sSO2Parameters, sConfigStruct *config)
 {
 	double exposure;
 	int status = 0;
 	if (config->dFixTime != 0) {
 		/* Check if exposure time is declared fix in the config file and if so, set it */
 		log_message("Set program to use a fix exposure time, %i", config->dFixTime);
-		if(sSO2Parameters->identifier == 'a')
+		if (sSO2Parameters->identifier == 'a')
 			exposure = config->dExposureTime_a;
 		else
 			exposure = config->dExposureTime_b;
 	} else {
 		log_message("Find exposure");
 		status = find_ettr(&exposure, sSO2Parameters, config);
-		if(status){
+		if (status) {
 			log_error("could not find exposure (ETTR)");
 			return status;
 		}
@@ -52,7 +52,7 @@ double getExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config
 	return status;
 }
 
-int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruct * config)
+int find_ettr(double *exposure, sParameterStruct *sSO2Parameters, sConfigStruct *config)
 {
 	int status = 0;
 	int relative_exposure = 0;  /* 0 good exposure, -1 underexposure, 1 overexposure */
@@ -65,7 +65,7 @@ int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruc
 	double actualExposure;
 	*exposure = sSO2Parameters->dExposureTime;
 
-	do{
+	do {
 
 		/* because the continues exposure time value maps to a finite set of
 		 * discrete values (either frames in frameblanking mode or a number
@@ -77,7 +77,7 @@ int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruc
 		 */
 		calc_mode_speed(*exposure, &actualExposure, &m, speed);
 
-		if( m == lastm && strncmp(speed, lastspeed, 9) == 0){
+		if (m == lastm && strncmp(speed, lastspeed, 9) == 0) {
 			log_message("change in calculated exposure is lower than the amount that the camera can actually change by, so this is good enough.");
 			/* unfortunately, this gets even more complicated
 			 * If this image was overexposed, we are now stuck with blown
@@ -86,7 +86,7 @@ int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruc
 			 * with the most interesting. So in that case we revert back
 			 * to the last known underexposed value.
 			 */
-			if(relative_exposure == 1){
+			if (relative_exposure == 1) {
 				log_message("calculated value was overexposed, reverting to last known underexposed value");
 				*exposure = underexposed;
 			}
@@ -115,27 +115,27 @@ int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruc
 		 * if last over- or underexposed value is not yet known, half or double
 		 * the current exposure time value
 		 */
-		if (relative_exposure == 1){ /* overexposed */
+		if (relative_exposure == 1) {	/* overexposed */
 			overexposed = *exposure;
-			if(underexposed > 0) {
-				*exposure = floor((*exposure + underexposed)/2);
+			if (underexposed > 0) {
+				*exposure = floor((*exposure + underexposed) / 2);
 			} else {
-				*exposure = floor(*exposure/2);
+				*exposure = floor(*exposure / 2);
 			}
 
-		} else if(relative_exposure == -1){ /* underexposed */
+		} else if (relative_exposure == -1) {	/* underexposed */
 			underexposed = *exposure;
-			if(overexposed > 0) {
-				*exposure = floor((*exposure + overexposed)/2);
-			} else if(abs(*exposure - MAX_EXPOSURETIME) < 2) {
+			if (overexposed > 0) {
+				*exposure = floor((*exposure + overexposed) / 2);
+			} else if (abs(*exposure - MAX_EXPOSURETIME) < 2) {
 				log_message("image is still underexposed, but exposure time has reached its max value (%i of %i)", floor(*exposure), MAX_EXPOSURETIME);
 				relative_exposure = 0;
 			} else {
-				*exposure = (*exposure*2 < MAX_EXPOSURETIME) ? *exposure*2 : MAX_EXPOSURETIME;
+				*exposure = (*exposure * 2 < MAX_EXPOSURETIME) ? *exposure * 2 : MAX_EXPOSURETIME;
 			}
 		}
 		log_debug("relative_exposure %i %f", relative_exposure, *exposure);
-	} while( relative_exposure );
+	} while (relative_exposure);
 	return 0;
 }
 
@@ -152,8 +152,7 @@ int find_ettr(double * exposure, sParameterStruct * sSO2Parameters, sConfigStruc
  *            < 0  underexposed
  *
 */
-int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
-	     int *timeswitch)
+int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config, int *timeswitch)
 {
 	int bufferlength = config->dBufferlength;
 	int histogram[4096] = { 0 };
@@ -167,19 +166,19 @@ int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 		histogram[temp]++;
 	}
 
-	if(config->debug){
-		FILE * fd;
+	if (config->debug) {
+		FILE *fd;
 		char fname[1000];
 		sprintf(fname, "exposurehist-%c-%f", sSO2Parameters->identifier, sSO2Parameters->dExposureTime);
 		fd = fopen(fname, "w");
-		for (i = 0; i < 4096; i++){
+		for (i = 0; i < 4096; i++) {
 			fprintf(fd, "%i %i\n", i, histogram[i]);
 		}
 		fclose(fd);
 
 		sprintf(fname, "img-%c-%f", sSO2Parameters->identifier, sSO2Parameters->dExposureTime);
 		fd = fopen(fname, "w");
-		for (i = 0; i < bufferlength; i++){
+		for (i = 0; i < bufferlength; i++) {
 			fprintf(fd, "%i %i\n", i, sSO2Parameters->stBuffer[i]);
 		}
 		fclose(fd);
@@ -190,21 +189,21 @@ int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 	 * ignore hot pixels)
 	 */
 	sum = 0;
-	for (i = floor(4096*.95); i < 4096 - 1; i++) {
+	for (i = floor(4096 * .95); i < 4096 - 1; i++) {
 		sum += histogram[i];
 	}
-	if ( sum < bufferlength*.0001 ){
+	if (sum < bufferlength * .0001) {
 		log_debug("image underexposed");
 		*timeswitch = -1;
 		return 0;
 	}
 
-	/* now check for overexposure*/
+	/* now check for overexposure */
 	sum = 0;
-	for (i = floor(4096*.99); i < 4096 - 1; i++) {
+	for (i = floor(4096 * .99); i < 4096 - 1; i++) {
 		sum += histogram[i];
 	}
-	if ( sum > bufferlength*.0001 ){
+	if (sum > bufferlength * .0001) {
 		log_debug("image overexposed");
 		*timeswitch = 1;
 		return 0;
@@ -214,10 +213,10 @@ int evalHist(sParameterStruct * sSO2Parameters, sConfigStruct * config,
 	 * to at least print some warnings
 	 */
 	/* at least two thirds of the elements should be at least half full */
-	for (i = floor(4096*.75); i < 4096 - 1; i++) {
+	for (i = floor(4096 * .75); i < 4096 - 1; i++) {
 		sum += histogram[i];
 	}
-	if(sum < bufferlength/2){
+	if (sum < bufferlength / 2) {
 		log_message("ETTR WARNING: scene might be poorly lit");
 	}
 

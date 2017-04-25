@@ -18,12 +18,12 @@
 
 /* prototypes for private functions */
 int set_mode_speed(tHandle, char, char[9]);
-int calc_mode_speed(double, double*, char *, char[9]);
+int calc_mode_speed(double, double *, char *, char[9]);
 
 #include"exposure.c"
 
 void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params);
-static int sendMessage(tHandle hCamera, ui8 *inputBuffer);
+static int sendMessage(tHandle hCamera, ui8 * inputBuffer);
 int setup_camera(sParameterStruct * sSO2Parameters);
 
 int camera_abort(sParameterStruct * sSO2Parameters)
@@ -42,7 +42,7 @@ int camera_uninit(sParameterStruct * sSO2Parameters)
 
 int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 {
-	sSO2Parameters->fBufferReady = (1==0);
+	sSO2Parameters->fBufferReady = (1 == 0);
 
 #pragma GCC diagnostic ignored "-Wpedantic"
 	PHX_Acquire(sSO2Parameters->hCamera, PHX_START, internalCallback);
@@ -52,7 +52,7 @@ int camera_get(sParameterStruct * sSO2Parameters, int waiter)
 		/* if theres no callback, this function will work synchronously
 		 * and wait for the return of the image buffer
 		 */
-		while (!sSO2Parameters->fBufferReady){
+		while (!sSO2Parameters->fBufferReady) {
 			sleepMs(1);
 		}
 
@@ -95,8 +95,8 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 		return PHX_ERROR_OUT_OF_RANGE;
 	}
 	calc_mode_speed(exposureTime, &actualExposureTime, &m, speed);
-	sSO2Parameters->dExposureTime = actualExposureTime; /* update struct to the actual exposure time*/
-	if(m == 'S'){
+	sSO2Parameters->dExposureTime = actualExposureTime; /* update struct to the actual exposure time */
+	if (m == 'S') {
 		log_message("Camera %c uses electronic shutter. Exposure was set to approx. %f us which calculates to %f", sSO2Parameters->identifier, exposureTime, actualExposureTime);
 	} else {
 		log_message("Camera %c uses frameblanking. Exposure was set to approx. %f us which calculates to %f", sSO2Parameters->identifier, exposureTime, actualExposureTime);
@@ -106,22 +106,22 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 	return eStat;
 }
 
-int calc_mode_speed(double exposureTime, double * actualExposureTime, char *m, char speed[9])
+int calc_mode_speed(double exposureTime, double *actualExposureTime, char *m, char speed[9])
 {
 	int n = 1;
 	/* S Shutter, F frameblanking */
 	if (exposureTime <= 83560.) {
 		/* ELECTRONIC SHUTTER, Shutter speed: 1 - 1055 */
-		n = round((exposureTime - 12.4)/79.275 + 1);
+		n = round((exposureTime - 12.4) / 79.275 + 1);
 		sprintf(speed, "SHT %d\r", n);
 		*m = 'S';
-		*actualExposureTime = 12.4 + (n-1)*79.275, n;
+		*actualExposureTime = 12.4 + (n - 1) * 79.275, n;
 	} else {
 		/* FRAME BLANKING, number of frames: 1 - 12 */
 		n = round(exposureTime / 83700.);
 		sprintf(speed, "FBL %d\r", n);
 		*m = 'F';
-		*actualExposureTime = n*83700, n;
+		*actualExposureTime = n * 83700, n;
 	}
 	return 0;
 }
@@ -132,13 +132,13 @@ int set_mode_speed(tHandle hCamera, char m, char speed[9])
 	char mode[8];
 	sprintf(mode, "NMD %c\r", m);
 
-	eStat = sendMessage(hCamera, (ui8*)mode);
+	eStat = sendMessage(hCamera, (ui8 *) mode);
 	if (PHX_OK != eStat) {
 		log_error("Setting camera mode failed");
 		return eStat;
 	}
 
-	eStat = sendMessage(hCamera, (ui8*)speed);
+	eStat = sendMessage(hCamera, (ui8 *) speed);
 	if (PHX_OK != eStat) {
 		log_error("setting shutter to %s failed", speed);
 		return eStat;
@@ -185,26 +185,26 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 	log_message("setup camera");
 
 	/* initialize default values */
-	eStat = sendMessage(hCamera, (ui8*)"INI\r");
+	eStat = sendMessage(hCamera, (ui8 *) "INI\r");
 	if (PHX_OK != eStat) {
 		log_error("sending INI to camera was unsuccessful");
 		return eStat;
 	}
 	/* freerunning or external control mode: */
 	/* N freerun mode, E external */
-	eStat = sendMessage(hCamera, (ui8*)"AMD N\r");
+	eStat = sendMessage(hCamera, (ui8 *) "AMD N\r");
 	if (PHX_OK != eStat) {
 		log_error("sending AMD N to camera was unsuccessful");
 		return eStat;
 	}
 	/* scanning mode: N Normal, S superpixel */
-	eStat = sendMessage(hCamera, (ui8*)"SMD N\r");
+	eStat = sendMessage(hCamera, (ui8 *) "SMD N\r");
 	if (PHX_OK != eStat) {
 		log_error("sending SMD N to camera was unsuccessful");
 		return eStat;
 	}
 	/* horizontal pixel output: M = 1344 */
-	eStat = sendMessage(hCamera, (ui8*)"SHA M\r");
+	eStat = sendMessage(hCamera, (ui8 *) "SHA M\r");
 	if (PHX_OK != eStat) {
 		log_error("sending SHA M to camera was unsuccessful");
 		return eStat;
@@ -212,7 +212,7 @@ int setup_camera(sParameterStruct * sSO2Parameters)
 	/* contrast enhancement gain: low */
 	/* CEG L CONTRAST ENHANCEMENT GAIN  (CEG L: 0dB) (CEG H: 14dB) */
 	log_message("set contrast enhancement gain to LOW");
-	eStat = sendMessage(hCamera, (ui8*)"CEG L\r");
+	eStat = sendMessage(hCamera, (ui8 *) "CEG L\r");
 	if (PHX_OK != eStat) {
 		log_error("sending CEG L to camera was unsuccessful");
 		return eStat;
@@ -226,16 +226,16 @@ void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params)
 {
 	stImageBuff buffythevampireslayer;
 	etStat eStat;
-	sParameterStruct *sSO2Parameters = (sParameterStruct*) params;
+	sParameterStruct *sSO2Parameters = (sParameterStruct *) params;
 	log_debug("internal camera callback called");
 
 	/* Fifo Overflow */
-	if ( PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask ) {
+	if (PHX_INTRPT_FIFO_OVERFLOW & dwInterruptMask) {
 		log_error("a fifo overflow occured.");
 	}
 
 	/* Handle the Buffer Ready event */
-	if ( PHX_INTRPT_BUFFER_READY & dwInterruptMask ) {
+	if (PHX_INTRPT_BUFFER_READY & dwInterruptMask) {
 		eStat = PHX_Acquire(hCamera, PHX_BUFFER_GET, &buffythevampireslayer);
 		if (PHX_OK != eStat) {
 			log_error("frame couldn't be aquired");
@@ -243,13 +243,13 @@ void internalCallback(tHandle hCamera, ui32 dwInterruptMask, void *params)
 
 		sSO2Parameters->stBuffer = buffythevampireslayer.pvAddress;
 		sSO2Parameters->hCamera = hCamera;
-		sSO2Parameters->fBufferReady = (1==1);
+		sSO2Parameters->fBufferReady = (1 == 1);
 	} else {
 		log_error("phx callback called but frame was not aquired");
 	}
 }
 
-static int sendMessage(tHandle hCamera, ui8 *msg)
+static int sendMessage(tHandle hCamera, ui8 * msg)
 {
 	etStat eStat = !PHX_OK;
 	int i;
@@ -299,7 +299,8 @@ static int sendMessage(tHandle hCamera, ui8 *msg)
 			continue; /* short circuit */
 		}
 		/* remove carriage return character from string for logging */
-		for(j = 0; j < recvLength; j++) recv[j] = recv[j] == '\r' ? ' ' : recv[j];
+		for (j = 0; j < recvLength; j++)
+			recv[j] = recv[j] == '\r' ? ' ' : recv[j];
 		log_debug("send message: %s was successful", recv);
 		return 0;	/* here return of SUCCESS */
 	}

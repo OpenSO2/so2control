@@ -1,12 +1,12 @@
  /*
- * This file implements the configuration handling facilities.
- * Configuration values are taken from three sources:
- * - from the command line arguments, eg. --noofimages N
- * - from an config file
- * - internal presets
- *
- * All function pertaining configuration are prefixed with "config_".
- */
+  * This file implements the configuration handling facilities.
+  * Configuration values are taken from three sources:
+  * - from the command line arguments, eg. --noofimages N
+  * - from an config file
+  * - internal presets
+  *
+  * All function pertaining configuration are prefixed with "config_".
+  */
 #include<string.h>
 #include<stdlib.h>
 #include "configurations.h"
@@ -15,15 +15,15 @@
 #define MAXBUF 1024
 
 /* local prototypes*/
-char * getString(char * source);
+char *getString(char *source);
 
 /*
  * Set up a sParameterStruct structure with values taken from the
  * configuration
  */
-void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruct *config, char identifier)
+void config_init_sParameterStruct(sParameterStruct * sSO2Parameters, sConfigStruct * config, char identifier)
 {
-	if(identifier == 'a') {
+	if (identifier == 'a') {
 		sSO2Parameters->dExposureTime = config->dExposureTime_a;
 	} else {
 		sSO2Parameters->dExposureTime = config->dExposureTime_b;
@@ -38,7 +38,8 @@ void config_init_sParameterStruct(sParameterStruct *sSO2Parameters, sConfigStruc
  * inits a sConfigStruct with zeros or empty strings. This is useful to
  * be able to check if one of the values has been set later on
  */
-void config_init_sConfigStruct(sConfigStruct *config){
+void config_init_sConfigStruct(sConfigStruct * config)
+{
 	config->processing = -1;
 	config->debug = -1;
 	config->noofimages = -1;
@@ -70,8 +71,7 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 	char errstr[512];
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--speedy-gonzales") == 0
-		    || strcmp(argv[i], "--noprocessing") == 0) {
+		if (strcmp(argv[i], "--speedy-gonzales") == 0 || strcmp(argv[i], "--noprocessing") == 0) {
 			config->processing = 1;
 		} else if (strcmp(argv[i], "--png-only") == 0) {
 			config->processing = 2;
@@ -125,9 +125,9 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
  */
 int config_load_configfile(sConfigStruct * config)
 {
-	FILE *pFILE;          /* filehandle for config file */
-	char lineBuf[MAXBUF]; /* buffer that holds the current line of the config file */
-	char *delimeterBuf;   /* buffer that holds the line after a specified delimeter */
+	FILE *pFILE;		/* filehandle for config file */
+	char lineBuf[MAXBUF];	/* buffer that holds the current line of the config file */
+	char *delimeterBuf;	/* buffer that holds the line after a specified delimeter */
 	int linenumber = 0;
 
 	char user_conffile[256] = "";
@@ -139,33 +139,33 @@ int config_load_configfile(sConfigStruct * config)
 	char *xdg_configdir = getenv("XDG_CONFIG_DIRS");
 
 	/* source path */
-	if (!strlen(config->cConfigFileName)){
+	if (!strlen(config->cConfigFileName)) {
 		config->cConfigFileName = "./configurations/so2-camera.conf";
 	}
 
 	/* home path */
-	if(xdg_home_configdir){ /* linux only */
+	if (xdg_home_configdir) {	/* linux only */
 		sprintf(user_conffile, "%s/so2-camera/so2-camera.conf", xdg_home_configdir);
-	} else if (programdata) { /* windows only */
+	} else if (programdata) {	/* windows only */
 		sprintf(user_conffile, "%s/so2-camera/config/so2-camera.conf", programdata);
 	} else if (home) {
 		sprintf(user_conffile, "%s/.config/so2-camera/so2-camera.conf", home);
 	}
 
-	if ((pFILE = fopen(config->cConfigFileName, "r"))){
+	if ((pFILE = fopen(config->cConfigFileName, "r"))) {
 		/* source path */
 		log_debug("read configfile from source path: %s", config->cConfigFileName);
-	} else if ((pFILE = fopen(user_conffile, "r"))){
+	} else if ((pFILE = fopen(user_conffile, "r"))) {
 		/* user path */
 		log_debug("read configfile from home path: %s", user_conffile);
 		config->cConfigFileName = user_conffile;
 	} else {
 		/* system path */
 #ifdef POSIX
-		while ((token = strsep(&xdg_configdir, ":"))){
+		while ((token = strsep(&xdg_configdir, ":"))) {
 			sprintf(system_conffile, "%s/so2-camera/so2-camera.conf", token);
 			log_debug("search for config file at %s", system_conffile);
-			if((pFILE = fopen(system_conffile, "r"))){
+			if ((pFILE = fopen(system_conffile, "r"))) {
 				log_debug("read configfile from system path: %s", system_conffile);
 				config->cConfigFileName = system_conffile;
 				break;
@@ -174,7 +174,7 @@ int config_load_configfile(sConfigStruct * config)
 #endif
 	}
 
-	if(!pFILE){
+	if (!pFILE) {
 		log_error("opening config file failed!");
 		return 1;
 	}
@@ -240,7 +240,7 @@ int config_load_configfile(sConfigStruct * config)
 /*
  * load default config values.
  */
-void config_load_default(sConfigStruct *config)
+void config_load_default(sConfigStruct * config)
 {
 	config->dInterFrameDelay   = config->dInterFrameDelay != -1 ? config->dInterFrameDelay : 10;
 	config->dBufferlength      = config->dBufferlength    != -1 ? config->dBufferlength    : 1376256;
@@ -255,9 +255,9 @@ void config_load_default(sConfigStruct *config)
 	config->enableWebcam       = config->enableWebcam != -1         ? config->enableWebcam       : 1;
 }
 
-char * getString(char * source)
+char *getString(char *source)
 {
-	char * tmp;
+	char *tmp;
 	size_t l = strspn(source, " =");
 	tmp = source + l; /* remove leading whitespace */
 	tmp = strtok(tmp, "\n");/* remove LF */

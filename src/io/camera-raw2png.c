@@ -4,10 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-	char * infile;
-	char * outfile;
-	FILE * f;
-	IplImage * img;
+	char *infile;
+	char *outfile;
+	FILE *f;
+	IplImage *img;
 	unsigned int length;
 	int read_bytes;
 	int state = 0;
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	}
 
 	(void)fseek(f, 0, SEEK_SET);
-	buffer = (short int*)malloc(length);
+	buffer = (short int *)malloc(length);
 	if (!buffer) {
 		printf("failed to create buffer\n");
 		free(buffer);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	//~ cvFlip(img, img, -1);
 
 	state = cvSaveImage(outfile, img, NULL);
-	if(!state){
+	if (!state) {
 		printf("failed to save image \n");
 		return 1;
 	}

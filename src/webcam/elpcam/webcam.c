@@ -2,14 +2,13 @@
 #include "log.h"
 #include "webcam.h"
 
-static CvCapture* cam;
+static CvCapture *cam;
 
 int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 {
 	/* open camera */
 	cam = cvCaptureFromCAM(CV_CAP_ANY);
-	if (!cam)
-	{
+	if (!cam) {
 		log_error("couldn't open camera device");
 		return -1;
 	}
@@ -18,8 +17,8 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, config->webcam_xRes);
 	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, config->webcam_yRes);
 
-	webcam->timestampBefore = (timeStruct*)malloc(sizeof(timeStruct));
-	webcam->timestampAfter = (timeStruct*)malloc(sizeof(timeStruct));
+	webcam->timestampBefore = (timeStruct *) malloc(sizeof(timeStruct));
+	webcam->timestampAfter = (timeStruct *) malloc(sizeof(timeStruct));
 
 	return 0;
 }

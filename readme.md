@@ -111,7 +111,7 @@ Compilation flags can be used to controll the compilation of the program
 Coding style
 ------------
 
-This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle)
+This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle) without the line length limit
 which is enforced using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
 
 ```

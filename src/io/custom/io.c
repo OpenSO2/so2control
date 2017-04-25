@@ -13,7 +13,7 @@
 #include "comm.h"
 
 /* local prototypes */
-int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype);
+int createFilename(sConfigStruct * config, char *filename, int filenamelength, timeStruct * time, char *camname, char *filetype);
 IplImage *bufferToImage(short *buffer);
 IplImage *bufferToImageCam(char *buffer);
 int dateStructToISO8601(timeStruct * time, char *iso_date);
@@ -33,28 +33,26 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config);
  */
 int io_init(sConfigStruct * config)
 {
-	#define SUBFOLDER_STR_LEN 18
+#define SUBFOLDER_STR_LEN 18
 	int status;
 	static timeStruct now;
-	struct stat st = {0};
-	char * subfolder = NULL;
+	struct stat st = { 0 };
+	char *subfolder = NULL;
 	getTime(&now);
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("skip io init");
 		free(subfolder);
 		return 0;
 	}
-
 	// check for and remove trailing "/" to avoid ugly "//" in imagePath
-	if(config->cImagePath[(strlen(config->cImagePath)-1)] == '/'){
-		config->cImagePath[(strlen(config->cImagePath)-1)] = '\0';
+	if (config->cImagePath[(strlen(config->cImagePath) - 1)] == '/') {
+		config->cImagePath[(strlen(config->cImagePath) - 1)] = '\0';
 	}
-
 	// eg. /2016-08-08_12_12/
 	//     123456789012345678
-	if(config->createsubfolders){
+	if (config->createsubfolders) {
 		subfolder = (char *)malloc(SUBFOLDER_STR_LEN + 1);
 		sprintf(subfolder, "/%04d-%02d-%02d_%02d_%02d/",
 			now.year,
@@ -66,7 +64,7 @@ int io_init(sConfigStruct * config)
 		subfolder = (char *)malloc(1 + 1);
 		sprintf(subfolder, "/");
 	}
-	config->cImagePath = (char *) realloc(config->cImagePath, strlen(config->cImagePath) + strlen(subfolder) + 1);
+	config->cImagePath = (char *)realloc(config->cImagePath, strlen(config->cImagePath) + strlen(subfolder) + 1);
 	strcat(config->cImagePath, subfolder);
 
 	free(subfolder);
@@ -75,7 +73,7 @@ int io_init(sConfigStruct * config)
 	if (stat(config->cImagePath, &st) == -1) {
 		status = mkdir(config->cImagePath, 0700);
 
-		if(status != 0){
+		if (status != 0) {
 			log_error("output folder (%s) does not exist and could not be created; create parent folder to fix this issue", config->cImagePath);
 			return 1;
 		}
@@ -168,17 +166,15 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 {
 	int l;
 	int writen_bytes;
-	FILE * fp;
-	char * buffer;
+	FILE *fp;
+	char *buffer;
 	int state;
 	char filename[512];
 	//~ char iso_date[25];
-	FILE * f;
+	FILE *f;
 	int filenamelength = 512;
 	IplImage *img;
 	CvMat *png;
-
-
 
 	/* convert the image buffer to an openCV image */
 	// TODO: check if this has already been done
@@ -205,7 +201,7 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 
 	comm_set_buffer("cam", buffer, l);
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("do not save png webcam image");
 
@@ -222,12 +218,11 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	f = fopen(filename, "wb");
-	if(!f){
+	if (!f) {
 		log_error("Failed to open file to save webcam image");
 		log_debug("Filename was %s", filename);
 		return 1;
 	}
-
 
 	/* save image to disk */
 	log_debug("open new png file %i", l);
@@ -260,10 +255,10 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 	int state;
 	char filename[512];
 	char iso_date[25];
-	FILE * f;
+	FILE *f;
 	int filenamelength = 512;
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("do not save raw webcam image dump");
 		return 0;
@@ -276,7 +271,7 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	f = fopen(filename, "wb");
-	if(!f){
+	if (!f) {
 		log_error("Failed to open file to save webcam image");
 		log_debug("Filename was %s", filename);
 		return 1;
@@ -300,7 +295,7 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	f = fopen(filename, "wt");
-	if (f){
+	if (f) {
 		fprintf(f, "bufferSize %i\n", webcam->bufferSize);
 		dateStructToISO8601(webcam->timestampBefore, iso_date);
 		fprintf(f, "timestampBefore %s\n", iso_date);
@@ -318,7 +313,7 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-	FILE * f;
+	FILE *f;
 	int i;
 	int state = 1;
 	char filename[512];
@@ -331,15 +326,14 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 	}
 
 	f = fopen(filename, "wt");
-	if (f){
-		for(i = 0; i < spectro->spectrum_length; i++){
+	if (f) {
+		for (i = 0; i < spectro->spectrum_length; i++) {
 			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->dark_current[i]);
 		}
 		fclose(f);
 	} else {
 		log_error("failed to write dark current");
 	}
-
 
 	state = createFilename(config, filename, filenamelength, spectro->timestampBefore, "electronic-offset", "dat");
 	if (state) {
@@ -348,8 +342,8 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 	}
 
 	f = fopen(filename, "wt");
-	if (f){
-		for(i = 0; i < spectro->spectrum_length; i++){
+	if (f) {
+		for (i = 0; i < spectro->spectrum_length; i++) {
 			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->electronic_offset[i]);
 		}
 		fclose(f);
@@ -363,15 +357,15 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 
 int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 {
-	FILE * f;
+	FILE *f;
 	int i;
 	char iso_date[25];
 	char filename[512];
 	int filenamelength = 512;
 
-	comm_set_buffer("spc", (char*)spectro->lastSpectrum, spectro->spectrum_length*sizeof(char));
+	comm_set_buffer("spc", (char *)spectro->lastSpectrum, spectro->spectrum_length * sizeof(char));
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("do not save spectrum");
 		return 0;
@@ -381,8 +375,8 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 
 	/* save spectrum */
 	f = fopen(filename, "wt");
-	if (f){
-		for(i = 0; i < spectro->spectrum_length; i++){
+	if (f) {
+		for (i = 0; i < spectro->spectrum_length; i++) {
 			fprintf(f, "%f %f \n", spectro->wavelengths[i], spectro->lastSpectrum[i]);
 		}
 		fclose(f);
@@ -391,7 +385,7 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 	/* save meta */
 	createFilename(config, filename, filenamelength, spectro->timestampBefore, "spectrum_meta", "txt");
 	f = fopen(filename, "wt");
-	if (f){
+	if (f) {
 		fprintf(f, "max %f\n", spectro->max);
 		fprintf(f, "integration_time_micros %i\n", spectro->integration_time_micros);
 		fprintf(f, "spectrum_length %i\n", spectro->spectrum_length);
@@ -409,7 +403,6 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 
 	return 0;
 }
-
 
 /*
  * io_uninit
@@ -444,7 +437,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	char id = sSO2Parameters->identifier;
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("do not save raw image dump");
 		return 0;
@@ -453,8 +446,8 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	/* identify Camera for filename Prefix */
 	char *camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
-	state = createFilename(config, headerfile, headerfilelength, time, camname,  "txt");
-	if(state){
+	state = createFilename(config, headerfile, headerfilelength, time, camname, "txt");
+	if (state) {
 		log_error("could not create txt filename");
 	}
 
@@ -468,7 +461,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	imageFile = fopen(rawfile, "wb");
 	if (imageFile != NULL) {
 		fwriteReturn = fwrite(sSO2Parameters->stBuffer, 1, config->dBufferlength * 2, imageFile);
-		if(fwriteReturn != config->dBufferlength * 2){
+		if (fwriteReturn != config->dBufferlength * 2) {
 			log_debug("could not write raw file %i != %i", config->dBufferlength, fwriteReturn);
 			log_error("could not write raw file");
 		}
@@ -552,7 +545,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 
 	comm_set_buffer(camname, buffer, l);
 
-	if(strcmp(config->cImagePath, "-") == 0){
+	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
 		log_debug("do not save png image");
 
@@ -562,8 +555,8 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		return 0;
 	}
 
-	state = createFilename(config, filename, filenamelength, time, camname,  "png");
-	if(state){
+	state = createFilename(config, filename, filenamelength, time, camname, "png");
+	if (state) {
 		log_error("could not create txt filename");
 	}
 
@@ -597,14 +590,15 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	return state;
 }
 
-int insertHeaders(char **png, sParameterStruct *sSO2Parameters, sConfigStruct *config, int png_length){
+int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length)
+{
 	char iso_date[25];
 	dateStructToISO8601(sSO2Parameters->timestampBefore, iso_date);
-	png_length = insertHeader(png, "Creation Time ",    iso_date, png_length);
-	png_length = insertStringValue(png, "timestampBefore",    iso_date, png_length);
+	png_length = insertHeader(png, "Creation Time ", iso_date, png_length);
+	png_length = insertStringValue(png, "timestampBefore", iso_date, png_length);
 
 	dateStructToISO8601(sSO2Parameters->timestampAfter, iso_date);
-	png_length = insertStringValue(png, "timestampAfter",     iso_date, png_length);
+	png_length = insertStringValue(png, "timestampAfter", iso_date, png_length);
 
 	png_length = insertValue(png, "dBufferlength",      (float)config->dBufferlength,      png_length);
 	png_length = insertValue(png, "dImageCounter",      (float)config->dImageCounter,      png_length);
@@ -625,7 +619,7 @@ int insertValue(char **png, char *name, float value, int png_length)
 	return insertHeader(png, "Comment ", text, png_length);
 }
 
-int insertStringValue(char **png, char *name, char * value, int png_length)
+int insertStringValue(char **png, char *name, char *value, int png_length)
 {
 	char text[200];
 	sprintf(text, "%s: %s", name, value);
@@ -742,7 +736,7 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-int createFilename(sConfigStruct * config, char * filename, int filenamelength, timeStruct *time, char *camname, char * filetype)
+int createFilename(sConfigStruct * config, char *filename, int filenamelength, timeStruct *time, char *camname, char *filetype)
 {
 	int state = sprintf(filename,
 		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",

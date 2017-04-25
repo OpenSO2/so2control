@@ -45,13 +45,13 @@ typedef struct {
 	int dInterFrameDelay;
 
 	/* contains the config filename */
-	char * cConfigFileName;
+	char *cConfigFileName;
 
 	/* contains a prefix for all images */
-	char * cFileNamePrefix;
+	char *cFileNamePrefix;
 
 	/* path to image directory */
-	char * cImagePath;
+	char *cImagePath;
 
 	int createsubfolders;
 
@@ -65,13 +65,13 @@ typedef struct {
 	 * serial device used to talk to the filterwheel firmware
 	 * eg. /dev/ttyUSB0
 	 */
-	char * filterwheel_device;
+	char *filterwheel_device;
 
 	/* number of images between */
 	int darkframeintervall;
 
 	/* serial device to talk to for the spectrometer shutter */
-	const char * spectrometer_shutter_device;
+	const char *spectrometer_shutter_device;
 
 	/*
 	 * serial device channel on which the servo is connected (only used
@@ -103,16 +103,15 @@ typedef struct {
 
 } sConfigStruct;
 
-
 /*  */
 typedef struct {
-	double * wavelengths;
+	double *wavelengths;
 
-	double * lastSpectrum;
+	double *lastSpectrum;
 
-	double * electronic_offset;
+	double *electronic_offset;
 
-	double * dark_current;
+	double *dark_current;
 
 	double max;
 
@@ -142,7 +141,7 @@ typedef struct {
 	double dExposureTime;
 
 	/* Pointer to image buffer */
-	short * stBuffer;
+	short *stBuffer;
 
 	/* ~Callback stuff~ */
 
@@ -160,7 +159,6 @@ typedef struct {
 
 } sParameterStruct;
 
-
 /* Webcam parameters */
 typedef struct {
 	/* Pointer to image buffer x*y*24 RAW */
@@ -175,7 +173,6 @@ typedef struct {
 	/* Timestamp taken *after* the image has been received */
 	timeStruct *timestampAfter;
 } sWebCamStruct;
-
 
  /******************************
  *   FUNCTIONS

@@ -61,11 +61,11 @@ int main(int argc, char *argv[])
 
 	buffer = getBufferFromFile(infile, 64);
 
-	if(!buffer) return 1;
+	if (!buffer)
+		return 1;
 
 #ifdef BENCHMARK
-	log_debug("reading file took %fms \n",
-		  ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
+	log_debug("reading file took %fms \n", ((float)clock() / CLOCKS_PER_SEC - startTime) * 1000);
 #endif
 
 	parse_filename_to_timeStruct(infile, &time);
