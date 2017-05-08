@@ -1,7 +1,8 @@
-SO2-Control Software
+SO2 Camera Software
 ====================
 
-SO2 Camera control software written in C, licenced under MIT.
+A [free software](http://www.gnu.org/philosophy/free-sw.html) SO2
+Camera control software written in C, licensed under MIT.
 
 | Windows | Linux | QA     |
 | ------- | ----- | ------ |
@@ -111,7 +112,7 @@ Coding style
 ------------
 
 This project follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle) without the line length limit
-which is enforced using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
+which is checked and enforced using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
 
 ```
 $ make checkstyle

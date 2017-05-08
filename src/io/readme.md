@@ -1,34 +1,82 @@
 SO2 Camera: IO subsystem
 ========================
 
-Converts and processes raw data from so2-camera to PNG images.
+Dumps camera data to disk or converts and processes data to PNG images.
+
+This implements the file output system, responsible for writing
+the gathered data to disk and to process the data into reasonable
+file formats. This could also do i.e. packaging files into a .tar
+file.
+
+Currently, there are three write modes:
+
+- dumb mode, the camera data and all relevent headers are dumped to
+  files
+- png mode, the camera data is converted to pngs, and relevant
+  headers are written to ancillary text chunks
+- both
+
+PNG mode is a lot slower, but produces smaller files which can be
+easily viewed and used for further processing.
+Dumb mode requires less processing and does not alter the original
+data, but requires additional work for viewing and evalution.
+Doing both maximizes the amount of work, but ensures data integrety (in
+case either mode fails).
 
 Why PNG?
 --------
 
-[PNG](http://www.libpng.org/pub/png/) is an ideal choice for scientific data, because
+The PNG file format is good file format for scientific imagery. It
+is wildly supported and the file format is comparatifly simple,
+which makes integration relativly simple. Because of this, viewer
+application exist for very nearly every platform. It supports image
+compression, which can reduce file size by 1/3 to 2/3 compared to
+raw dumps. Unlike JPEG [1], PNG compression is always lossless.
+PNG nativly supports 16 (and more) bit image depth, unlike e.g. GIF.
 
-- compressed format (unlike raw dumps, 1/3 smaller file size)
-- lossless compression (unlike JPEG, WebP)
-- simple format (unlike Tiff)
-- widely supported (unlike WebP or Tiff)
-- supports 16bit (unlike gif)
-- can usually be used for publishing (http://academia.stackexchange.com/questions/42624/is-the-png-file-format-acceptable-for-academic-papers)
 
+[1] There is also a lossless JPEG compression, but that is not widely supported.
 
 Headers
 -------
 
 PNG is a chunked file format and supports text chunks holding
 standardized and custom content We employ standard tEXt chunks with
-standard Keywords to ensure compatability (see make_png_header.c).
+standard Keywords to ensure compatibility (see make_png_header.c).
 
-PNG Text Chunks can be accessed with eg. imageMagick (identify -verbose)
-Linux: pngcheck -t (Linux) or TweakPNG (Windows).
-
+Unfortunately, displaying text chunks is not widely supported in PNG
+viewer applications, but specialized tools like [`pngcheck`](http://www.libpng.org/pub/png/apps/pngcheck.html)
+and [`ImageMagick`](http://www.imagemagick.org) (`identify-verbose`)
+can do this.
 
 Dependencies
 ------------
-Depends on [zLib](http://www.zlib.net/) and [openCV](http://opencv.org/) 3.0.
 
-Depends on openCV (which will maybe replace by libpng in the future).
+Depends on openCV which can be installed on linux by running something like
+
+````
+$ # Debian, Ubuntu etc
+$ sudo apt-get install libopencv-dev
+$ # RHEL, Scientific Linux, CentOS, Fedora, etc
+$ sudo yum install opencv-devel
+````
+
+Compilation
+-----------
+
+On Linux run
+
+````
+$ cmake .
+$ make
+$ ./io-cli infile.raw outfolder
+````
+
+Run Tests
+---------
+
+`````
+$ cmake .
+$ make
+$ make test
+`````
