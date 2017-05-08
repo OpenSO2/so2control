@@ -19,3 +19,6 @@ Dependencies
 - [Seabreeze](http://oceanoptics.com/api/seabreeze/).
   Install as described in [https://github.com/ap--/python-seabreeze/]().
 
+
+dev dependencies
+libusb-devel

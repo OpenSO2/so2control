@@ -15,7 +15,6 @@ SO2 Camera control software written in C, licenced under MIT.
 **Dependencies:**
 
 - [OpenCV][opencv]
-- [zLib][zlib]
 - [Active Silicon SDK](phx)
 
 All Dependencies are optional.
