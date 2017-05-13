@@ -213,10 +213,6 @@ int config_load_configfile(sConfigStruct * config)
 			config->spectroscopy_roi_upper = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "spectroscopy_roi_lower") && config->spectroscopy_roi_lower == -1) {
 			config->spectroscopy_roi_lower = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "webcam_xRes")) {
-			config->webcam_xRes = atoi(delimeterBuf + 1);
-		} else if (strstr(lineBuf, "webcam_yRes")) {
-			config->webcam_yRes = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "spectrometer_shutter_device")) {
 			config->spectrometer_shutter_device = getString(delimeterBuf);
 		} else if (strstr(lineBuf, "spectrometer_shutter_channel")) {

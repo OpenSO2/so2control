@@ -13,22 +13,18 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 		return -1;
 	}
 
-	/* setup x and y resolution */
-	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, config->webcam_xRes);
-	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, config->webcam_yRes);
-
 	webcam->timestampBefore = (timeStruct *) malloc(sizeof(timeStruct));
 	webcam->timestampAfter = (timeStruct *) malloc(sizeof(timeStruct));
 
 	return 0;
 }
 
-int webcam_get(sWebCamStruct * camStruct)
+int webcam_get(sWebCamStruct * webcam)
 {
 	IplImage *frame;
 	int stat = 0;
 
-	stat = getTime(camStruct->timestampBefore);
+	stat = getTime(webcam->timestampBefore);
 	if (stat) {
 		printf("couldn't get the time before\n");
 		return -1;
@@ -41,15 +37,17 @@ int webcam_get(sWebCamStruct * camStruct)
 		return -2;
 	}
 
-	stat = getTime(camStruct->timestampAfter);
+	stat = getTime(webcam->timestampAfter);
 	if (stat) {
 		printf("couldn't get the time after \n");
 		return -1;
 	}
 
 	/* put image information into structure */
-	camStruct->buffer = frame->imageData;
-	camStruct->bufferSize = frame->imageSize;
+	webcam->width = frame->width;
+	webcam->height = frame->height;
+	webcam->buffer = frame->imageData;
+	webcam->bufferSize = frame->imageSize;
 
 	return 0;
 }

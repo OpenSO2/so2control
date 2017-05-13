@@ -164,22 +164,31 @@ int io_writeWebcam(sWebCamStruct * webcam, sConfigStruct * config)
 
 int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 {
-	int l;
+	int png_length;
 	int writen_bytes;
 	FILE *fp;
 	char *buffer;
 	int state;
 	char filename[512];
-	//~ char iso_date[25];
+	char iso_date[25];
 	FILE *f;
 	int filenamelength = 512;
 	IplImage *img;
 	CvMat *png;
 
-	/* convert the image buffer to an openCV image */
-	// TODO: check if this has already been done
-	// TODO: check return code
-	img = bufferToImageCam(webcam->buffer);
+	/* create new image to hold the loaded data*/
+	CvSize mSize;
+
+	mSize.height = webcam->height;
+	mSize.width = webcam->width;
+
+	img = cvCreateImage(mSize, IPL_DEPTH_8U, 3);
+	if (!img) {
+		log_error("failed to decode image");
+		return -1;
+	}
+
+	memcpy(img->imageData, webcam->buffer, webcam->bufferSize);
 
 	/*
 	 * encode image as png to buffer
@@ -187,19 +196,27 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	 */
 	png = cvEncodeImage(".png", img, 0);
 
-	l = png->rows * png->cols;
+	png_length = png->rows * png->cols;
 	cvReleaseImage(&img);
 
 	/* pry the actual buffer pointer from png */
-	buffer = (char *)malloc(l);
-	memcpy(buffer, png->data.s, l);
+	buffer = (char *)malloc(png_length);
+	memcpy(buffer, png->data.s, png_length);
 	cvReleaseMat(&png);
 
 	/* add headers */
-	log_debug("insert headers %i", l);
-	//~ l = insertHeaders(&buffer, sSO2Parameters, config, l);
+	dateStructToISO8601(webcam->timestampBefore, iso_date);
+	png_length = insertHeader(&buffer, "Creation Time ", iso_date, png_length);
+	png_length = insertStringValue(&buffer, "timestampBefore", iso_date, png_length);
 
-	comm_set_buffer("cam", buffer, l);
+	dateStructToISO8601(webcam->timestampAfter, iso_date);
+	png_length = insertStringValue(&buffer, "timestampAfter", iso_date, png_length);
+
+#ifdef VERSION
+	png_length = insertStringValue(&buffer, "version", VERSION, png_length);
+#endif
+
+	comm_set_buffer("cam", buffer, png_length);
 
 	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
@@ -225,12 +242,12 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	/* save image to disk */
-	log_debug("open new png file %i", l);
+	log_debug("open new png file %i", png_length);
 	fp = fopen(filename, "wb");
 
 	if (fp) {
-		writen_bytes = fwrite(buffer, 1, l, fp);
-		state = writen_bytes == l ? 0 : 1;
+		writen_bytes = fwrite(buffer, 1, png_length, fp);
+		state = writen_bytes == png_length ? 0 : 1;
 		if (state) {
 			log_error("PNG image wasn't written correctly");
 		}
@@ -296,7 +313,8 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 
 	f = fopen(filename, "wt");
 	if (f) {
-		fprintf(f, "bufferSize %i\n", webcam->bufferSize);
+		fprintf(f, "height %i\n", webcam->height);
+		fprintf(f, "width %i\n", webcam->width);
 		dateStructToISO8601(webcam->timestampBefore, iso_date);
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(webcam->timestampAfter, iso_date);

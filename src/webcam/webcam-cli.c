@@ -26,9 +26,6 @@ int main(int argc, char *argv[])
 	/* Setup Webcam Structure */
 	memset(&webcam, 0, sizeof(sWebCamStruct));
 
-	config.webcam_xRes = 1280;
-	config.webcam_yRes = 720;
-
 	/* testing functions */
 	stat = webcam_init(&config, &webcam);
 	if (stat) {
@@ -43,7 +40,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (generate_png) {
-		img = cvCreateImageHeader(cvSize(config.webcam_xRes, config.webcam_yRes), IPL_DEPTH_8U, 3);
+		img = cvCreateImageHeader(cvSize(webcam.width, webcam.height), IPL_DEPTH_8U, 3);
 		cvSetData(img, webcam.buffer, img->widthStep);
 
 		cvSaveImage(filename, img, NULL);

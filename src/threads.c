@@ -71,7 +71,7 @@ void *threads_webcam_run(void *args)
 		if (status != 0) {
 			log_error("failed to write webcam image");
 		}
-		sleep(3);
+		//~ sleep(.1);
 	}
 
 #ifdef WIN

@@ -86,12 +86,6 @@ typedef struct {
 	int spectroscopy_roi_upper;
 	int spectroscopy_roi_lower;
 
-	/* Resolution in x direction */
-	int webcam_xRes;
-
-	/* Resolution in y direction */
-	int webcam_yRes;
-
 	/* port on which a tcp connection can be made */
 	int comm_port;
 
@@ -166,6 +160,12 @@ typedef struct {
 
 	/* Size of Buffer in bytes */
 	int bufferSize;
+
+	/* Image height */
+	int height;
+
+	/* Image width */
+	int width;
 
 	/* Timestamp taken *before* the image has been triggered */
 	timeStruct *timestampBefore;
