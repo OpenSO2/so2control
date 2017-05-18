@@ -234,17 +234,10 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 		return state;
 	}
 
-	f = fopen(filename, "wb");
-	if (!f) {
-		log_error("Failed to open file to save webcam image");
-		log_debug("Filename was %s", filename);
-		return 1;
-	}
-
 	/* save image to disk */
 	log_debug("open new png file %i", png_length);
-	fp = fopen(filename, "wb");
 
+	fp = fopen(filename, "wb");
 	if (fp) {
 		writen_bytes = fwrite(buffer, 1, png_length, fp);
 		state = writen_bytes == png_length ? 0 : 1;
@@ -254,7 +247,7 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 		fclose(fp);
 	} else {
 		state = 1;
-		log_error("Couldn't open png file");
+		log_error("Failed to open file to save webcam image. File name was %s", filename);
 	}
 
 	/* cleanup */
