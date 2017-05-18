@@ -5,6 +5,10 @@
 #include "log.h"
 #include "timehelpers.h"
 
+#ifdef POSIX
+#include "errno.h"
+#endif
+
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define LOG_BUFFER_SIZE 512
@@ -61,30 +65,60 @@ int log_init(sConfigStruct * config)
 
 int log_message(char *message, ...)
 {
+	int state;
 	va_list args;
 	va_start(args, message);
-	return logg("INFO ", message, args);
+	state = logg("INFO ", message, args);
 	va_end(args);
+	return state;
 }
 
 int log_error(char *message, ...)
 {
+	int state;
 	va_list args;
 	va_start(args, message);
-	return logg("ERROR", message, args);
+#ifdef POSIX
+	if( errno != 0 ){
+		char errstr[512];
+		char * new_message;
+		char * glue = ". Error returned from OS was: ";	
+
+                strerror_r(errno, errstr, 512);
+
+		if((new_message = malloc(strlen(message) + strlen(errstr) + strlen(glue) + 1)) != NULL){
+			new_message[0] = '\0';
+			strcat(new_message, message);
+			strcat(new_message, glue);
+			strcat(new_message, errstr);
+			message = new_message;
+		}
+	}
+#endif
+	state = logg("ERROR", message, args);
+
+#ifdef POSIX
+	free(message);
+#endif
+
 	va_end(args);
+
+	return state;
 }
 
 int log_debug(char *message, ...)
 {
+	int state;
 	va_list args;
 
 	if (!conf || conf->debug == 0)
 		return 0;
 
 	va_start(args, message);
-	return logg("DEBUG", message, args);
+	state = logg("DEBUG", message, args);
 	va_end(args);
+
+	return state;
 }
 
 int logg(char *type, char *message, va_list args)
