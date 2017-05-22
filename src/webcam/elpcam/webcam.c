@@ -13,6 +13,17 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 		return -1;
 	}
 
+	/*
+	 * Set webcam to the highest possible resolution by setting the
+	 * resolution to some unreasonable high value which will be reduced
+	 * to the max value by the device
+	 */
+	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH, 100000);
+	cvSetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT, 100000);
+	webcam->width = cvGetCaptureProperty(cam, CV_CAP_PROP_FRAME_WIDTH);
+	webcam->height = cvGetCaptureProperty(cam, CV_CAP_PROP_FRAME_HEIGHT);
+	log_message("set webcam to resolution %i x %i", webcam->width, webcam->height);
+
 	webcam->timestampBefore = (timeStruct *) malloc(sizeof(timeStruct));
 	webcam->timestampAfter = (timeStruct *) malloc(sizeof(timeStruct));
 
@@ -44,8 +55,6 @@ int webcam_get(sWebCamStruct * webcam)
 	}
 
 	/* put image information into structure */
-	webcam->width = frame->width;
-	webcam->height = frame->height;
 	webcam->buffer = frame->imageData;
 	webcam->bufferSize = frame->imageSize;
 
