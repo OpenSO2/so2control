@@ -82,9 +82,9 @@ int log_error(char *message, ...)
 	if( errno != 0 ){
 		char errstr[512];
 		char * new_message;
-		char * glue = ". Error returned from OS was: ";	
+		char * glue = ". Error returned from OS was: ";
 
-                strerror_r(errno, errstr, 512);
+		strerror_r(errno, errstr, 512);
 
 		if((new_message = malloc(strlen(message) + strlen(errstr) + strlen(glue) + 1)) != NULL){
 			new_message[0] = '\0';
@@ -132,8 +132,10 @@ int logg(char *type, char *message, va_list args)
 	vsnprintf(buffer, LOG_BUFFER_SIZE, message, args);
 
 	/* generate final log string */
-	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d | %s | %s\n",
-		t.hour, t.min, t.sec, type, buffer);
+	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d.%03d | %s | %s\n",
+		t.hour, t.min, t.sec, t.milli, type, buffer);
+
+
 
 	if (strcmp(type, "ERROR"))
 		fprintf(stdout, "%s", buffer2);
