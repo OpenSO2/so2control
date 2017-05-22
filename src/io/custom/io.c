@@ -247,14 +247,14 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 		fclose(fp);
 	} else {
 		state = 1;
-		log_error("Failed to open file to save webcam image. File name was %s", filename);
+		log_error("Failed to open file to save webcam image. Filename was %s", filename);
 	}
 
 	/* cleanup */
 	free(buffer);
 
 	if (!state) {
-		log_message("webcam png image written");
+		log_message("webcam png image written to file %s", filename);
 	}
 
 	return 0;
@@ -282,8 +282,7 @@ int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config)
 
 	f = fopen(filename, "wb");
 	if (!f) {
-		log_error("Failed to open file to save webcam image");
-		log_debug("Filename was %s", filename);
+		log_error("Failed to open file to save webcam image. Filename was %s", filename);
 		return 1;
 	}
 
@@ -595,7 +594,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	free(buffer);
 
 	if (!state) {
-		log_message("png image written");
+		log_message("png image written to file %s", filename);
 	}
 
 	return state;
