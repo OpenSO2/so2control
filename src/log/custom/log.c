@@ -21,23 +21,56 @@ int logg(char *type, char *message, va_list args);
 
 int log_init(sConfigStruct * config)
 {
-	static char nameLogFile[LOG_BUFFER_SIZE];
 	struct stat st = { 0 };
-
+	char * dir;
+	char * filename;
+	int filenamelength;
+	char * subpath = "logs";
 	conf = config;
-	getTime(&t);
 
-	/* check if log folder exists and create if not */
-	if (stat("logs/", &st) == -1) {
-		mkdir("logs", 0700);
-	}
+	if(strcmp("-", config->cImagePath)){
+		// check for and remove trailing "/" to avoid ugly "//" in imagePath
+		if (config->cImagePath[(strlen(config->cImagePath) - 1)] == '/') {
+			config->cImagePath[(strlen(config->cImagePath) - 1)] = '\0';
+		}
 
-	snprintf(nameLogFile, LOG_BUFFER_SIZE, "logs/log_%04d_%02d_%02d_%02d_%02d.txt",
-		t.year, t.mon, t.day, t.hour, t.min);
+		dir = malloc(strlen(config->cImagePath) + 1 + strlen(subpath) + 1);
+		dir[0] = '\0';
 
-	logfile = fopen(nameLogFile, "a");
-	if (NULL == logfile) {
-		return 1;
+		strcat(dir, config->cImagePath);
+		strcat(dir, "/");
+		strcat(dir, subpath);
+
+		/* check if log folder exists and create if not */
+		if (stat(dir, &st) == -1) {
+			mkdir(dir, 0700);
+		}
+
+		/*
+		 * 0        1         2
+		 * 1234567890123456789012345
+		 * /log_2017_05_26_23_47.txt
+		 */
+		filenamelength = strlen(dir) + 25 + 1;
+		filename = malloc(filenamelength);
+		getTime(&t);
+		snprintf(filename, filenamelength, "%s/log_%04d_%02d_%02d_%02d_%02d.txt",
+			dir, t.year, t.mon, t.day, t.hour, t.min);
+
+		free(dir);
+
+		logfile = fopen(filename, "a");
+		if (NULL == logfile) {
+			log_error("failed to open logfile %s", filename);
+			free(filename);
+			return 1;
+		}
+
+		log_message("logfile will be written to %s", filename);
+
+		free(filename);
+	} else {
+		log_message("no log is written to disk");
 	}
 
 	log_message("*******************************************");
@@ -134,8 +167,6 @@ int logg(char *type, char *message, va_list args)
 	/* generate final log string */
 	snprintf(buffer2, LOG_BUFFER_SIZE, "%02d:%02d:%02d.%03d | %s | %s\n",
 		t.hour, t.min, t.sec, t.milli, type, buffer);
-
-
 
 	if (strcmp(type, "ERROR"))
 		fprintf(stdout, "%s", buffer2);
