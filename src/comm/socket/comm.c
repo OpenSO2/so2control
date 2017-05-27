@@ -143,6 +143,12 @@ int comm_init(sConfigStruct * config)
 	listen(sockfd, 5);
 	log_message("Listening to tcp socket on port %i", config->comm_port);
 
+	/*
+	 * make sure to flush all buffers before forking to avoid duplicate
+	 * output in logfile
+	 */
+	fflush(0);
+
 	/* do communication in own process and return to main thread */
 	accept_pid = fork();
 
@@ -198,6 +204,12 @@ int init(int sockfd)
 		}
 
 		log_debug("new connection established for socket %i, new socket %i", sockfd, newsockfd);
+
+		/*
+		 * make sure to flush all buffers before forking to avoid duplicate
+		 * output in logfile
+		 */
+		fflush(0);
 
 		/* spawn a process for every request */
 		if ((pid = fork()) < 0) {
