@@ -131,7 +131,8 @@ int log_error(char *message, ...)
 	state = logg("ERROR", message, args);
 
 #ifdef POSIX
-	free(message);
+	if( errno != 0 )
+		free(message);
 #endif
 
 	va_end(args);
