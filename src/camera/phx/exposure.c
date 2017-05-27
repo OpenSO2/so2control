@@ -145,7 +145,7 @@ int find_ettr(double *exposure, sParameterStruct *sSO2Parameters, sConfigStruct 
  * blown out highlights) by assuming that a correctly lit scene
  * - has at least some elements that are close to being saturated (>95%) and
  * - has no elements that are almost blown out (>99%).
- * Saturated elements are ignores, because they might just be dead.
+ * Saturated elements are ignored, because they might just be dead.
  *
  * timeswitch = 0  exposed correctly
  *            > 0  overexposed
