@@ -13,18 +13,18 @@
 #include "comm.h"
 
 /* local prototypes */
-int createFilename(sConfigStruct * config, char *filename, int filenamelength, timeStruct * time, char *camname, char *filetype);
-IplImage *bufferToImage(short *buffer);
-IplImage *bufferToImageCam(char *buffer);
-int dateStructToISO8601(timeStruct * time, char *iso_date);
-int insertValue(char **png, char *name, float value, int png_length);
-int insertStringValue(char **png, char *name, char *value, int png_length);
-int insertHeader(char **png, char *name, char *content, int png_length);
-int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct * config, int png_length);
-int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
-int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
-int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config);
-int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config);
+int createFilename(sConfigStruct *, char *, int, timeStruct *, char *, char *);
+IplImage *bufferToImage(short *);
+IplImage *bufferToImageCam(char *);
+int dateStructToISO8601(timeStruct *, char *);
+int insertValue(char **, char *, float, int);
+int insertStringValue(char **, char *, char *, int);
+int insertHeader(char **, char *, char *, int);
+int insertHeaders(char **, sParameterStruct *, sConfigStruct *, int);
+int io_writeImage(sParameterStruct *, sConfigStruct *);
+int io_writeDump(sParameterStruct *, sConfigStruct *);
+int io_writeWebcamDump(sWebCamStruct *, sConfigStruct *);
+int io_writeWebcamImage(sWebCamStruct *, sConfigStruct *);
 int rotate(IplImage *, int);
 
 /*
@@ -167,7 +167,6 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 {
 	int png_length;
 	int writen_bytes;
-	FILE *fp;
 	char *buffer;
 	int state;
 	char filename[512];
@@ -240,14 +239,14 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	/* save image to disk */
 	log_debug("open new png file %i", png_length);
 
-	fp = fopen(filename, "wb");
-	if (fp) {
-		writen_bytes = fwrite(buffer, 1, png_length, fp);
+	f = fopen(filename, "wb");
+	if (f) {
+		writen_bytes = fwrite(buffer, 1, png_length, f);
 		state = writen_bytes == png_length ? 0 : 1;
 		if (state) {
 			log_error("PNG image wasn't written correctly");
 		}
-		fclose(fp);
+		fclose(f);
 	} else {
 		state = 1;
 		log_error("Failed to open file to save webcam image. Filename was %s", filename);
@@ -447,6 +446,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	int fwriteReturn;
 	int state = 0;
 	char iso_date[25];
+	char *camname;
 	char id = sSO2Parameters->identifier;
 	timeStruct *time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 
@@ -457,7 +457,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	}
 
 	/* identify Camera for filename Prefix */
-	char *camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
+	camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
 	state = createFilename(config, headerfile, headerfilelength, time, camname, "txt");
 	if (state) {
