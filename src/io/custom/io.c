@@ -25,6 +25,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config);
 int io_writeWebcamDump(sWebCamStruct * webcam, sConfigStruct * config);
 int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config);
+int rotate(IplImage *, int);
 
 /*
  * `io_init`
@@ -189,6 +190,8 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	}
 
 	memcpy(img->imageData, webcam->buffer, webcam->bufferSize);
+
+	rotate(img, config->rotate_webcam);
 
 	/*
 	 * encode image as png to buffer
@@ -495,6 +498,7 @@ int io_writeDump(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		fprintf(f, "timestampBefore %s\n", iso_date);
 		dateStructToISO8601(sSO2Parameters->timestampAfter, iso_date);
 		fprintf(f, "timestampAfter %s\n", iso_date);
+		fprintf(f, "rotate %i\n", id == 'a' ? config->rotate_a : config->rotate_b);
 #ifdef VERSION
 		fprintf(f, "version %s\n", VERSION);
 #endif
@@ -538,6 +542,8 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	// TODO: check if this has already been done
 	// TODO: check return code
 	img = bufferToImage(stBuffer);
+
+	rotate(img, id == 'a' ? config->rotate_a : config->rotate_b);
 
 	/*
 	 * encode image as png to buffer
@@ -615,6 +621,7 @@ int insertHeaders(char **png, sParameterStruct * sSO2Parameters, sConfigStruct *
 	png_length = insertValue(png, "dInterFrameDelay",   (float)config->dInterFrameDelay,   png_length);
 	png_length = insertValue(png, "dExposureTime",      (float)sSO2Parameters->dExposureTime,      png_length);
 	png_length = insertValue(png, "dFixTime",           (float)config->dFixTime,           png_length);
+	png_length = insertValue(png, "rotated",            (float)(sSO2Parameters->identifier == 'a' ? config->rotate_a : config->rotate_b), png_length);
 #ifdef VERSION
 	png_length = insertStringValue(png, "version", VERSION, png_length);
 #endif
@@ -760,4 +767,19 @@ int createFilename(sConfigStruct * config, char *filename, int filenamelength, t
 	}
 
 	return state > 0 ? 0 : 1;
+}
+
+/* rotate an image
+ * atm, only 180deg rotation is implemented
+ */
+int rotate(IplImage *img, int angle){
+	if (angle == 180 || angle == -180) {
+		cvFlip(img, img, -1);
+	} else if (angle == 0) {
+		/* do nothing */
+	} else {
+		log_error("could not rotate image, angle %i out of bounds", angle);
+	}
+
+	return 0;
 }

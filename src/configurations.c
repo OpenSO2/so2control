@@ -60,6 +60,9 @@ void config_init_sConfigStruct(sConfigStruct * config)
 	config->comm_port = -1;
 	config->enableWebcam = -1;
 	config->enableSpectroscopy = -1;
+	config->rotate_a = -1;
+	config->rotate_b = -1;
+	config->rotate_webcam = -1;
 }
 
 /*
@@ -223,6 +226,14 @@ int config_load_configfile(sConfigStruct * config)
 			config->enableSpectroscopy = atoi(delimeterBuf + 1);
 		} else if (strstr(lineBuf, "enableWebcam") && config->enableWebcam == -1) {
 			config->enableWebcam = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "rotate_a") && config->rotate_a == -1) {
+			config->rotate_a = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "rotate_b") && config->rotate_b == -1) {
+			config->rotate_b = atoi(delimeterBuf + 1);
+		} else if (strstr(lineBuf, "rotate_webcam") && config->rotate_webcam == -1) {
+			config->rotate_webcam = atoi(delimeterBuf + 1);
+		//~ } else {
+			//~ log_message("not understood: %s  rota: %i", lineBuf, strstr(lineBuf, "rotate_a"));
 		}
 	}
 

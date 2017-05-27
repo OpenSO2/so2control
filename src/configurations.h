@@ -95,6 +95,11 @@ typedef struct {
 	/* switch to disable spectroscopy and spectrometer code */
 	int enableSpectroscopy;
 
+	/* value in degrees by which the images should be rotated */
+	int rotate_a;
+	int rotate_b;
+	int rotate_webcam;
+
 } sConfigStruct;
 
 /*  */
