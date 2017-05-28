@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 	sParameterStruct sSO2Parameters;
 	sConfigStruct config;
 	config.debug = 0;
+	config.cImagePath = "-";
 	if (log_init(&config)) {
 		printf("could not start log file, stop.\n");
 	}
@@ -77,6 +78,8 @@ int main(int argc, char *argv[])
 	sSO2Parameters.dark = 0;
 	sSO2Parameters.dExposureTime = 0.000000;
 
+	config.rotate_a = 0;
+	config.rotate_b = 0;
 	config.dImageCounter = 0;
 	config.dBufferlength = 1376256;
 	config.dInterFrameDelay = 10;
