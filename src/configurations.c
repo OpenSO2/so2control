@@ -15,7 +15,8 @@
 #define MAXBUF 1024
 
 /* local prototypes*/
-char *getString(char *source);
+char *getString(char *);
+void print_help(char *);
 
 /*
  * Set up a sParameterStruct structure with values taken from the
@@ -66,15 +67,46 @@ void config_init_sConfigStruct(sConfigStruct * config)
 }
 
 /*
+ * http://courses.cms.caltech.edu/cs11/material/general/usage.html
+ */
+void print_help(char * name)
+{
+	fprintf(stderr, "Usage %s [--noprocessing] [--png-only] [--debug] [--noofimages n]\n", name);
+	fprintf(stderr, "      [--configfile filename] [--imagepath folder] [--port portno]\n");
+	fprintf(stderr, "      [--disableWebcam] [--disableSpectroscopy]\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "SO2-Camera Control Software \n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "This software comes with ABSOLUTELY NO WARRANTY. This is free software and you\n");
+	fprintf(stderr, "are welcome to modify and redistribute it under certain conditions.\n");
+	fprintf(stderr, "See the MIT Licence for details. \n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "   --help, -h                    Print this usage information and exit\n");
+	fprintf(stderr, "   --noprocessing                Skip processing as much as possible and only save raw images\n");
+	fprintf(stderr, "   --png-only                    Skip saving of raw files\n");
+	fprintf(stderr, "   --debug                       Print debug output\n");
+	fprintf(stderr, "   --noofimages n                Only save n UV image sets and exit\n");
+	fprintf(stderr, "   --configfile /path/file.conf  Load config file from path. If not set config files are searched for at the usual places\n");
+	fprintf(stderr, "   --imagepath /path/outfolder   Save images and logs in path\n");
+	fprintf(stderr, "   --port portno                 Set port for liveview. Default: 7009\n");
+	fprintf(stderr, "   --disableWebcam               Disable processing and saving of webcam images\n");
+	fprintf(stderr, "   --disableSpectroscopy         Disable processing and saving of spectra\n");
+
+	exit(0);
+}
+
+
+/*
  * handle command line properties and translate into config properties
  */
 int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 {
 	int i;
-	char errstr[512];
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--speedy-gonzales") == 0 || strcmp(argv[i], "--noprocessing") == 0) {
+		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+			print_help(argv[0]);
+		} else if (strcmp(argv[i], "--speedy-gonzales") == 0 || strcmp(argv[i], "--noprocessing") == 0) {
 			config->processing = 1;
 		} else if (strcmp(argv[i], "--png-only") == 0) {
 			config->processing = 2;
@@ -98,8 +130,8 @@ int config_process_cli_arguments(int argc, char *argv[], sConfigStruct * config)
 		} else if (strcmp(argv[i], "--disableSpectroscopy") == 0) {
 			config->enableSpectroscopy = 0;
 		} else {
-			sprintf(errstr, "unknown command line option \"%s\"", argv[i]);
-			log_error(errstr);
+			log_error("unknown command line option \"%s\"", argv[i]);
+			print_help(argv[0]);
 			return 1;
 		}
 	}
