@@ -33,7 +33,7 @@ int spectrometer_init(sSpectrometerStruct * spectro)
 
 	i = 0;
 	while (fgets(line, 512, f) != NULL) {
-		wavelengths[i++] = atol(line);
+		wavelengths[i++] = atof(line);
 	}
 
 	fclose(f);
@@ -46,7 +46,7 @@ int spectrometer_init(sSpectrometerStruct * spectro)
 
 	i = 0;
 	while (fgets(line, 512, f) != NULL) {
-		spectrum[i++] = atol(line);
+		spectrum[i++] = atof(line);
 	}
 
 	fclose(f);
