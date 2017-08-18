@@ -15,7 +15,7 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	/* open mock image */
 	FILE *fid = fopen(WEBCAM_MOCK_RAW, "rb");
 	if (!fid) {
-		log_error("image >mock.raw< could not be loaded");
+		log_error("image %s could not be opened", WEBCAM_MOCK_RAW);
 		return -1;
 	}
 
@@ -39,8 +39,8 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	fclose(fid);
 
 	webcam->bufferSize = fsize;
-	webcam->height = 1280;
-	webcam->width = 720;
+	webcam->height = 720;
+	webcam->width = 1280;
 	webcam->timestampBefore = (timeStruct *) malloc(sizeof(timeStruct));
 	webcam->timestampAfter = (timeStruct *) malloc(sizeof(timeStruct));
 
@@ -51,7 +51,7 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 int webcam_get(sWebCamStruct * webcam)
 {
 	webcam->buffer = buffer;
-	sleep(.1);
+	sleep(1);
 	return 0;
 }
 
