@@ -375,7 +375,7 @@ int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
 	char filename[512];
 	int filenamelength = 512;
 
-	comm_set_buffer("spc", (char *)spectro->lastSpectrum, spectro->spectrum_length * sizeof(char));
+	comm_set_buffer("spc", spectro->lastSpectrum, spectro->spectrum_length);
 
 	if (strcmp(config->cImagePath, "-") == 0) {
 		// short circuit
@@ -532,12 +532,10 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	stBuffer = sSO2Parameters->stBuffer;
 
 	time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
-
 	/* identify camera for filename prefix */
 	camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
 	log_debug("filename created: %s", filename);
-
 	/* convert the image buffer to an openCV image */
 	// TODO: check if this has already been done
 	// TODO: check return code
@@ -575,6 +573,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	if (state) {
 		log_error("could not create txt filename");
 	}
+
 
 	/* add headers */
 	log_debug("insert headers %i", l);

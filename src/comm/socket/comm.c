@@ -23,7 +23,8 @@
 #include "log.h"
 
 int handle_socket(int);
-int send_all(int, char *, size_t);
+int send_spectrum(int, double *, size_t);
+int send_image(int, char *, size_t);
 int send_buf(int, char *);
 int init(int sockfd);
 int recv_all(int, char *, size_t);
@@ -45,7 +46,7 @@ typedef struct {
 	char *top;
 	char *bot;
 	char *cam;
-	char *spc;
+	double *spc;
 } buffersStruct;
 
 static buffersStruct *buffers;
@@ -75,20 +76,37 @@ void kill_socket_processes(int reason)
 	}
 }
 
-int send_all(int socket, char *ptr, size_t length)
+int send_spectrum(int socket, double *ptr, size_t size)
 {
-	int i;
-	while (length > 0) {
-		log_debug("send_all while %i on socket %i with pointer %i; %i %i", (int)length, socket, ptr, ptr[30], ptr[40]);
-		i = send(socket, ptr, length, 0);
-		log_debug("send accomplished! Return value: %i", (int)i);
+	int written;
 
-		if (i < 1)
+	while (size > 0) {
+		written = write(socket, ptr, size);
+
+		if (written < 1)
 			return -1;
 
-		ptr += i;
-		length -= i;
+		ptr += written;
+		size -= written;
 	}
+
+	return 0;
+}
+
+int send_image(int socket, char *ptr, size_t size)
+{
+	int written;
+
+	while (size > 0) {
+		written = write(socket, ptr, size);
+
+		if (written < 1)
+			return -1;
+
+		ptr += written;
+		size -= written;
+	}
+
 	return 0;
 }
 
@@ -120,7 +138,7 @@ int comm_init(sConfigStruct * config)
 	buffers->top = (char *)mmap(NULL, buffers->topSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	buffers->bot = (char *)mmap(NULL, buffers->botSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	buffers->cam = (char *)mmap(NULL, buffers->camSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	buffers->spc = (char *)mmap(NULL, buffers->spcSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	buffers->spc = (double *)mmap(NULL, buffers->spcSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0) {
@@ -238,10 +256,10 @@ int init(int sockfd)
 	return 0;
 }
 
-int comm_set_buffer(char *cmd, char *buffer, int size)
+int comm_set_buffer(char *cmd, void *buffer, int size)
 {
-	char *buf;
-
+	char *bufc;
+	double *bufd;
 	/* wait until all reads are completed  */
 	while (buffers->readLock) {
 		log_debug("wait for readlock");
@@ -253,26 +271,30 @@ int comm_set_buffer(char *cmd, char *buffer, int size)
 	 */
 	buffers->writeLock = 1;
 
+
 	/* set size for each type of buffer */
 	if (strncmp(cmd, "top", 3) == 0) {
-		buf = buffers->top;
+		bufc = buffers->top;
 		buffers->topSize = size;
 	} else if (strncmp(cmd, "bot", 3) == 0) {
-		buf = buffers->bot;
+		bufc = buffers->bot;
 		buffers->botSize = size;
 	} else if (strncmp(cmd, "cam", 3) == 0) {
-		buf = buffers->cam;
+		bufc = buffers->cam;
 		buffers->camSize = size;
 	} else if (strncmp(cmd, "spc", 3) == 0) {
-		buf = buffers->spc;
+		bufd = buffers->spc;
 		buffers->spcSize = size;
 	} else {
 		fprintf(stderr, "incorrect buffer name\n");
 		buffers->writeLock = 0;
 		return -1;
 	}
-
-	memcpy(buf, buffer, size);
+	if (strncmp(cmd, "spc", 3) == 0) {
+		memmove(bufd, (double *)buffer, size*sizeof(double));
+	} else {
+		memmove(bufc, (char *)buffer, size*sizeof(char));
+	}
 
 	/* release lock */
 	buffers->writeLock = 0;
@@ -284,29 +306,49 @@ int send_buf(int newsockfd, char *cmd)
 {
 	int n;
 	int size;
-	char *buf;
+	double *bufd;
+	char *bufc;
 
 	if (strncmp(cmd, "top", 3) == 0) {
-		buf = buffers->top;
-		size = buffers->topSize;
+		bufc = buffers->top;
+		size = buffers->topSize*sizeof(bufc);
 	} else if (strncmp(cmd, "bot", 3) == 0) {
-		buf = buffers->bot;
-		size = buffers->botSize;
+		bufc = buffers->bot;
+		size = buffers->botSize*sizeof(bufc);
 	} else if (strncmp(cmd, "cam", 3) == 0) {
-		buf = buffers->cam;
-		size = buffers->camSize;
+		bufc = buffers->cam;
+		size = buffers->camSize*sizeof(bufc);
 	} else if (strncmp(cmd, "spc", 3) == 0) {
-		buf = buffers->spc;
-		size = buffers->spcSize;
+		bufd = buffers->spc;
+		size = buffers->spcSize*sizeof(bufd);
 	} else {
 		log_error("incorrect buffer name");
 		return -1;
 	}
 
-	log_debug("Sending picture size (%i)", size);
+	/* work around: dont send anything if the buffer has not yet been set */
+	if(size == 100000000 || size == 800000000) size = 0;
+
+	//~ log_debug("Sending command (%s)", cmd);
+	//~ write(newsockfd, cmd, sizeof(cmd));
+
+	log_debug("Sending buffer size (%i)", size);
 	write(newsockfd, &size, sizeof(size));
 
-	n = send_all(newsockfd, buf, size);
+	/* short circuit if nothing is to be send*/
+	if(size == 0){
+		log_debug("Buffer not ready, nothing send but length=0");
+		return 0;
+	}
+
+	log_debug("Sending payload");
+	if (strncmp(cmd, "spc", 3) == 0) {
+		n = send_spectrum(newsockfd, bufd, size);
+	} else {
+		n = send_image(newsockfd, bufc, size);
+	}
+	log_debug("send accomplished! Return value: %i", n);
+
 	if (n < 0) {
 		log_error("ERROR writing to socket");
 		return -1;
