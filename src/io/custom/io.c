@@ -526,20 +526,13 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 	int state;
 	char *buffer;
 	char *camname;
-	timeStruct *time;
 	char id = sSO2Parameters->identifier;
 
-	stBuffer = sSO2Parameters->stBuffer;
-
-	time = sSO2Parameters->timestampBefore;	// Datum und Uhrzeit
 	/* identify camera for filename prefix */
 	camname = sSO2Parameters->dark ? (id == 'a' ? (char *)"top_dark" : (char *)"bot_dark") : (id == 'a' ? (char *)"top" : (char *)"bot");
 
-	log_debug("filename created: %s", filename);
 	/* convert the image buffer to an openCV image */
-	// TODO: check if this has already been done
-	// TODO: check return code
-	img = bufferToImage(stBuffer);
+	img = bufferToImage(sSO2Parameters->stBuffer);
 
 	rotate(img, id == 'a' ? config->rotate_a : config->rotate_b);
 
@@ -569,7 +562,7 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		return 0;
 	}
 
-	state = createFilename(config, filename, filenamelength, time, camname, "png");
+	state = createFilename(config, filename, filenamelength, sSO2Parameters->timestampBefore, camname, "png");
 	if (state) {
 		log_error("could not create txt filename");
 	}
