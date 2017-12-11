@@ -18,5 +18,4 @@ int io_uninit(sConfigStruct *);
 #ifdef __cplusplus
 }
 #endif
-
 #endif

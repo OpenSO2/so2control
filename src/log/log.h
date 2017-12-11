@@ -15,5 +15,4 @@ int log_uninit(void);
 #ifdef __cplusplus
 }
 #endif
-
 #endif

@@ -26,4 +26,5 @@ int spectrometer_shutter_uninit(sConfigStruct * config)
 {
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

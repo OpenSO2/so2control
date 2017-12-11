@@ -45,15 +45,17 @@ int webcam_init(sConfigStruct * config, sWebCamStruct * webcam)
 	 */
 
 	/* throw away the first few buffers to force a clean buffer */
-	for(i = 0; i < 10; i++)
+	for (i = 0; i < 10; i++) {
 		cvQueryFrame(cam);
+	}
 
 	/* use some frames to get a mean return time */
 	noofmeanframes = 5;
-	for(i = 0; i < noofmeanframes; i++)
+	for (i = 0; i < noofmeanframes; i++) {
 		start = getTimeStamp();
 		cvQueryFrame(cam);
-		mean_exposure += (getTimeStamp() - start)/noofmeanframes;
+		mean_exposure += (getTimeStamp() - start) / noofmeanframes;
+	}
 
 	log_debug("webcam mean exposure is %lu", mean_exposure);
 
@@ -67,8 +69,8 @@ int webcam_get(sWebCamStruct * webcam)
 	long start, diff = 0;
 	int i;
 
-	/* if the time it takes to get a frame is a lot shorter than previously, there is something fishy going on; retry.*/
-	for(i = 0; i < 8 && diff < mean_exposure*.75; i++){
+	/* if the time it takes to get a frame is a lot shorter than previously, there is something fishy going on; retry. */
+	for (i = 0; i < 8 && diff < mean_exposure * .75; i++) {
 		stat = getTime(webcam->timestampBefore);
 		if (stat) {
 			log_error("couldn't get the time before requesting a webcam frame\n");
@@ -107,5 +109,5 @@ int webcam_uninit(sConfigStruct * config, sWebCamStruct * webcam)
 	cvReleaseCapture(&cam);
 	return 0;
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
+#pragma GCC diagnostic warning "-Wunused-parameter"

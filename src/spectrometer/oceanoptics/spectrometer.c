@@ -94,7 +94,7 @@ int spectrometer_init(sSpectrometerStruct * spectro)
 		return 1;
 	}
 
-	spectro->max = 65535; /* 16bit */
+	spectro->max = 65535;	/* 16bit */
 
 	spectro->timestampBefore = malloc(sizeof(timeStruct));
 	spectro->timestampAfter = malloc(sizeof(timeStruct));
@@ -145,4 +145,5 @@ int spectrometer_uninit(sConfigStruct * config)
 
 	return error_code;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

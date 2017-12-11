@@ -64,6 +64,7 @@ int spectrometer_uninit(sConfigStruct * config)
 	free(spectrum);
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -75,4 +76,5 @@ int spectrometer_get(sSpectrometerStruct * spectro)
 
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

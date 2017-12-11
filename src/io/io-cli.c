@@ -19,13 +19,13 @@ void parse_filename_to_timeStruct(char *inf, timeStruct * time)
 	// infile is of the form testing_2014_09_22-23_43_55_984_cam_bot.raw
 	//                       0         1         2         3         4
 	//                       0123456789012345678901234567890123456789012
-	time->year = (inf[offset +  8] - '0') * 1000 + (inf[offset +  9] - '0') * 100 + (inf[offset + 10] - '0') * 10 + inf[offset + 11] - '0';
-	time->mon  = (inf[offset + 13] - '0') * 10 + inf[offset + 14] - '0';
-	time->day  = (inf[offset + 16] - '0') * 10 + inf[offset + 17] - '0';
-	time->hour = (inf[offset + 19] - '0') * 10 + inf[offset + 20] - '0';
-	time->min  = (inf[offset + 22] - '0') * 10 + inf[offset + 23] - '0';
-	time->sec  = (inf[offset + 25] - '0') * 10 + inf[offset + 26] - '0';
-	time->milli= (inf[offset + 28] - '0') * 100 + (inf[offset + 29] - '0') * 10 + inf[offset + 30] - '0';
+	time->year = (inf[offset +  8] - '0') * 1000 + (inf[offset + 9] - '0') * 100 + (inf[offset + 10] - '0') * 10 + inf[offset + 11] - '0';
+	time->mon  = (inf[offset + 13] - '0') *   10 + inf[offset + 14] - '0';
+	time->day  = (inf[offset + 16] - '0') *   10 + inf[offset + 17] - '0';
+	time->hour = (inf[offset + 19] - '0') *   10 + inf[offset + 20] - '0';
+	time->min  = (inf[offset + 22] - '0') *   10 + inf[offset + 23] - '0';
+	time->sec  = (inf[offset + 25] - '0') *   10 + inf[offset + 26] - '0';
+	time->milli= (inf[offset + 28] - '0') *  100 + (inf[offset + 29] - '0') * 10 + inf[offset + 30] - '0';
 }
 
 int main(int argc, char *argv[])

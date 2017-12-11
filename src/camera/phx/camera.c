@@ -95,7 +95,7 @@ int camera_setExposure(sParameterStruct * sSO2Parameters)
 		return PHX_ERROR_OUT_OF_RANGE;
 	}
 	calc_mode_speed(exposureTime, &actualExposureTime, &m, speed);
-	sSO2Parameters->dExposureTime = actualExposureTime; /* update struct to the actual exposure time */
+	sSO2Parameters->dExposureTime = actualExposureTime;	/* update struct to the actual exposure time */
 	if (m == 'S') {
 		log_message("Camera %c uses electronic shutter. Exposure was set to approx. %f us which calculates to %f", sSO2Parameters->identifier, exposureTime, actualExposureTime);
 	} else {
@@ -265,7 +265,7 @@ static int sendMessage(tHandle hCamera, ui8 * msg)
 		eStat = PHX_CommsTransmit(hCamera, msg, &msgLength, timeout);
 		if (PHX_OK != eStat) {
 			log_error("PHX_CommsTransmit() failed");
-			continue; /* short circuit */
+			continue;	/* short circuit */
 		}
 
 		/* if transmitting was successful program waits for incoming messages
@@ -283,20 +283,20 @@ static int sendMessage(tHandle hCamera, ui8 * msg)
 
 		if (PHX_OK != eStat) {
 			log_debug("nothing was received from camera");
-			continue; /* short circuit */
+			continue;	/* short circuit */
 		}
 
 		/* if data is received, download the data */
 		eStat = PHX_CommsReceive(hCamera, recv, &recvLength, timeout);
 		if (PHX_OK != eStat) {
 			log_debug("nothing was received from camera");
-			continue; /* short circuit */
+			continue;	/* short circuit */
 		}
 
 		/* if cameras answer equals input string, exit successful */
 		if (strncmp((const char *)msg, (const char *)msg, msgLength)) {
 			log_debug("String send and string received were not equal.");
-			continue; /* short circuit */
+			continue;	/* short circuit */
 		}
 		/* remove carriage return character from string for logging */
 		for (j = 0; j < recvLength; j++)

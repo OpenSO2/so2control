@@ -69,7 +69,7 @@ void config_init_sConfigStruct(sConfigStruct * config)
 /*
  * http://courses.cms.caltech.edu/cs11/material/general/usage.html
  */
-void print_help(char * name)
+void print_help(char *name)
 {
 	fprintf(stderr, "Usage %s [--noprocessing] [--png-only] [--debug] [--noofimages n]\n", name);
 	fprintf(stderr, "      [--configfile filename] [--imagepath folder] [--port portno]\n");
@@ -94,7 +94,6 @@ void print_help(char * name)
 
 	exit(0);
 }
-
 
 /*
  * handle command line properties and translate into config properties
@@ -298,7 +297,7 @@ char *getString(char *source)
 {
 	char *tmp;
 	size_t l = strspn(source, " =");
-	tmp = source + l; /* remove leading whitespace */
-	tmp = strtok(tmp, "\n");/* remove LF */
+	tmp = source + l;	/* remove leading whitespace */
+	tmp = strtok(tmp, "\n");	/* remove LF */
 	return strdup(tmp);
 }

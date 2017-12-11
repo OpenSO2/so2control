@@ -54,5 +54,4 @@ int camera_config(sParameterStruct *);
 #ifdef __cplusplus
 }
 #endif
-
 #endif

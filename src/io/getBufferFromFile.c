@@ -22,7 +22,7 @@ short *getBufferFromFile(char *filename, int offset)
 		return NULL;
 	}
 
-	(void)fseek(f, offset, SEEK_SET); /* offset for header */
+	(void)fseek(f, offset, SEEK_SET);	/* offset for header */
 	buffer = (short int *)malloc(length);
 	if (!buffer) {
 		printf("failed to create buffer\n");

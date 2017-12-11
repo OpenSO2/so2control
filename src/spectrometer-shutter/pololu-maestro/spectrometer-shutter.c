@@ -25,7 +25,7 @@ static int channel = -1;
 int maestroSetTarget(unsigned short target);
 int maestroSetTarget(unsigned short target)
 {
-	unsigned char command[] = {0x84, channel, target & 0x7F, target >> 7 & 0x7F};
+	unsigned char command[] = { 0x84, channel, target & 0x7F, target >> 7 & 0x7F };
 	if (write(fd, command, sizeof(command)) == -1) {
 		log_error("error sending command to spectrometer shutter");
 		return -1;
@@ -89,4 +89,5 @@ int spectrometer_shutter_uninit(sConfigStruct * config)
 		return close(fd);
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	a = (int)*argv[1] - '0'; /* convert char to int */
+	a = (int)*argv[1] - '0';	/* convert char to int */
 
 #if defined(POSIX)
 	config.filterwheel_device = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A402X19O-if00-port0";

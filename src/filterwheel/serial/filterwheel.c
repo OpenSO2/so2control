@@ -1,16 +1,16 @@
-#include <stdio.h>   /* Standard input/output definitions */
+#include <stdio.h>		/* Standard input/output definitions */
 #include "../filterwheel.h"
 #include "timehelpers.h"
 #include "log.h"
 
 #if defined(POSIX)
-#include <string.h>  /* String function definitions */
-#include <unistd.h>  /* UNIX standard function definitions */
-#include <fcntl.h>   /* File control definitions */
-#include <errno.h>   /* Error number definitions */
-#include <termios.h> /* POSIX terminal control definitions */
+#include <string.h>		/* String function definitions */
+#include <unistd.h>		/* UNIX standard function definitions */
+#include <fcntl.h>		/* File control definitions */
+#include <errno.h>		/* Error number definitions */
+#include <termios.h>		/* POSIX terminal control definitions */
 
-static int fd = -1;  /* File descriptor for the port */
+static int fd = -1;		/* File descriptor for the port */
 #else
 #include <windows.h>
 static HANDLE hSerial;
@@ -104,4 +104,5 @@ int filterwheel_uninit(sConfigStruct * config)
 #endif
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

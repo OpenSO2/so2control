@@ -14,5 +14,4 @@ int webcam_uninit(sConfigStruct *, sWebCamStruct *);
 #ifdef __cplusplus
 }
 #endif
-
 #endif /* _WEBCAM_H_ */

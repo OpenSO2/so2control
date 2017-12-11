@@ -22,13 +22,13 @@ int logg(char *type, char *message, va_list args);
 int log_init(sConfigStruct * config)
 {
 	struct stat st = { 0 };
-	char * dir;
-	char * filename;
+	char *dir;
+	char *filename;
 	int filenamelength;
-	char * subpath = "logs";
+	char *subpath = "logs";
 	conf = config;
 
-	if(strcmp("-", config->cImagePath)){
+	if (strcmp("-", config->cImagePath)) {
 		// check for and remove trailing "/" to avoid ugly "//" in imagePath
 		if (config->cImagePath[(strlen(config->cImagePath) - 1)] == '/') {
 			config->cImagePath[(strlen(config->cImagePath) - 1)] = '\0';
@@ -112,14 +112,14 @@ int log_error(char *message, ...)
 	va_list args;
 	va_start(args, message);
 #ifdef POSIX
-	if( errno != 0 ){
+	if (errno != 0) {
 		char errstr[512];
-		char * new_message;
-		char * glue = ". Error returned from OS was: ";
+		char *new_message;
+		char *glue = ". Error returned from OS was: ";
 
 		strerror_r(errno, errstr, 512);
 
-		if((new_message = malloc(strlen(message) + strlen(errstr) + strlen(glue) + 1)) != NULL){
+		if ((new_message = malloc(strlen(message) + strlen(errstr) + strlen(glue) + 1)) != NULL) {
 			new_message[0] = '\0';
 			strcat(new_message, message);
 			strcat(new_message, glue);
@@ -131,7 +131,7 @@ int log_error(char *message, ...)
 	state = logg("ERROR", message, args);
 
 #ifdef POSIX
-	if( errno != 0 )
+	if (errno != 0)
 		free(message);
 #endif
 

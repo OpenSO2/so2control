@@ -7,10 +7,10 @@
 #include <math.h>
 
 #ifdef WIN
-	#include<windows.h>
+#include<windows.h>
 #else
-	#define _POSIX_C_SOURCE 200809L
-	#include<unistd.h>		/* usleep */
+#define _POSIX_C_SOURCE 200809L
+#include<unistd.h>		/* usleep */
 #endif
 
 #ifdef __cplusplus
@@ -37,5 +37,4 @@ long getTimeStamp(void);
 #ifdef __cplusplus
 }
 #endif
-
 #endif

@@ -46,7 +46,7 @@ double spectroscopy_calc_exposure(sSpectrometerStruct * spectro)
 		}
 	}
 
-	return highest; // should be something between 0..max
+	return highest;		// should be something between 0..max
 }
 
 /*
@@ -159,8 +159,8 @@ int spectroscopy_meanAndSubstract(int noOfMeasurements, int integration_time_mic
 		spectrometer_get(spectro);
 
 		for (i = 0; i < spectro->spectrum_length; i++) {
-			spectro->lastSpectrum[i] -= spectro->electronic_offset[i]; // substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
-			spectro->lastSpectrum[i] -= spectro->dark_current[i] * spectro->integration_time_micros/60000000; // substract dark current, scaled by integration time
+			spectro->lastSpectrum[i] -= spectro->electronic_offset[i];	// substract electronic offset, scaled by number of measurements (electronic offset was averaged to 1 measurement)
+			spectro->lastSpectrum[i] -= spectro->dark_current[i] * spectro->integration_time_micros / 60000000;	// substract dark current, scaled by integration time
 			spectrum[i] += spectro->lastSpectrum[i] / noOfMeasurements;
 		}
 	}
@@ -220,4 +220,5 @@ int spectroscopy_uninit(sSpectrometerStruct * spectro)
 {
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"

@@ -27,7 +27,7 @@ double getExposureTime(sParameterStruct *, sConfigStruct *);
 /* Either return the preset, fixed exposure time or run off into an
  * iterative loop to find a suitable value
  */
-double getExposureTime(sParameterStruct *sSO2Parameters, sConfigStruct *config)
+double getExposureTime(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	double exposure;
 	int status = 0;
@@ -52,10 +52,10 @@ double getExposureTime(sParameterStruct *sSO2Parameters, sConfigStruct *config)
 	return status;
 }
 
-int find_ettr(double *exposure, sParameterStruct *sSO2Parameters, sConfigStruct *config)
+int find_ettr(double *exposure, sParameterStruct * sSO2Parameters, sConfigStruct * config)
 {
 	int status = 0;
-	int relative_exposure = 0;  /* 0 good exposure, -1 underexposure, 1 overexposure */
+	int relative_exposure = 0;	/* 0 good exposure, -1 underexposure, 1 overexposure */
 	double overexposed = -1;
 	double underexposed = -1;
 	char lastspeed[9];

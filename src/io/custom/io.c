@@ -176,7 +176,7 @@ int io_writeWebcamImage(sWebCamStruct * webcam, sConfigStruct * config)
 	IplImage *img;
 	CvMat *png;
 
-	/* create new image to hold the loaded data*/
+	/* create new image to hold the loaded data */
 	CvSize mSize;
 
 	mSize.height = webcam->height;
@@ -365,6 +365,7 @@ int io_spectrum_save_calib(sSpectrometerStruct * spectro, sConfigStruct * config
 
 	return 0;
 }
+
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 int io_spectrum_save(sSpectrometerStruct * spectro, sConfigStruct * config)
@@ -567,7 +568,6 @@ int io_writeImage(sParameterStruct * sSO2Parameters, sConfigStruct * config)
 		log_error("could not create txt filename");
 	}
 
-
 	/* add headers */
 	log_debug("insert headers %i", l);
 	l = insertHeaders(&buffer, sSO2Parameters, config, l);
@@ -745,7 +745,7 @@ int dateStructToISO8601(timeStruct * time, char iso_date[25])
 	return strl > 0 ? 1 : 0;
 }
 
-int createFilename(sConfigStruct * config, char *filename, int filenamelength, timeStruct *time, char *camname, char *filetype)
+int createFilename(sConfigStruct * config, char *filename, int filenamelength, timeStruct * time, char *camname, char *filetype)
 {
 	int state = sprintf(filename,
 		"%s%s_%04d_%02d_%02d-%02d_%02d_%02d_%03d_cam_%s.%s",
@@ -764,7 +764,8 @@ int createFilename(sConfigStruct * config, char *filename, int filenamelength, t
 /* rotate an image
  * atm, only 180deg rotation is implemented
  */
-int rotate(IplImage *img, int angle){
+int rotate(IplImage * img, int angle)
+{
 	if (angle == 180 || angle == -180) {
 		cvFlip(img, img, -1);
 	} else if (angle == 0) {
