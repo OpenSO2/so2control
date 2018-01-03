@@ -21,6 +21,38 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
+/* Camera parameters */
+typedef struct {
+	/* A handle to identify the camera */
+	unsigned long hCamera;
+
+	/* Timestamp taken *before* the image has been triggered */
+	timeStruct *timestampBefore;
+
+	/* Timestamp taken after the image buffer has been returned */
+	timeStruct *timestampAfter;
+
+	/* contains the Exposuretime in [ms] */
+	double dExposureTime;
+
+	/* Pointer to image buffer */
+	short * stBuffer;
+
+	/* ~Callback stuff~ */
+
+	/* Event Flags */
+	volatile unsigned long fBufferReady;
+
+	/* Control Flags */
+	volatile unsigned long fFifoOverFlow;
+
+	/* Camera identifier */
+	char identifier;
+
+	/* flag to indicate that the current image is a dark image */
+	int dark;
+
+} sParameterStruct;
 #ifdef __cplusplus
 extern "C" {
 #endif
