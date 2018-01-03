@@ -1,4 +1,4 @@
-SO2 Camera: Spectrometer subsystem
+SO2 Camera: Spectrometer module
 ==================================
 
 This implements the spectrometer auto-calibration for the so2 camera project.
