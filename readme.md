@@ -1,12 +1,12 @@
-SO2-Control Software
+SO2 Camera Software
 ====================
 
-SO2 Camera control software written in C, licensed under [MIT](LICENSE.md).
+A [free](http://www.gnu.org/philosophy/free-sw.html) SO2 Camera control
+software written in C, licensed under [MIT](LICENSE.md).
 
 | Windows | Linux | QA     |
 | ------- | ----- | ------ |
 | [![Build status on Windows](https://ci.appveyor.com/api/projects/status/wtsnd28pv7ymsabg?svg=true)](https://ci.appveyor.com/project/jjacobsohn/so2-camera) | [![Build Status on Linux](https://travis-ci.org/OpenSO2/so2control.svg?branch=master)](https://travis-ci.org/OpenSO2/so2control)  | [![Coverity Scan Build Status](https://scan.coverity.com/projects/6043/badge.svg)](https://scan.coverity.com/projects/johannjacobsohn-so2-camera) |
-
 
 This is a command line utility to drive the hardware typically employed
 in SO2 cameras. This includes dual view UV cameras, filter wheel,
@@ -128,7 +128,7 @@ Coding style
 ------------
 
 This project loosely follows the [linux kernel coding style](https://www.kernel.org/doc/Documentation/CodingStyle) (ignoring the line length limit)
-which is checked using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
+which is checked and enforced using [indent](http://www.gnu.org/software/indent/) and can be triggered by issuing
 
 ```
 $ cmake .
